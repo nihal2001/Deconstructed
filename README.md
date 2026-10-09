@@ -148,7 +148,6 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 - **A completed visit removes the place from "Want to try."**
 - **"Score all four criteria"** in the brief is read as "score every criterion of the chosen system". Fast Casual has three.
 - **Look.** Every colour is one of the five in `Color-scheme.png` at its exact value (jet `143642`, blush rose `D65780`, alabaster `EAE6E5`, olive `91972A`, seagrass `519E8A`) or a transparency of one. Screens are solid jet; cards and sheets are alabaster. The one exception is the "Google Maps" attribution text in live mode, which follows Google's own styling. Headings and scores are set in Optima, which ships with iOS; body text is the system font. The app has this one appearance and does not follow the system light/dark setting. Small alabaster text on seagrass, olive and rose is below the usual 4.5:1 contrast guideline at these exact values.
-- **Not a git repository.** I didn't initialise one or commit anything. `.gitignore` is in place for when you do.
 
 ## Not finished or not verified
 
