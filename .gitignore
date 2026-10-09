@@ -1,0 +1,13 @@
+# Secrets — never commit
+Config/Secrets.xcconfig
+supabase/.env
+supabase/.temp/
+*.p8
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+.DS_Store

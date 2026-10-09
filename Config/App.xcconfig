@@ -1,0 +1,17 @@
+// Shared build configuration. Secrets live in Config/Secrets.xcconfig (git-ignored).
+// Copy Secrets.example.xcconfig to Secrets.xcconfig and fill it in to leave demo mode.
+
+APP_BUNDLE_ID = com.deconstructed.app
+
+// Left empty on purpose: with no credentials the app runs its clearly labelled demo.
+GOOGLE_MAPS_API_KEY =
+SUPABASE_PROJECT_HOST =
+SUPABASE_ANON_KEY =
+
+// Client-side guard rails for Google Places traffic (see docs/google-api-usage.md).
+PLACES_MAX_REQUESTS_PER_MINUTE = 30
+PLACES_MAX_REQUESTS_PER_DAY = 400
+PLACES_AUTOCOMPLETE_MIN_CHARACTERS = 3
+PLACES_AUTOCOMPLETE_DEBOUNCE_MS = 350
+
+#include? "Secrets.xcconfig"

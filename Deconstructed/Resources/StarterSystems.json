@@ -1,0 +1,160 @@
+{
+  "systems": [
+    {
+      "id": "00000000-0000-4000-A000-000000000001",
+      "versionID": "00000000-0000-4000-A001-000000000001",
+      "templateKey": "general",
+      "name": "General",
+      "summary": "An all-round rubric for most sit-down meals. Food carries half the score; service, value and atmosphere share the rest. Judge the restaurant against what it sets out to be.",
+      "criteria": [
+        {
+          "id": "00000000-0000-4000-A002-000000000101",
+          "name": "Food",
+          "guidance": "Flavour, cooking, ingredients and consistency across everything you ordered.",
+          "maxPoints": 5,
+          "levels": [
+            { "points": 0, "label": "Inedible", "detail": "Dishes were left unfinished or sent back. Something was unsafe, spoiled or badly wrong." },
+            { "points": 1, "label": "Poor", "detail": "Most dishes had clear flaws: bland, greasy, over- or under-cooked. You would not order any of it again." },
+            { "points": 2, "label": "Uneven", "detail": "One or two things were fine, but the meal as a whole was forgettable or inconsistent." },
+            { "points": 3, "label": "Good", "detail": "Solid, enjoyable cooking with no real mistakes. You left satisfied, though nothing stood out." },
+            { "points": 4, "label": "Very good", "detail": "Well-made food with at least one dish you would come back for specifically." },
+            { "points": 5, "label": "Exceptional", "detail": "Memorable from start to finish. Every dish was excellent and several were among the best of their kind you have had." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000102",
+          "name": "Service",
+          "guidance": "How you were treated, in the style the restaurant offers. Counter service done well can score full marks.",
+          "maxPoints": 2,
+          "levels": [
+            { "points": 0, "label": "Let you down", "detail": "Rude, absent or disorganised. Service made the visit worse." },
+            { "points": 1, "label": "Fine", "detail": "Polite and functional, with small lapses such as slow check-ins or a forgotten request." },
+            { "points": 2, "label": "Excellent", "detail": "Warm, attentive and well paced. Staff knew the menu and you never had to chase anything." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000103",
+          "name": "Value",
+          "guidance": "What you got for what you paid. An expensive meal can be full value and a cheap one can be poor value.",
+          "maxPoints": 2,
+          "levels": [
+            { "points": 0, "label": "Overpriced", "detail": "The bill felt out of line with the quality or portions. You would not pay this again." },
+            { "points": 1, "label": "Fair", "detail": "About what you expected to pay for a meal of this quality." },
+            { "points": 2, "label": "Great value", "detail": "The quality and care clearly exceeded the price, whatever that price was." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000104",
+          "name": "Atmosphere",
+          "guidance": "Whether the room suits the kind of place it is. Simple decor is not a fault; discomfort, dirt or noise that spoils the meal is.",
+          "maxPoints": 1,
+          "levels": [
+            { "points": 0, "label": "Detracted", "detail": "The space got in the way: uncomfortable, unclean, or too loud to enjoy the meal." },
+            { "points": 1, "label": "Fits the place", "detail": "Comfortable and clean, with a setting that suits the restaurant's style and added to the visit." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-A000-000000000002",
+      "versionID": "00000000-0000-4000-A001-000000000002",
+      "templateKey": "fine_dining",
+      "name": "Fine Dining",
+      "summary": "For tasting menus and special-occasion restaurants, where service and setting are part of what you pay for. A high price is expected here and does not lower the score on its own.",
+      "criteria": [
+        {
+          "id": "00000000-0000-4000-A002-000000000201",
+          "name": "Food",
+          "guidance": "Technique, ingredients, originality and how well the menu holds together as a whole.",
+          "maxPoints": 4,
+          "levels": [
+            { "points": 0, "label": "Failed", "detail": "Serious technical faults or dishes that simply did not work. Well below what the format promises." },
+            { "points": 1, "label": "Below the bar", "detail": "Competent in places but with several weak or muddled courses for a restaurant at this level." },
+            { "points": 2, "label": "Accomplished", "detail": "Skilled, polished cooking with good ingredients, but few surprises and a course or two that fell flat." },
+            { "points": 3, "label": "Excellent", "detail": "Precise and distinctive cooking. Nearly every course landed and a couple were outstanding." },
+            { "points": 4, "label": "Extraordinary", "detail": "A complete, original menu with no weak course. Food you will remember and describe to people for years." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000202",
+          "name": "Service",
+          "guidance": "Pacing, knowledge, anticipation and how at ease the team made you feel.",
+          "maxPoints": 3,
+          "levels": [
+            { "points": 0, "label": "Poor", "detail": "Inattentive, stiff or careless. Long unexplained waits or mistakes that were not put right." },
+            { "points": 1, "label": "Adequate", "detail": "Correct but impersonal or uneven. Courses were paced awkwardly or questions went unanswered." },
+            { "points": 2, "label": "Polished", "detail": "Knowledgeable and well paced, with only minor slips. You felt looked after." },
+            { "points": 3, "label": "Seamless", "detail": "Anticipated what you needed before you asked. Warm, exact and unobtrusive from arrival to goodbye." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000203",
+          "name": "Atmosphere",
+          "guidance": "The room, table, sound, lighting and sense of occasion.",
+          "maxPoints": 2,
+          "levels": [
+            { "points": 0, "label": "Undermined the meal", "detail": "Cramped, noisy, tired or uncomfortable in a way that worked against the experience." },
+            { "points": 1, "label": "Pleasant", "detail": "A comfortable, well-kept room that did its job without adding much." },
+            { "points": 2, "label": "Transporting", "detail": "A considered space where the design, comfort and mood made the evening feel like an occasion." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000204",
+          "name": "Value",
+          "guidance": "Whether the whole experience justified the bill at this level. Being expensive is not the test.",
+          "maxPoints": 1,
+          "levels": [
+            { "points": 0, "label": "Not worth it", "detail": "The experience did not justify the price, even by fine-dining standards." },
+            { "points": 1, "label": "Worth it", "detail": "You would pay this again for the same experience." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-A000-000000000003",
+      "versionID": "00000000-0000-4000-A001-000000000003",
+      "templateKey": "fast_casual",
+      "name": "Fast Casual",
+      "summary": "For counters, trucks, slice shops and takeaway. Rewards great food at a fair price, served quickly and correctly. Decor and table service are not scored.",
+      "criteria": [
+        {
+          "id": "00000000-0000-4000-A002-000000000301",
+          "name": "Food",
+          "guidance": "Flavour, freshness and how well it is made for what it is. A perfect taco can score as high as any plated dish.",
+          "maxPoints": 5,
+          "levels": [
+            { "points": 0, "label": "Inedible", "detail": "Stale, cold or wrong enough that you did not finish it." },
+            { "points": 1, "label": "Poor", "detail": "Low-quality ingredients or careless cooking. Not worth the calories." },
+            { "points": 2, "label": "Passable", "detail": "Filled a gap. Nothing wrong enough to complain about, nothing good enough to return for." },
+            { "points": 3, "label": "Good", "detail": "Fresh, tasty and reliably made. A dependable choice when you are nearby." },
+            { "points": 4, "label": "Very good", "detail": "Clearly better than most places of its kind. Worth a detour." },
+            { "points": 5, "label": "Best in class", "detail": "Among the best versions of this food you have eaten anywhere. Worth a special trip." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000302",
+          "name": "Value",
+          "guidance": "Portion and quality for the price, compared with similar quick places.",
+          "maxPoints": 3,
+          "levels": [
+            { "points": 0, "label": "Rip-off", "detail": "Small portions or poor quality for a price well above comparable places." },
+            { "points": 1, "label": "Pricey", "detail": "A little more than it should cost for what you get." },
+            { "points": 2, "label": "Fair", "detail": "A reasonable price for a filling, decent meal." },
+            { "points": 3, "label": "A bargain", "detail": "Generous and high quality for the money. You would happily pay more." }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-A002-000000000303",
+          "name": "Speed and Accuracy",
+          "guidance": "How long you waited relative to how busy it was, and whether the order was right.",
+          "maxPoints": 2,
+          "levels": [
+            { "points": 0, "label": "Slow or wrong", "detail": "A long wait with no explanation, or the order was wrong and not fixed." },
+            { "points": 1, "label": "Acceptable", "detail": "A reasonable wait, or a small mistake that was corrected without fuss." },
+            { "points": 2, "label": "Fast and right", "detail": "Quick for how busy it was, and everything was exactly as ordered." }
+          ]
+        }
+      ]
+    }
+  ]
+}

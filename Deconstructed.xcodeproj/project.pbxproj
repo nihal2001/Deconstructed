@@ -1,0 +1,451 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC0000000000000000000A01 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DC0000000000000000000B01 /* Supabase */; };
+		DC0000000000000000000A02 /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = DC0000000000000000000B02 /* GoogleMaps */; };
+		DC0000000000000000000A03 /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = DC0000000000000000000B03 /* GooglePlaces */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DC0000000000000000000C01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC0000000000000000000101;
+			remoteInfo = Deconstructed;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		DC0000000000000000000201 /* Deconstructed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Deconstructed.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0000000000000000000202 /* DeconstructedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeconstructedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0000000000000000000203 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
+		DC0000000000000000000204 /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		DC0000000000000000000205 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DC0000000000000000000206 /* Deconstructed.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Deconstructed.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DC0000000000000000000301 /* Deconstructed */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Deconstructed;
+			sourceTree = "<group>";
+		};
+		DC0000000000000000000302 /* DeconstructedTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DeconstructedTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC0000000000000000000401 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0000000000000000000A01 /* Supabase in Frameworks */,
+				DC0000000000000000000A02 /* GoogleMaps in Frameworks */,
+				DC0000000000000000000A03 /* GooglePlaces in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0000000000000000000402 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC0000000000000000000501 = {
+			isa = PBXGroup;
+			children = (
+				DC0000000000000000000301 /* Deconstructed */,
+				DC0000000000000000000302 /* DeconstructedTests */,
+				DC0000000000000000000503 /* Config */,
+				DC0000000000000000000502 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DC0000000000000000000502 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC0000000000000000000201 /* Deconstructed.app */,
+				DC0000000000000000000202 /* DeconstructedTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC0000000000000000000503 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				DC0000000000000000000203 /* App.xcconfig */,
+				DC0000000000000000000204 /* Secrets.example.xcconfig */,
+				DC0000000000000000000205 /* Info.plist */,
+				DC0000000000000000000206 /* Deconstructed.entitlements */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DC0000000000000000000101 /* Deconstructed */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0000000000000000000701 /* Build configuration list for PBXNativeTarget "Deconstructed" */;
+			buildPhases = (
+				DC0000000000000000000601 /* Sources */,
+				DC0000000000000000000401 /* Frameworks */,
+				DC0000000000000000000603 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DC0000000000000000000301 /* Deconstructed */,
+			);
+			name = Deconstructed;
+			packageProductDependencies = (
+				DC0000000000000000000B01 /* Supabase */,
+				DC0000000000000000000B02 /* GoogleMaps */,
+				DC0000000000000000000B03 /* GooglePlaces */,
+			);
+			productName = Deconstructed;
+			productReference = DC0000000000000000000201 /* Deconstructed.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DC0000000000000000000102 /* DeconstructedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0000000000000000000702 /* Build configuration list for PBXNativeTarget "DeconstructedTests" */;
+			buildPhases = (
+				DC0000000000000000000602 /* Sources */,
+				DC0000000000000000000402 /* Frameworks */,
+				DC0000000000000000000604 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC0000000000000000000C02 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DC0000000000000000000302 /* DeconstructedTests */,
+			);
+			name = DeconstructedTests;
+			productName = DeconstructedTests;
+			productReference = DC0000000000000000000202 /* DeconstructedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					DC0000000000000000000101 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					DC0000000000000000000102 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = DC0000000000000000000101;
+					};
+				};
+			};
+			buildConfigurationList = DC0000000000000000000700 /* Build configuration list for PBXProject "Deconstructed" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DC0000000000000000000501;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DC0000000000000000000D01 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				DC0000000000000000000D02 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
+				DC0000000000000000000D03 /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DC0000000000000000000502 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC0000000000000000000101 /* Deconstructed */,
+				DC0000000000000000000102 /* DeconstructedTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC0000000000000000000603 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0000000000000000000604 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC0000000000000000000601 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0000000000000000000602 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DC0000000000000000000C02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC0000000000000000000101 /* Deconstructed */;
+			targetProxy = DC0000000000000000000C01 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		DC0000000000000000000801 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DC0000000000000000000203 /* App.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DC0000000000000000000802 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DC0000000000000000000203 /* App.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DC0000000000000000000811 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Deconstructed.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Deconstructed;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Deconstructed uses your location to centre the map and search for restaurants near you. You can also set an area manually.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		DC0000000000000000000812 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Deconstructed.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Deconstructed;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Deconstructed uses your location to centre the map and search for restaurants near you. You can also set an area manually.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		DC0000000000000000000821 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID).tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deconstructed.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Deconstructed";
+			};
+			name = Debug;
+		};
+		DC0000000000000000000822 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID).tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deconstructed.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Deconstructed";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC0000000000000000000700 /* Build configuration list for PBXProject "Deconstructed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0000000000000000000801 /* Debug */,
+				DC0000000000000000000802 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC0000000000000000000701 /* Build configuration list for PBXNativeTarget "Deconstructed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0000000000000000000811 /* Debug */,
+				DC0000000000000000000812 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC0000000000000000000702 /* Build configuration list for PBXNativeTarget "DeconstructedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0000000000000000000821 /* Debug */,
+				DC0000000000000000000822 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DC0000000000000000000D01 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.55.0;
+			};
+		};
+		DC0000000000000000000D02 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-maps-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+		DC0000000000000000000D03 /* XCRemoteSwiftPackageReference "ios-places-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-places-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DC0000000000000000000B01 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC0000000000000000000D01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+		DC0000000000000000000B02 /* GoogleMaps */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC0000000000000000000D02 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
+			productName = GoogleMaps;
+		};
+		DC0000000000000000000B03 /* GooglePlaces */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC0000000000000000000D03 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
+			productName = GooglePlaces;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = DC0000000000000000000001 /* Project object */;
+}
