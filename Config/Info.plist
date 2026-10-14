@@ -4,24 +4,22 @@
 <dict>
 	<key>GoogleMapsAPIKey</key>
 	<string>$(GOOGLE_MAPS_API_KEY)</string>
-	<key>SupabaseProjectHost</key>
-	<string>$(SUPABASE_PROJECT_HOST)</string>
-	<key>SupabaseAnonKey</key>
-	<string>$(SUPABASE_ANON_KEY)</string>
-	<key>PlacesMaxRequestsPerMinute</key>
-	<string>$(PLACES_MAX_REQUESTS_PER_MINUTE)</string>
-	<key>PlacesMaxRequestsPerDay</key>
-	<string>$(PLACES_MAX_REQUESTS_PER_DAY)</string>
-	<key>PlacesAutocompleteMinCharacters</key>
-	<string>$(PLACES_AUTOCOMPLETE_MIN_CHARACTERS)</string>
 	<key>PlacesAutocompleteDebounceMs</key>
 	<string>$(PLACES_AUTOCOMPLETE_DEBOUNCE_MS)</string>
+	<key>PlacesAutocompleteMinCharacters</key>
+	<string>$(PLACES_AUTOCOMPLETE_MIN_CHARACTERS)</string>
+	<key>PlacesMaxRequestsPerDay</key>
+	<string>$(PLACES_MAX_REQUESTS_PER_DAY)</string>
+	<key>PlacesMaxRequestsPerMinute</key>
+	<string>$(PLACES_MAX_REQUESTS_PER_MINUTE)</string>
+	<key>SupabaseAnonKey</key>
+	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>SupabaseProjectHost</key>
+	<string>$(SUPABASE_PROJECT_HOST)</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
 		<string>LaunchBackground</string>
 	</dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 </dict>
 </plist>

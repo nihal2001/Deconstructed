@@ -286,10 +286,12 @@
 				CODE_SIGN_ENTITLEMENTS = Config/Deconstructed.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7B97ZT8BW2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Deconstructed;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Deconstructed uses your location to centre the map and search for restaurants near you. You can also set an area manually.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -316,10 +318,12 @@
 				CODE_SIGN_ENTITLEMENTS = Config/Deconstructed.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7B97ZT8BW2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Deconstructed;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Deconstructed uses your location to centre the map and search for restaurants near you. You can also set an area manually.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
