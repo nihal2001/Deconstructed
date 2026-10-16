@@ -10,11 +10,11 @@ import UIKit
 /// alabaster with jet text. Colours that differ between those two contexts are selected by
 /// the SwiftUI colour scheme: "dark" means "on jet", "light" means "on alabaster".
 enum Theme {
-    private static let jetHex: UInt32 = 0x143642
-    private static let roseHex: UInt32 = 0xD65780
-    private static let alabasterHex: UInt32 = 0xEAE6E5
-    private static let oliveHex: UInt32 = 0x91972A
-    private static let seagrassHex: UInt32 = 0x519E8A
+    static let jetHex: UInt32 = 0x143642
+    static let roseHex: UInt32 = 0xD65780
+    static let alabasterHex: UInt32 = 0xEAE6E5
+    static let oliveHex: UInt32 = 0x91972A
+    static let seagrassHex: UInt32 = 0x519E8A
 
     static let jet = Color(light: jetHex, dark: jetHex)
     static let alabaster = Color(light: alabasterHex, dark: alabasterHex)

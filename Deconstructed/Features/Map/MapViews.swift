@@ -80,7 +80,7 @@ struct AppleMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView()
         map.delegate = context.coordinator
-        map.pointOfInterestFilter = .excludingAll // keep real businesses out of a fictional demo
+        MapStyle.apply(to: map)
         map.register(MKMarkerAnnotationView.self, forAnnotationViewWithReuseIdentifier: "pin")
         map.register(MKMarkerAnnotationView.self, forAnnotationViewWithReuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
         return map
@@ -125,7 +125,8 @@ struct AppleMapView: UIViewRepresentable {
             if let cluster = annotation as? MKClusterAnnotation {
                 let view = mapView.dequeueReusableAnnotationView(
                     withIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier, for: annotation) as? MKMarkerAnnotationView
-                view?.markerTintColor = UIColor(hex: 0x143642)
+                view?.markerTintColor = UIColor(hex: Theme.alabasterHex) // jet would vanish on the jet map
+                view?.glyphTintColor = UIColor(hex: Theme.jetHex)
                 view?.glyphText = "\(cluster.memberAnnotations.count)"
                 view?.accessibilityLabel = "\(cluster.memberAnnotations.count) restaurants. Double tap to zoom in."
                 return view
@@ -134,6 +135,7 @@ struct AppleMapView: UIViewRepresentable {
             let view = mapView.dequeueReusableAnnotationView(withIdentifier: "pin", for: annotation) as? MKMarkerAnnotationView
             view?.clusteringIdentifier = "restaurant"
             view?.markerTintColor = annotation.pin.color
+            view?.glyphTintColor = UIColor(hex: Theme.alabasterHex)
             view?.glyphImage = UIImage(systemName: annotation.pin.symbol)
             view?.displayPriority = annotation.pin.kind == .result ? .defaultHigh : .required
             view?.accessibilityLabel = switch annotation.pin.kind {
@@ -142,6 +144,11 @@ struct AppleMapView: UIViewRepresentable {
             case .result: "Search result"
             }
             return view
+        }
+
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let wash = overlay as? MapStyle.Wash { return MapStyle.Wash.renderer(for: wash) }
+            return MKOverlayRenderer(overlay: overlay)
         }
 
         func mapView(_ mapView: MKMapView, didSelect annotation: MKAnnotation) {
@@ -183,6 +190,7 @@ struct GoogleMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> GMSMapView {
         let map = GMSMapView(options: GMSMapViewOptions())
         map.delegate = context.coordinator
+        MapStyle.apply(to: map)
         map.settings.rotateGestures = false
         map.settings.tiltGestures = false
         return map
@@ -222,11 +230,16 @@ struct GoogleMapView: UIViewRepresentable {
         var hasSetCamera = false
         var renderedSelection: String?
         private var markers: [GMSMarker] = []
+        /// One image per kind and state, shared by every marker that uses it.
+        private var badges: [String: UIImage] = [:]
         private let cellSize: CGFloat = 56
 
         init(_ parent: GoogleMapView) { self.parent = parent }
 
         func render(on map: GMSMapView) {
+            // Before the first layout the projection is meaningless and screen points can't be
+            // grouped. The camera settling afterwards calls back here.
+            guard !map.bounds.isEmpty else { return }
             markers.forEach { $0.map = nil }
             markers = []
             renderedSelection = parent.selection
@@ -244,10 +257,12 @@ struct GoogleMapView: UIViewRepresentable {
             for group in cells.values {
                 let marker: GMSMarker
                 if group.count == 1, let pin = group.first {
+                    let isSelected = pin.id == parent.selection
                     marker = GMSMarker(position: pin.coordinate.clLocation)
-                    marker.icon = GMSMarker.markerImage(with: pin.color)
+                    marker.icon = badge(for: pin, selected: isSelected)
+                    marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
                     marker.userData = [pin.id]
-                    marker.zIndex = pin.id == parent.selection ? 10 : 1
+                    marker.zIndex = isSelected ? 10 : 1
                     marker.accessibilityLabel = switch pin.kind {
                     case .wantToTry: "Want to try"
                     case .visited: "Visited"
@@ -267,16 +282,22 @@ struct GoogleMapView: UIViewRepresentable {
             }
         }
 
+        private func badge(for pin: MapPin, selected: Bool) -> UIImage {
+            let key = "\(pin.kind)-\(selected)"
+            if let badge = badges[key] { return badge }
+            let badge = MapStyle.badge(for: pin, selected: selected)
+            badges[key] = badge
+            return badge
+        }
+
         private static func clusterView(count: Int) -> UIView {
             let label = UILabel(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
             label.text = "\(count)"
             label.textAlignment = .center
             label.font = .systemFont(ofSize: 15, weight: .bold)
-            label.textColor = .white
-            label.backgroundColor = UIColor(hex: 0x143642)
+            label.textColor = UIColor(hex: Theme.jetHex)
+            label.backgroundColor = UIColor(hex: Theme.alabasterHex) // jet would vanish on the jet map
             label.layer.cornerRadius = 20
-            label.layer.borderWidth = 2
-            label.layer.borderColor = UIColor.white.cgColor
             label.clipsToBounds = true
             return label
         }

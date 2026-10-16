@@ -92,6 +92,7 @@ struct MapScreen: View {
             .animation(.snappy, value: selection)
             .navigationTitle("Map")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Theme.jet, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .appRoutes()
             .sheet(isPresented: $showAreaPicker) { AreaPickerSheet() }
