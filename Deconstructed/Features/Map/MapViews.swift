@@ -46,13 +46,16 @@ struct RestaurantMap: View {
     @Binding var selection: String?
     var camera: MapCameraRequest?
     var showsUserLocation: Bool
+    /// How far down from its top edge the app's controls cover the map.
+    var topInset: CGFloat
+    /// How far up from the bottom safe area the preview card covers the map.
     var bottomInset: CGFloat
     var onMove: (Coordinate, Double) -> Void
 
     var body: some View {
         if usesGoogle {
             GoogleMapView(pins: pins, selection: $selection, camera: camera, showsUserLocation: showsUserLocation,
-                          bottomInset: bottomInset, onMove: onMove)
+                          topInset: topInset, bottomInset: bottomInset, onMove: onMove)
         } else {
             AppleMapView(pins: pins, selection: $selection, camera: camera, showsUserLocation: showsUserLocation,
                          onMove: onMove)
@@ -182,6 +185,7 @@ struct GoogleMapView: UIViewRepresentable {
     @Binding var selection: String?
     var camera: MapCameraRequest?
     var showsUserLocation: Bool
+    var topInset: CGFloat
     var bottomInset: CGFloat
     var onMove: (Coordinate, Double) -> Void
 
@@ -200,8 +204,11 @@ struct GoogleMapView: UIViewRepresentable {
         let coordinator = context.coordinator
         coordinator.parent = self
         map.isMyLocationEnabled = showsUserLocation
-        // Keeps the Google logo and attribution clear of the app's own overlays.
-        map.padding = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        // Keeps the Google logo and attribution clear of the preview card. Padding only the bottom
+        // would re-centre the camera in the smaller area and move the map, so the top is padded by
+        // the same amount. The centre stays put, and so does everything on screen.
+        let padding = UIEdgeInsets(top: bottomInset, left: 0, bottom: bottomInset, right: 0)
+        if map.padding != padding { map.padding = padding }
 
         if let camera, camera.id != coordinator.lastCameraID {
             coordinator.lastCameraID = camera.id
@@ -211,7 +218,12 @@ struct GoogleMapView: UIViewRepresentable {
                 coordinate: CLLocationCoordinate2D(latitude: camera.center.latitude + latDelta, longitude: camera.center.longitude + lngDelta),
                 coordinate: CLLocationCoordinate2D(latitude: camera.center.latitude - latDelta, longitude: camera.center.longitude - lngDelta))
             let update = GMSCameraUpdate.fit(bounds, withPadding: 24)
-            if coordinator.hasSetCamera { map.animate(with: update) } else { map.moveCamera(update) }
+            if coordinator.hasSetCamera {
+                map.animate(with: update)
+                coordinator.isFollowingRequest = true
+            } else {
+                map.moveCamera(update)
+            }
             coordinator.hasSetCamera = true
         }
 
@@ -219,6 +231,7 @@ struct GoogleMapView: UIViewRepresentable {
             coordinator.pins = pins
             coordinator.render(on: map)
         }
+        coordinator.revealSelection(on: map)
     }
 
     /// Draws markers and groups those that would overlap on screen into count markers.
@@ -229,12 +242,46 @@ struct GoogleMapView: UIViewRepresentable {
         var lastCameraID: UUID?
         var hasSetCamera = false
         var renderedSelection: String?
+        /// True while the map animates to a camera request, which revealing the selection would cancel.
+        var isFollowingRequest = false
         private var markers: [GMSMarker] = []
         /// One image per kind and state, shared by every marker that uses it.
         private var badges: [String: UIImage] = [:]
         private let cellSize: CGFloat = 56
+        /// The selection and insets last revealed, so the map pans for a new selection or a
+        /// resized card but never fights the user dragging the selected pin out of view.
+        private var revealed: RevealState?
+
+        private struct RevealState: Equatable {
+            var placeID: String
+            var top: CGFloat
+            var bottom: CGFloat
+        }
 
         init(_ parent: GoogleMapView) { self.parent = parent }
+
+        /// Pans just enough to bring the selected marker out from under the controls and the card.
+        func revealSelection(on map: GMSMapView) {
+            guard let selection = parent.selection else {
+                revealed = nil
+                return
+            }
+            let state = RevealState(placeID: selection, top: parent.topInset, bottom: map.padding.bottom)
+            guard state != revealed, hasSetCamera, !isFollowingRequest, !map.bounds.isEmpty,
+                  let marker = markers.first(where: { ($0.userData as? [String]) == [selection] }) else { return }
+            revealed = state
+
+            let size = marker.iconView?.bounds.size ?? marker.icon?.size ?? .zero
+            let markerTop = map.projection.point(for: marker.position).y - size.height * marker.groundAnchor.y
+            let markerBottom = markerTop + size.height
+            let margin: CGFloat = 8
+            let clearTop = state.top + margin
+            let clearBottom = map.bounds.height - map.safeAreaInsets.bottom - state.bottom - margin
+            // Clear of the card first, then of the controls if there is not room for both.
+            var shift = max(0, markerBottom - clearBottom)
+            if markerTop - shift < clearTop { shift = markerTop - clearTop }
+            if shift != 0 { map.animate(with: GMSCameraUpdate.scrollBy(x: 0, y: shift)) }
+        }
 
         func render(on map: GMSMapView) {
             // Before the first layout the projection is meaningless and screen points can't be
@@ -320,10 +367,13 @@ struct GoogleMapView: UIViewRepresentable {
 
         // Camera settled: regroup markers and report the new area. No search is triggered.
         func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
+            isFollowingRequest = false
             render(on: mapView)
-            let region = mapView.projection.visibleRegion()
+            revealSelection(on: mapView)
+            // Measured to the top of the map rather than of the padded area, so opening the card is not a move.
+            let top = mapView.projection.coordinate(for: CGPoint(x: mapView.bounds.midX, y: mapView.safeAreaInsets.top))
             let radius = CLLocation(latitude: position.target.latitude, longitude: position.target.longitude)
-                .distance(from: CLLocation(latitude: region.farLeft.latitude, longitude: position.target.longitude))
+                .distance(from: CLLocation(latitude: top.latitude, longitude: position.target.longitude))
             parent.onMove(Coordinate(position.target), radius)
         }
     }

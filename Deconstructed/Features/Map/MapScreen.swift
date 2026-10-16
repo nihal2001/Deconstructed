@@ -18,6 +18,10 @@ struct MapScreen: View {
     @State private var coordinates: [UUID: Coordinate] = [:]
     @State private var showAreaPicker = false
     @State private var path = NavigationPath()
+    /// How much of the map the controls and the preview card cover, measured so the map can
+    /// keep the Google logo and the selected pin clear of them at any text size.
+    @State private var controlsHeight: CGFloat = 0
+    @State private var cardHeight: CGFloat = 0
 
     private var discovery: DiscoveryModel { model.discovery }
     private var location: LocationService { model.location }
@@ -59,7 +63,7 @@ struct MapScreen: View {
                 RestaurantMap(
                     usesGoogle: !model.isDemo, pins: pins, selection: $selection, camera: camera,
                     showsUserLocation: location.access == .granted,
-                    bottomInset: selection == nil ? 0 : 150,
+                    topInset: controlsHeight, bottomInset: selection == nil ? 0 : cardHeight,
                     onMove: { center, radius in discovery.mapMoved(center: center, radiusMeters: radius) })
                     .ignoresSafeArea(edges: .bottom)
 
@@ -80,12 +84,14 @@ struct MapScreen: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { controlsHeight = $0 }
             }
             .safeAreaInset(edge: .bottom) {
                 if let selection {
                     MapPreviewCard(placeID: selection) { self.selection = nil }
                         .padding(.horizontal, 12)
                         .padding(.bottom, 8)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
