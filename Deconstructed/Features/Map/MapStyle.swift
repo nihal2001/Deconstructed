@@ -2,27 +2,28 @@ import GoogleMaps
 import MapKit
 import UIKit
 
-/// The look of the Map tab: a quiet jet basemap that keeps land, water, parks, roads and place
+/// The look of the Map tab: a light, warm basemap that keeps land, water, parks, roads and place
 /// names, and drops everything else (businesses, landmarks, transit, road shields, indoor maps),
 /// so the only places on the map are the app's own pins.
 ///
-/// Every colour is a palette colour, or one laid over jet at a given strength and flattened to
-/// a single value, because map styles take opaque colours.
+/// Every colour is a palette colour, or one laid over alabaster at a given strength and
+/// flattened to a single value, because map styles take opaque colours.
 enum MapStyle {
     // MARK: Palette, as the map uses it
 
-    static let water = hex(Theme.jetHex)
-    static let land = mix(Theme.alabasterHex, 0.06, over: Theme.jetHex)
-    static let buildings = mix(Theme.alabasterHex, 0.10, over: Theme.jetHex)
-    static let parks = mix(Theme.seagrassHex, 0.22, over: Theme.jetHex)
-    static let localRoads = mix(Theme.alabasterHex, 0.13, over: Theme.jetHex)
-    static let arterialRoads = mix(Theme.alabasterHex, 0.20, over: Theme.jetHex)
-    static let highways = mix(Theme.alabasterHex, 0.30, over: Theme.jetHex)
-    static let borders = mix(Theme.alabasterHex, 0.22, over: Theme.jetHex)
-    static let cityLabels = hex(Theme.alabasterHex)
-    static let areaLabels = mix(Theme.alabasterHex, 0.62, over: Theme.jetHex)
-    static let roadLabels = mix(Theme.alabasterHex, 0.48, over: Theme.jetHex)
-    static let waterLabels = mix(Theme.seagrassHex, 0.80, over: Theme.jetHex)
+    static let land = mix(Theme.oliveHex, 0.08, over: Theme.alabasterHex)
+    static let buildings = mix(Theme.oliveHex, 0.16, over: Theme.alabasterHex)
+    static let water = mix(Theme.seagrassHex, 0.55, over: Theme.alabasterHex)
+    static let parks = mix(Theme.oliveHex, 0.38, over: Theme.alabasterHex)
+    static let localRoads = hex(Theme.alabasterHex) // a shade lighter than the land
+    static let arterialRoads = mix(Theme.roseHex, 0.22, over: Theme.alabasterHex)
+    static let highways = mix(Theme.roseHex, 0.50, over: Theme.alabasterHex)
+    static let borders = mix(Theme.jetHex, 0.25, over: Theme.alabasterHex)
+    static let cityLabels = hex(Theme.jetHex)
+    static let areaLabels = mix(Theme.jetHex, 0.62, over: Theme.alabasterHex)
+    static let roadLabels = mix(Theme.jetHex, 0.55, over: Theme.alabasterHex)
+    static let waterLabels = mix(Theme.seagrassHex, 0.65, over: Theme.jetHex)
+    static let halo = hex(Theme.alabasterHex)
 
     // MARK: Google (live)
 
@@ -32,7 +33,7 @@ enum MapStyle {
             rule(element: "geometry", ["color": land]),
             rule(element: "labels.icon", ["visibility": "off"]),
             rule(element: "labels.text.fill", ["color": areaLabels]),
-            rule(element: "labels.text.stroke", ["color": water]),
+            rule(element: "labels.text.stroke", ["color": halo]),
 
             // Points of interest and transit are hidden; park shapes stay as green space.
             rule("poi", ["visibility": "off"]),
@@ -43,7 +44,7 @@ enum MapStyle {
             rule("water", element: "labels.text.fill", ["color": waterLabels]),
             rule("landscape.man_made", element: "geometry", ["color": buildings]),
 
-            // Roads brighten with importance; names are soft and never shielded.
+            // Streets are light lanes; bigger roads blush rose. Names are soft and never shielded.
             rule("road", element: "geometry.stroke", ["visibility": "off"]),
             rule("road.local", element: "geometry.fill", ["color": localRoads]),
             rule("road.arterial", element: "geometry.fill", ["color": arterialRoads]),
@@ -62,22 +63,22 @@ enum MapStyle {
 
     static func apply(to map: GMSMapView) {
         map.mapStyle = google
-        map.backgroundColor = UIColor(hex: Theme.jetHex) // no grey flash before tiles load
-        map.overrideUserInterfaceStyle = .dark // light Google logo on the dark map
+        map.backgroundColor = UIColor(hex: Theme.alabasterHex) // no grey flash before tiles load
+        map.overrideUserInterfaceStyle = .light // dark Google logo on the light map
         map.isIndoorEnabled = false
         map.settings.indoorPicker = false
     }
 
     // MARK: Apple (demo)
 
-    /// MapKit can't be recoloured, so the demo uses Apple's muted dark map without points of
-    /// interest, with a jet wash laid between the roads and the labels.
+    /// MapKit can't be recoloured, so the demo uses Apple's light map without points of
+    /// interest, with an alabaster wash laid between the roads and the labels to warm it.
     static func apply(to map: MKMapView) {
-        let configuration = MKStandardMapConfiguration(elevationStyle: .flat, emphasisStyle: .muted)
+        let configuration = MKStandardMapConfiguration(elevationStyle: .flat, emphasisStyle: .default)
         configuration.pointOfInterestFilter = .excludingAll // keep real businesses out of a fictional demo
         configuration.showsTraffic = false
         map.preferredConfiguration = configuration
-        map.overrideUserInterfaceStyle = .dark
+        map.overrideUserInterfaceStyle = .light
         map.addOverlay(Wash(), level: .aboveRoads)
     }
 
@@ -88,13 +89,13 @@ enum MapStyle {
 
         static func renderer(for wash: Wash) -> MKOverlayRenderer {
             let renderer = Renderer(overlay: wash)
-            renderer.alpha = 0.5
+            renderer.alpha = 0.3
             return renderer
         }
 
         private final class Renderer: MKOverlayRenderer {
             override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-                context.setFillColor(UIColor(hex: Theme.jetHex).cgColor)
+                context.setFillColor(UIColor(hex: Theme.alabasterHex).cgColor)
                 context.fill(rect(for: mapRect))
             }
         }

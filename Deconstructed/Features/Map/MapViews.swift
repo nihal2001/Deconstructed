@@ -51,14 +51,16 @@ struct RestaurantMap: View {
     /// How far up from the bottom safe area the preview card covers the map.
     var bottomInset: CGFloat
     var onMove: (Coordinate, Double) -> Void
+    /// A count marker was tapped: the place IDs it stands for.
+    var onSelectGroup: ([String]) -> Void
 
     var body: some View {
         if usesGoogle {
             GoogleMapView(pins: pins, selection: $selection, camera: camera, showsUserLocation: showsUserLocation,
-                          topInset: topInset, bottomInset: bottomInset, onMove: onMove)
+                          topInset: topInset, bottomInset: bottomInset, onMove: onMove, onSelectGroup: onSelectGroup)
         } else {
             AppleMapView(pins: pins, selection: $selection, camera: camera, showsUserLocation: showsUserLocation,
-                         onMove: onMove)
+                         onMove: onMove, onSelectGroup: onSelectGroup)
         }
     }
 }
@@ -71,6 +73,8 @@ struct AppleMapView: UIViewRepresentable {
     var camera: MapCameraRequest?
     var showsUserLocation: Bool
     var onMove: (Coordinate, Double) -> Void
+    /// A count marker was tapped: the place IDs it stands for.
+    var onSelectGroup: ([String]) -> Void
 
     final class PinAnnotation: NSObject, MKAnnotation {
         let pin: MapPin
@@ -128,10 +132,10 @@ struct AppleMapView: UIViewRepresentable {
             if let cluster = annotation as? MKClusterAnnotation {
                 let view = mapView.dequeueReusableAnnotationView(
                     withIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier, for: annotation) as? MKMarkerAnnotationView
-                view?.markerTintColor = UIColor(hex: Theme.alabasterHex) // jet would vanish on the jet map
-                view?.glyphTintColor = UIColor(hex: Theme.jetHex)
+                view?.markerTintColor = UIColor(hex: Theme.jetHex)
+                view?.glyphTintColor = UIColor(hex: Theme.alabasterHex)
                 view?.glyphText = "\(cluster.memberAnnotations.count)"
-                view?.accessibilityLabel = "\(cluster.memberAnnotations.count) restaurants. Double tap to zoom in."
+                view?.accessibilityLabel = "\(cluster.memberAnnotations.count) restaurants. Double tap to see them."
                 return view
             }
             guard let annotation = annotation as? PinAnnotation else { return nil }
@@ -156,8 +160,8 @@ struct AppleMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, didSelect annotation: MKAnnotation) {
             if let cluster = annotation as? MKClusterAnnotation {
-                mapView.showAnnotations(cluster.memberAnnotations, animated: true)
                 mapView.deselectAnnotation(annotation, animated: false)
+                parent.onSelectGroup(cluster.memberAnnotations.compactMap { ($0 as? PinAnnotation)?.pin.id })
             } else if let pin = (annotation as? PinAnnotation)?.pin {
                 parent.selection = pin.id
             }
@@ -188,6 +192,8 @@ struct GoogleMapView: UIViewRepresentable {
     var topInset: CGFloat
     var bottomInset: CGFloat
     var onMove: (Coordinate, Double) -> Void
+    /// A count marker was tapped: the place IDs it stands for.
+    var onSelectGroup: ([String]) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -322,7 +328,7 @@ struct GoogleMapView: UIViewRepresentable {
                     marker.iconView = Self.clusterView(count: group.count)
                     marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
                     marker.userData = group.map(\.id)
-                    marker.accessibilityLabel = "\(group.count) restaurants. Double tap to zoom in."
+                    marker.accessibilityLabel = "\(group.count) restaurants. Double tap to see them."
                 }
                 marker.map = map
                 markers.append(marker)
@@ -342,9 +348,11 @@ struct GoogleMapView: UIViewRepresentable {
             label.text = "\(count)"
             label.textAlignment = .center
             label.font = .systemFont(ofSize: 15, weight: .bold)
-            label.textColor = UIColor(hex: Theme.jetHex)
-            label.backgroundColor = UIColor(hex: Theme.alabasterHex) // jet would vanish on the jet map
+            label.textColor = UIColor(hex: Theme.alabasterHex)
+            label.backgroundColor = UIColor(hex: Theme.jetHex)
             label.layer.cornerRadius = 20
+            label.layer.borderWidth = 2
+            label.layer.borderColor = UIColor(hex: Theme.alabasterHex).cgColor
             label.clipsToBounds = true
             return label
         }
@@ -354,9 +362,7 @@ struct GoogleMapView: UIViewRepresentable {
             if ids.count == 1 {
                 parent.selection = ids[0]
             } else {
-                var bounds = GMSCoordinateBounds()
-                for pin in pins where ids.contains(pin.id) { bounds = bounds.includingCoordinate(pin.coordinate.clLocation) }
-                mapView.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 80))
+                parent.onSelectGroup(ids)
             }
             return true
         }

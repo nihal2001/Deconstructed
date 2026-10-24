@@ -13,6 +13,9 @@ struct MapScreen: View {
 
     @State private var filter: Filter = .all
     @State private var selection: String?
+    /// The restaurants behind a tapped count marker, shown as cards to swipe through.
+    /// Empty unless the selection is one of them.
+    @State private var group: [String] = []
     @State private var camera: MapCameraRequest?
     /// Coordinates resolved for saved and visited places, by restaurant ID.
     @State private var coordinates: [UUID: Coordinate] = [:]
@@ -64,7 +67,11 @@ struct MapScreen: View {
                     usesGoogle: !model.isDemo, pins: pins, selection: $selection, camera: camera,
                     showsUserLocation: location.access == .granted,
                     topInset: controlsHeight, bottomInset: selection == nil ? 0 : cardHeight,
-                    onMove: { center, radius in discovery.mapMoved(center: center, radiusMeters: radius) })
+                    onMove: { center, radius in discovery.mapMoved(center: center, radiusMeters: radius) },
+                    onSelectGroup: { ids in
+                        group = ids
+                        selection = ids.first
+                    })
                     .ignoresSafeArea(edges: .bottom)
 
                 VStack(spacing: 10) {
@@ -88,14 +95,24 @@ struct MapScreen: View {
             }
             .safeAreaInset(edge: .bottom) {
                 if let selection {
-                    MapPreviewCard(placeID: selection) { self.selection = nil }
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 8)
-                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    Group {
+                        if group.count > 1, group.contains(selection) {
+                            groupPreview
+                        } else {
+                            MapPreviewCard(placeID: selection) { self.selection = nil }
+                                .padding(.horizontal, 12)
+                        }
+                    }
+                    .padding(.bottom, 8)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .animation(.snappy, value: selection)
+            .onChange(of: selection) { _, selection in
+                if let selection, group.contains(selection) { return }
+                group = []
+            }
             .navigationTitle("Map")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Theme.jet, for: .navigationBar)
@@ -114,6 +131,36 @@ struct MapScreen: View {
     }
 
     // MARK: Overlays
+
+    /// The restaurants behind a count marker, one card each, swiped sideways. The card in view
+    /// is the selection, so its pin is highlighted on the map.
+    private var groupPreview: some View {
+        VStack(spacing: 8) {
+            if let index = group.firstIndex(where: { $0 == selection }) {
+                Text("\(index + 1) of \(group.count)")
+                    .font(.caption.weight(.semibold))
+                    .monospacedDigit()
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.regularMaterial, in: Capsule())
+                    .accessibilityLabel("Restaurant \(index + 1) of \(group.count). Swipe for the others.")
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(alignment: .bottom, spacing: 8) {
+                    ForEach(group, id: \.self) { placeID in
+                        MapPreviewCard(placeID: placeID) { selection = nil }
+                            .containerRelativeFrame(.horizontal)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .contentMargins(.horizontal, 12, for: .scrollContent)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $selection)
+            .scrollClipDisabled()
+            .fixedSize(horizontal: false, vertical: true) // as tall as the cards, not the screen
+        }
+    }
 
     private var controls: some View {
         VStack(spacing: 10) {
