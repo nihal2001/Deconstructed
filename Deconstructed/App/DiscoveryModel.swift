@@ -20,7 +20,18 @@ final class DiscoveryModel {
     struct MapArea: Equatable {
         var center: Coordinate
         var radiusMeters: Double
+        /// What is actually on screen; a square around the circle when no map reported one.
+        var bounds: GeoBounds
+
+        init(center: Coordinate, radiusMeters: Double, bounds: GeoBounds? = nil) {
+            self.center = center
+            self.radiusMeters = radiusMeters
+            self.bounds = bounds ?? GeoBounds(center: center, radiusMeters: radiusMeters)
+        }
     }
+
+    /// Pages of 20 fetched per area search. Each page is a separately billed request.
+    static let maxAreaPages = 3
 
     var query = ""
     private(set) var suggestions: [PlaceSuggestion] = []
@@ -121,18 +132,40 @@ final class DiscoveryModel {
         await run(source: .text(text)) { [provider] in try await provider.searchText(text, near: origin) }
     }
 
-    /// The only entry point for nearby discovery. Bound to the "Search this area" button.
+    /// Searches around a point, for screens without a map.
     func searchArea(center: Coordinate, radiusMeters: Double) async {
-        let radius = min(max(radiusMeters, 300), 5_000)
-        visibleMapArea = visibleMapArea ?? MapArea(center: center, radiusMeters: radius)
-        anchorArea = MapArea(center: center, radiusMeters: radiusMeters)
-        await run(source: .area) { [provider] in try await provider.searchNearby(center: center, radiusMeters: radius) }
+        await searchArea(MapArea(center: center, radiusMeters: radiusMeters))
+    }
+
+    /// The only entry point for area discovery. Bound to the "Search this area" buttons.
+    /// Covers the whole area and fetches up to `maxAreaPages` pages; if a later page fails,
+    /// the pages already loaded are kept.
+    func searchArea(_ area: MapArea) async {
+        visibleMapArea = visibleMapArea ?? area
+        anchorArea = area
+        await run(source: .area) { [provider] in
+            var places: [Place] = []
+            var seen = Set<String>()
+            var cursor: AreaSearchCursor?
+            for _ in 0..<Self.maxAreaPages {
+                let page: AreaSearchPage
+                do {
+                    page = try await provider.searchArea(area.bounds, after: cursor)
+                } catch where !places.isEmpty {
+                    break
+                }
+                places += page.places.filter { seen.insert($0.placeID).inserted }
+                guard let next = page.next else { break }
+                cursor = next
+            }
+            return places
+        }
         mapMovedSinceSearch = false
     }
 
     /// Records where the map is looking. Deliberately performs no request.
-    func mapMoved(center: Coordinate, radiusMeters: Double) {
-        let area = MapArea(center: center, radiusMeters: radiusMeters)
+    func mapMoved(center: Coordinate, radiusMeters: Double, bounds: GeoBounds? = nil) {
+        let area = MapArea(center: center, radiusMeters: radiusMeters, bounds: bounds)
         visibleMapArea = area
         guard let anchor = anchorArea else {
             anchorArea = area

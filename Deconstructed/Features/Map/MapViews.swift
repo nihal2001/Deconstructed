@@ -50,7 +50,7 @@ struct RestaurantMap: View {
     var topInset: CGFloat
     /// How far up from the bottom safe area the preview card covers the map.
     var bottomInset: CGFloat
-    var onMove: (Coordinate, Double) -> Void
+    var onMove: (Coordinate, Double, GeoBounds) -> Void
     /// A count marker was tapped: the place IDs it stands for.
     var onSelectGroup: ([String]) -> Void
 
@@ -72,7 +72,7 @@ struct AppleMapView: UIViewRepresentable {
     @Binding var selection: String?
     var camera: MapCameraRequest?
     var showsUserLocation: Bool
-    var onMove: (Coordinate, Double) -> Void
+    var onMove: (Coordinate, Double, GeoBounds) -> Void
     /// A count marker was tapped: the place IDs it stands for.
     var onSelectGroup: ([String]) -> Void
 
@@ -177,7 +177,12 @@ struct AppleMapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             let region = mapView.region
             let radius = region.span.latitudeDelta * 111_000 / 2
-            parent.onMove(Coordinate(region.center), radius)
+            let bounds = GeoBounds(
+                southWest: Coordinate(latitude: region.center.latitude - region.span.latitudeDelta / 2,
+                                      longitude: region.center.longitude - region.span.longitudeDelta / 2),
+                northEast: Coordinate(latitude: region.center.latitude + region.span.latitudeDelta / 2,
+                                      longitude: region.center.longitude + region.span.longitudeDelta / 2))
+            parent.onMove(Coordinate(region.center), radius, bounds)
         }
     }
 }
@@ -191,7 +196,7 @@ struct GoogleMapView: UIViewRepresentable {
     var showsUserLocation: Bool
     var topInset: CGFloat
     var bottomInset: CGFloat
-    var onMove: (Coordinate, Double) -> Void
+    var onMove: (Coordinate, Double, GeoBounds) -> Void
     /// A count marker was tapped: the place IDs it stands for.
     var onSelectGroup: ([String]) -> Void
 
@@ -380,7 +385,12 @@ struct GoogleMapView: UIViewRepresentable {
             let top = mapView.projection.coordinate(for: CGPoint(x: mapView.bounds.midX, y: mapView.safeAreaInsets.top))
             let radius = CLLocation(latitude: position.target.latitude, longitude: position.target.longitude)
                 .distance(from: CLLocation(latitude: top.latitude, longitude: position.target.longitude))
-            parent.onMove(Coordinate(position.target), radius)
+            // The whole map below the navigation bar, so a search covers everything on screen.
+            let topLeft = mapView.projection.coordinate(for: CGPoint(x: 0, y: mapView.safeAreaInsets.top))
+            let bottomRight = mapView.projection.coordinate(for: CGPoint(x: mapView.bounds.maxX, y: mapView.bounds.maxY))
+            let bounds = GeoBounds(southWest: Coordinate(latitude: bottomRight.latitude, longitude: topLeft.longitude),
+                                   northEast: Coordinate(latitude: topLeft.latitude, longitude: bottomRight.longitude))
+            parent.onMove(Coordinate(position.target), radius, bounds)
         }
     }
 }

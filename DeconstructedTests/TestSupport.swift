@@ -102,10 +102,10 @@ final class RecordingPlacesProvider: PlacesProvider {
         return try await base.searchText(query, near: near)
     }
 
-    func searchNearby(center: Coordinate, radiusMeters: Double) async throws -> [Place] {
+    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
         nearbySearches += 1
         if let failure { throw failure }
-        return try await base.searchNearby(center: center, radiusMeters: radiusMeters)
+        return try await base.searchArea(bounds, after: cursor)
     }
 
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place {

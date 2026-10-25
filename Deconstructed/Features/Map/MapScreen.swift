@@ -67,7 +67,7 @@ struct MapScreen: View {
                     usesGoogle: !model.isDemo, pins: pins, selection: $selection, camera: camera,
                     showsUserLocation: location.access == .granted,
                     topInset: controlsHeight, bottomInset: selection == nil ? 0 : cardHeight,
-                    onMove: { center, radius in discovery.mapMoved(center: center, radiusMeters: radius) },
+                    onMove: { center, radius, bounds in discovery.mapMoved(center: center, radiusMeters: radius, bounds: bounds) },
                     onSelectGroup: { ids in
                         group = ids
                         selection = ids.first
@@ -295,7 +295,7 @@ struct MapScreen: View {
         guard let area = discovery.visibleMapArea else { return }
         filter = .all
         selection = nil
-        Task { await discovery.searchArea(center: area.center, radiusMeters: area.radiusMeters) }
+        Task { await discovery.searchArea(area) }
     }
 
     private func focus(on placeID: String?) {

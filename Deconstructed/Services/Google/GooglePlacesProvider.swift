@@ -7,7 +7,7 @@ import GooglePlaces
 ///
 /// Field masks decide the billing SKU, so each call asks for the least it needs:
 ///   - location  → Place Details Essentials (coordinate only, for saved pins)
-///   - core      → Place Details Pro / Text Search Pro / Nearby Search Pro
+///   - core      → Place Details Pro / Text Search Pro
 ///   - extended  → Place Details Enterprise, only when the user asks for more
 /// Photos, ratings and reviews are never requested. See docs/google-api-usage.md.
 @MainActor
@@ -71,22 +71,33 @@ final class GooglePlacesProvider: PlacesProvider {
         return places.compactMap { Self.place(from: $0, level: .core) }
     }
 
-    func searchNearby(center: Coordinate, radiusMeters: Double) async throws -> [Place] {
-        let request = GMSPlaceSearchNearbyRequest(
-            locationRestriction: GMSPlaceCircularLocationOption(center.clLocation, radiusMeters),
-            placeProperties: Self.coreFields.map(\.rawValue))
-        request.includedTypes = Self.foodTypes
-        request.maxResultCount = 20
-        let places: [GMSPlace] = try await withCheckedThrowingContinuation { continuation in
-            client.searchNearby(with: request) { (response: GMSPlaceSearchNearbyResponse?, error: Error?) in
-                if let error {
-                    continuation.resume(throwing: Self.map(error))
-                } else {
-                    continuation.resume(returning: response?.places ?? [])
+    /// Text Search rather than Nearby Search: it can be limited to the exact rectangle on screen
+    /// and pages through up to 60 results, where Nearby Search takes a circle and stops at 20.
+    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
+        let response: GMSPlaceSearchByTextResponse? = try await withCheckedThrowingContinuation { continuation in
+            if let pagination = cursor?.providerToken as? GMSPlacePagination {
+                pagination.fetchNextPage { response, error in
+                    if let error {
+                        continuation.resume(throwing: Self.map(error))
+                    } else {
+                        continuation.resume(returning: response as? GMSPlaceSearchByTextResponse)
+                    }
+                }
+            } else {
+                let request = GMSPlaceSearchByTextRequest(textQuery: "restaurants", placeProperties: Self.coreFields.map(\.rawValue))
+                request.maxResultCount = 20
+                request.locationRestriction = GMSPlaceRectangularLocationOption(bounds.northEast.clLocation, bounds.southWest.clLocation)
+                client.searchByText(with: request) { (response: GMSPlaceSearchByTextResponse?, error: Error?) in
+                    if let error {
+                        continuation.resume(throwing: Self.map(error))
+                    } else {
+                        continuation.resume(returning: response)
+                    }
                 }
             }
         }
-        return places.compactMap { Self.place(from: $0, level: .core) }
+        let next = response?.pagination.flatMap { $0.hasNextPage ? AreaSearchCursor($0) : nil }
+        return AreaSearchPage(places: (response?.places ?? []).compactMap { Self.place(from: $0, level: .core) }, next: next)
     }
 
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place {

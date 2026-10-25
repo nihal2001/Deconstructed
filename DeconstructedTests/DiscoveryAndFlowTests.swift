@@ -46,6 +46,25 @@ final class DiscoveryAndFlowTests: XCTestCase {
         XCTAssertTrue(discovery.mapMovedSinceSearch, "the button is offered again, but nothing is fetched")
     }
 
+    func testAreaSearchCoversTheWholeAreaAcrossSeveralPages() async {
+        let provider = PagedPlacesProvider(pages: 5)
+        let monitor = RequestMonitor(limits: .init(perMinute: 30, perDay: 400), defaults: nil)
+        let discovery = DiscoveryModel(provider: MeteredPlacesProvider(base: provider, monitor: monitor), config: config())
+        let bounds = GeoBounds(southWest: Coordinate(latitude: 32.7, longitude: -97.1),
+                               northEast: Coordinate(latitude: 33.1, longitude: -96.6))
+
+        await discovery.searchArea(DiscoveryModel.MapArea(center: bounds.center, radiusMeters: 20_000, bounds: bounds))
+        XCTAssertEqual(provider.requestedBounds, [bounds, bounds, bounds], "the on-screen rectangle, not a capped circle")
+        XCTAssertEqual(discovery.results.count, 60, "three pages of 20, then it stops")
+        XCTAssertEqual(monitor.todayCounts[.nearbySearch], 3, "every page is counted")
+
+        // A failing later page keeps the pages already loaded.
+        provider.failOnPage = 2
+        await discovery.searchArea(DiscoveryModel.MapArea(center: bounds.center, radiusMeters: 20_000, bounds: bounds))
+        XCTAssertEqual(discovery.results.count, 20)
+        XCTAssertNil(discovery.error)
+    }
+
     func testAutocompleteIsDebouncedAndNeedsMinimumLength() async {
         let provider = RecordingPlacesProvider()
         let discovery = DiscoveryModel(provider: provider, config: config(debounceMs: 60))
@@ -173,8 +192,8 @@ final class DiscoveryAndFlowTests: XCTestCase {
         let recorder = RecordingPlacesProvider()
         let metered = MeteredPlacesProvider(base: recorder, monitor: monitor)
 
-        for _ in 0..<3 { _ = try? await metered.searchNearby(center: center, radiusMeters: 1_000) }
-        let blocked = await assertThrows(try await metered.searchNearby(center: center, radiusMeters: 1_000))
+        for _ in 0..<3 { _ = try? await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000), after: nil) }
+        let blocked = await assertThrows(try await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000), after: nil))
         guard case .localLimitReached(let retryAfter)? = blocked as? PlacesError else { return XCTFail("expected a local limit") }
         XCTAssertLessThanOrEqual(retryAfter, 60)
         XCTAssertEqual(recorder.nearbySearches, 3, "the fourth request never reached the provider")
@@ -324,5 +343,30 @@ final class DiscoveryAndFlowTests: XCTestCase {
         XCTAssertFalse(state.visits.contains { $0.userID == DemoSeed.meID })
         XCTAssertFalse(state.users.contains { $0.id == DemoSeed.meID })
         XCTAssertFalse(state.follows.contains { $0.followerID == DemoSeed.meID || $0.followeeID == DemoSeed.meID })
+    }
+}
+
+/// Returns numbered pages of 20 places, to exercise paging without a real provider.
+@MainActor
+private final class PagedPlacesProvider: PlacesProvider {
+    let providerKey = "paged"
+    let isDemo = true
+    let pages: Int
+    var failOnPage: Int?
+    private(set) var requestedBounds: [GeoBounds] = []
+
+    init(pages: Int) { self.pages = pages }
+
+    func autocomplete(query: String, near: Coordinate?, session: PlacesSession) async throws -> [PlaceSuggestion] { [] }
+    func searchText(_ query: String, near: Coordinate?) async throws -> [Place] { [] }
+    func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place { throw PlacesError.notFound }
+
+    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
+        let page = (cursor?.providerToken as? NSNumber)?.intValue ?? 1
+        if page == 1 { requestedBounds = [] }
+        requestedBounds.append(bounds)
+        if page == failOnPage { throw PlacesError.network }
+        let places = (0..<20).map { Place(placeID: "p\(page)-\($0)", level: .core, coordinate: bounds.center, isDemo: true) }
+        return AreaSearchPage(places: places, next: page < pages ? AreaSearchCursor(NSNumber(value: page + 1)) : nil)
     }
 }

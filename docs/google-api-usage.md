@@ -11,7 +11,7 @@ Prices and policies were checked on **7 October 2026** against the pages linked 
 | Typing in search (3+ characters, after a 350 ms pause) | Autocomplete (New) with a session token | Autocomplete Requests, or free when the session ends in a details request | – |
 | Tapping a suggestion | Place Details with the same session token, which closes the session | Place Details Pro | ID, name, coordinate, address, types, address components |
 | Pressing Search on the keyboard | Text Search (New) | Text Search Pro | same six fields |
-| Tapping **Search this area** | Nearby Search (New), max 20 results | Nearby Search Pro | same six fields |
+| Tapping **Search this area** | Text Search (New) limited to the rectangle on screen, up to 3 pages of 20 | Text Search Pro, **one per page** | same six fields |
 | Opening a result from a search | none: the search already returned what the profile header needs | – | – |
 | Tapping **Show hours and contact details** | Place Details | Place Details Enterprise | adds price level, website, phone, current opening hours |
 | Map tab drawing a saved or visited pin with no fresh coordinate | Place Details | Place Details Essentials | ID, coordinate |
@@ -68,12 +68,12 @@ For one fairly active user: 20 search sessions, 8 "Search this area", 30 app lau
 | Autocomplete sessions that end in a pick (14 of 20) | 14 details | Details Pro |
 | Autocomplete sessions abandoned (6, about 4 keystroke requests each) | 24 | Autocomplete |
 | Keyboard searches | 6 | Text Search Pro |
-| Search this area | 8 | Nearby Search Pro |
+| Search this area (up to 3 pages each) | up to 24 | Text Search Pro |
 | Names for lists (25 places, on perhaps 10 of 30 launches) | 250 | Details Pro |
 | Pin coordinates past 30 days | up to 25 | Details Essentials |
 | Hours and contact | 5 | Details Enterprise |
 
-Roughly 264 Details Pro, 14 Search Pro, 24 Autocomplete, 25 Essentials and 5 Enterprise requests. About 19 such users fit inside the monthly free allowance for Details Pro; past that, each costs about $4.50 a month in Details Pro and under $0.50 for everything else. **Name lookups dominate.**
+Roughly 264 Details Pro, up to 30 Text Search Pro, 24 Autocomplete, 25 Essentials and 5 Enterprise requests. About 19 such users fit inside the monthly free allowance for Details Pro; past that, each costs about $4.50 a month in Details Pro and under $0.50 for everything else. **Name lookups dominate.**
 
 ## If name lookups get expensive
 
