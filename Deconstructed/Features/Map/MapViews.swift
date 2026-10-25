@@ -238,18 +238,25 @@ struct GoogleMapView: UIViewRepresentable {
             coordinator.hasSetCamera = true
         }
 
-        if coordinator.pins != pins || coordinator.renderedSelection != selection {
+        // Compared as sets: the same pins can arrive in a different order after an unrelated update.
+        if Set(coordinator.pins) != Set(pins) {
             coordinator.pins = pins
+            coordinator.groups = nil
+            coordinator.render(on: map)
+        } else if coordinator.renderedSelection != selection {
             coordinator.render(on: map)
         }
         coordinator.revealSelection(on: map)
     }
 
     /// Draws markers and groups those that would overlap on screen into count markers.
-    /// Clustering is recomputed locally whenever the camera settles; it makes no requests.
+    /// Groups are worked out once for each new set of pins, at the zoom of that moment, and then
+    /// kept as the map moves, so zooming or panning never merges or splits them. No requests.
     final class Coordinator: NSObject, GMSMapViewDelegate {
         var parent: GoogleMapView
         var pins: [MapPin] = []
+        /// Nil until the pins have been grouped on a laid-out map.
+        var groups: [[MapPin]]?
         var lastCameraID: UUID?
         var hasSetCamera = false
         var renderedSelection: String?
@@ -302,30 +309,19 @@ struct GoogleMapView: UIViewRepresentable {
             markers = []
             renderedSelection = parent.selection
 
-            var cells: [String: [MapPin]] = [:]
-            for pin in pins {
-                let point = map.projection.point(for: pin.coordinate.clLocation)
-                // The selected pin always stands alone so it stays tappable and visible.
-                let key = pin.id == parent.selection
-                    ? "selected"
-                    : "\(Int((point.x / cellSize).rounded(.down))):\(Int((point.y / cellSize).rounded(.down)))"
-                cells[key, default: []].append(pin)
+            if groups == nil {
+                var cells: [String: [MapPin]] = [:]
+                for pin in pins {
+                    let point = map.projection.point(for: pin.coordinate.clLocation)
+                    cells["\(Int((point.x / cellSize).rounded(.down))):\(Int((point.y / cellSize).rounded(.down)))", default: []].append(pin)
+                }
+                groups = Array(cells.values)
             }
 
-            for group in cells.values {
+            for group in groups ?? [] {
                 let marker: GMSMarker
                 if group.count == 1, let pin = group.first {
-                    let isSelected = pin.id == parent.selection
-                    marker = GMSMarker(position: pin.coordinate.clLocation)
-                    marker.icon = badge(for: pin, selected: isSelected)
-                    marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
-                    marker.userData = [pin.id]
-                    marker.zIndex = isSelected ? 10 : 1
-                    marker.accessibilityLabel = switch pin.kind {
-                    case .wantToTry: "Want to try"
-                    case .visited: "Visited"
-                    case .result: "Search result"
-                    }
+                    marker = pinMarker(for: pin)
                 } else {
                     let lat = group.map(\.coordinate.latitude).reduce(0, +) / Double(group.count)
                     let lng = group.map(\.coordinate.longitude).reduce(0, +) / Double(group.count)
@@ -338,6 +334,29 @@ struct GoogleMapView: UIViewRepresentable {
                 marker.map = map
                 markers.append(marker)
             }
+            // A selected pin inside a group is drawn on top of it, leaving the group as it was.
+            if let selection = parent.selection,
+               groups?.contains(where: { $0.count > 1 && $0.contains { $0.id == selection } }) == true,
+               let pin = pins.first(where: { $0.id == selection }) {
+                let marker = pinMarker(for: pin)
+                marker.map = map
+                markers.append(marker)
+            }
+        }
+
+        private func pinMarker(for pin: MapPin) -> GMSMarker {
+            let isSelected = pin.id == parent.selection
+            let marker = GMSMarker(position: pin.coordinate.clLocation)
+            marker.icon = badge(for: pin, selected: isSelected)
+            marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
+            marker.userData = [pin.id]
+            marker.zIndex = isSelected ? 10 : 1
+            marker.accessibilityLabel = switch pin.kind {
+            case .wantToTry: "Want to try"
+            case .visited: "Visited"
+            case .result: "Search result"
+            }
+            return marker
         }
 
         private func badge(for pin: MapPin, selected: Bool) -> UIImage {
@@ -379,7 +398,7 @@ struct GoogleMapView: UIViewRepresentable {
         // Camera settled: regroup markers and report the new area. No search is triggered.
         func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
             isFollowingRequest = false
-            render(on: mapView)
+            if groups == nil { render(on: mapView) } // groups stay as they are once made
             revealSelection(on: mapView)
             // Measured to the top of the map rather than of the padded area, so opening the card is not a move.
             let top = mapView.projection.coordinate(for: CGPoint(x: mapView.bounds.midX, y: mapView.safeAreaInsets.top))

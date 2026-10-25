@@ -27,7 +27,7 @@ enum PlacesRequestKind: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .autocomplete: "Autocomplete Requests (free inside a completed session)"
         case .textSearch: "Text Search Pro"
-        case .nearbySearch: "Text Search Pro, one per page" // the raw value predates the switch to Text Search
+        case .nearbySearch: "Text Search Pro, one per map tile" // the raw value predates the switch to Text Search
         case .detailsLocation: "Place Details Essentials"
         case .detailsCore: "Place Details Pro"
         case .detailsExtended: "Place Details Enterprise"
@@ -151,8 +151,8 @@ final class MeteredPlacesProvider: PlacesProvider {
         try await metered(.textSearch) { try await self.base.searchText(query, near: near) }
     }
 
-    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
-        try await metered(.nearbySearch) { try await self.base.searchArea(bounds, after: cursor) }
+    func searchArea(_ bounds: GeoBounds) async throws -> [Place] {
+        try await metered(.nearbySearch) { try await self.base.searchArea(bounds) }
     }
 
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place {

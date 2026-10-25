@@ -119,13 +119,10 @@ final class DemoPlacesProvider: PlacesProvider {
         return sorted(matches(query), near: near).map { core($0) }
     }
 
-    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
+    func searchArea(_ bounds: GeoBounds) async throws -> [Place] {
         try await simulate()
-        let inside = sorted(DemoCatalog.restaurants.filter { bounds.contains($0.coordinate) }, near: bounds.center)
-        let start = (cursor?.providerToken as? NSNumber)?.intValue ?? 0
-        let end = min(start + 20, inside.count)
-        return AreaSearchPage(places: inside[start..<end].map { core($0) },
-                              next: end < inside.count ? AreaSearchCursor(NSNumber(value: end)) : nil)
+        let inside = DemoCatalog.restaurants.filter { bounds.contains($0.coordinate) }
+        return sorted(inside, near: bounds.center).prefix(20).map { core($0) }
     }
 
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place {

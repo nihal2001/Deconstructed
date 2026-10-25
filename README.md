@@ -73,7 +73,7 @@ The starter rubrics are defined once, in `Deconstructed/Resources/StarterSystems
 
 ## Cost-sensitive Google flows
 
-- Moving the map never searches. Area search runs only from **Search this area**, covering what's on screen in up to three pages of 20 (each page is a billed request).
+- Moving the map never searches. Area search runs only from **Search this area**. On the map it splits the screen into a 3 × 3 grid and searches each tile, so results spread across the view (nine billed requests per tap).
 - Autocomplete waits for a 350 ms pause and three characters, and uses one session token per search, closed by the details request when a suggestion is picked.
 - Field masks are tiered: coordinate only for pins, six core fields for search and profiles, hours and contact only when the user asks. Photos and ratings are never requested.
 - Opening a search result reuses what the search returned.

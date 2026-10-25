@@ -46,23 +46,30 @@ final class DiscoveryAndFlowTests: XCTestCase {
         XCTAssertTrue(discovery.mapMovedSinceSearch, "the button is offered again, but nothing is fetched")
     }
 
-    func testAreaSearchCoversTheWholeAreaAcrossSeveralPages() async {
-        let provider = PagedPlacesProvider(pages: 5)
+    func testMapSearchIsSpreadAcrossTheWholeScreen() async {
+        let provider = TiledPlacesProvider()
         let monitor = RequestMonitor(limits: .init(perMinute: 30, perDay: 400), defaults: nil)
         let discovery = DiscoveryModel(provider: MeteredPlacesProvider(base: provider, monitor: monitor), config: config())
         let bounds = GeoBounds(southWest: Coordinate(latitude: 32.7, longitude: -97.1),
                                northEast: Coordinate(latitude: 33.1, longitude: -96.6))
 
         await discovery.searchArea(DiscoveryModel.MapArea(center: bounds.center, radiusMeters: 20_000, bounds: bounds))
-        XCTAssertEqual(provider.requestedBounds, [bounds, bounds, bounds], "the on-screen rectangle, not a capped circle")
-        XCTAssertEqual(discovery.results.count, 60, "three pages of 20, then it stops")
-        XCTAssertEqual(monitor.todayCounts[.nearbySearch], 3, "every page is counted")
+        XCTAssertEqual(provider.requested.count, 9, "a 3 × 3 grid, one request per tile")
+        XCTAssertEqual(Set(provider.requested.map(\.center)).count, 9, "every tile is different")
+        XCTAssertTrue(provider.requested.allSatisfy { bounds.contains($0.southWest) && bounds.contains($0.northEast) })
+        XCTAssertEqual(discovery.results.count, 9 * 20)
+        XCTAssertEqual(monitor.todayCounts[.nearbySearch], 9, "every tile is counted")
 
-        // A failing later page keeps the pages already loaded.
-        provider.failOnPage = 2
+        // Tiles that fail are left out rather than failing the whole search.
+        provider.failingTiles = 2
         await discovery.searchArea(DiscoveryModel.MapArea(center: bounds.center, radiusMeters: 20_000, bounds: bounds))
-        XCTAssertEqual(discovery.results.count, 20)
+        XCTAssertEqual(discovery.results.count, 7 * 20)
         XCTAssertNil(discovery.error)
+
+        // Only when every tile fails is it an error.
+        provider.failingTiles = 9
+        await discovery.searchArea(DiscoveryModel.MapArea(center: bounds.center, radiusMeters: 20_000, bounds: bounds))
+        XCTAssertEqual(discovery.error, .network)
     }
 
     func testAutocompleteIsDebouncedAndNeedsMinimumLength() async {
@@ -192,8 +199,8 @@ final class DiscoveryAndFlowTests: XCTestCase {
         let recorder = RecordingPlacesProvider()
         let metered = MeteredPlacesProvider(base: recorder, monitor: monitor)
 
-        for _ in 0..<3 { _ = try? await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000), after: nil) }
-        let blocked = await assertThrows(try await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000), after: nil))
+        for _ in 0..<3 { _ = try? await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000)) }
+        let blocked = await assertThrows(try await metered.searchArea(GeoBounds(center: center, radiusMeters: 1_000)))
         guard case .localLimitReached(let retryAfter)? = blocked as? PlacesError else { return XCTFail("expected a local limit") }
         XCTAssertLessThanOrEqual(retryAfter, 60)
         XCTAssertEqual(recorder.nearbySearches, 3, "the fourth request never reached the provider")
@@ -346,27 +353,23 @@ final class DiscoveryAndFlowTests: XCTestCase {
     }
 }
 
-/// Returns numbered pages of 20 places, to exercise paging without a real provider.
+/// Returns 20 distinct places per tile, to exercise the map search grid without a real provider.
 @MainActor
-private final class PagedPlacesProvider: PlacesProvider {
-    let providerKey = "paged"
+private final class TiledPlacesProvider: PlacesProvider {
+    let providerKey = "tiled"
     let isDemo = true
-    let pages: Int
-    var failOnPage: Int?
-    private(set) var requestedBounds: [GeoBounds] = []
-
-    init(pages: Int) { self.pages = pages }
+    var failingTiles = 0
+    private(set) var requested: [GeoBounds] = []
 
     func autocomplete(query: String, near: Coordinate?, session: PlacesSession) async throws -> [PlaceSuggestion] { [] }
     func searchText(_ query: String, near: Coordinate?) async throws -> [Place] { [] }
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place { throw PlacesError.notFound }
 
-    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage {
-        let page = (cursor?.providerToken as? NSNumber)?.intValue ?? 1
-        if page == 1 { requestedBounds = [] }
-        requestedBounds.append(bounds)
-        if page == failOnPage { throw PlacesError.network }
-        let places = (0..<20).map { Place(placeID: "p\(page)-\($0)", level: .core, coordinate: bounds.center, isDemo: true) }
-        return AreaSearchPage(places: places, next: page < pages ? AreaSearchCursor(NSNumber(value: page + 1)) : nil)
+    func searchArea(_ bounds: GeoBounds) async throws -> [Place] {
+        if requested.count == 9 { requested = [] }
+        requested.append(bounds)
+        if requested.count <= failingTiles { throw PlacesError.network }
+        let tile = "\(bounds.center.latitude),\(bounds.center.longitude)"
+        return (0..<20).map { Place(placeID: "\(tile)-\($0)", level: .core, coordinate: bounds.center, isDemo: true) }
     }
 }

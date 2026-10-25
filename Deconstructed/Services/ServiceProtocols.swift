@@ -77,18 +77,20 @@ struct GeoBounds: Equatable {
         (southWest.latitude...northEast.latitude).contains(coordinate.latitude)
             && (southWest.longitude...northEast.longitude).contains(coordinate.longitude)
     }
-}
 
-/// One page of an area search. `next` fetches the page after it, and is nil on the last page.
-struct AreaSearchPage {
-    var places: [Place]
-    var next: AreaSearchCursor?
-}
-
-/// Provider-specific handle for continuing an area search.
-final class AreaSearchCursor {
-    let providerToken: AnyObject
-    init(_ providerToken: AnyObject) { self.providerToken = providerToken }
+    /// The rectangle cut into `count` × `count` equal tiles, row by row from the south-west.
+    func tiles(_ count: Int) -> [GeoBounds] {
+        let latStep = (northEast.latitude - southWest.latitude) / Double(count)
+        let lngStep = (northEast.longitude - southWest.longitude) / Double(count)
+        return (0..<count).flatMap { row in
+            (0..<count).map { column in
+                let south = southWest.latitude + Double(row) * latStep
+                let west = southWest.longitude + Double(column) * lngStep
+                return GeoBounds(southWest: Coordinate(latitude: south, longitude: west),
+                                 northEast: Coordinate(latitude: south + latStep, longitude: west + lngStep))
+            }
+        }
+    }
 }
 
 @MainActor
@@ -100,9 +102,8 @@ protocol PlacesProvider: AnyObject {
     func autocomplete(query: String, near: Coordinate?, session: PlacesSession) async throws -> [PlaceSuggestion]
     /// Returns `.core` level places, so opening a result needs no further request.
     func searchText(_ query: String, near: Coordinate?) async throws -> [Place]
-    /// One page (up to 20) of food places inside `bounds`, as `.core` places. Pass a page's
-    /// `next` as `cursor` for the page after it; every page is a separate billed request.
-    func searchArea(_ bounds: GeoBounds, after cursor: AreaSearchCursor?) async throws -> AreaSearchPage
+    /// Up to 20 food places inside `bounds`, as `.core` places. One billed request.
+    func searchArea(_ bounds: GeoBounds) async throws -> [Place]
     /// Passing the autocomplete session closes it, which is what makes the session billable once.
     func details(placeID: String, level: PlaceDetailLevel, session: PlacesSession?) async throws -> Place
 }

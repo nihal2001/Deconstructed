@@ -30,8 +30,9 @@ final class DiscoveryModel {
         }
     }
 
-    /// Pages of 20 fetched per area search. Each page is a separately billed request.
-    static let maxAreaPages = 3
+    /// A map search is split into this many tiles across and down, one request each, so the
+    /// results spread over the whole screen instead of bunching where the provider ranks best.
+    static let mapSearchGrid = 3
 
     var query = ""
     private(set) var suggestions: [PlaceSuggestion] = []
@@ -132,31 +133,36 @@ final class DiscoveryModel {
         await run(source: .text(text)) { [provider] in try await provider.searchText(text, near: origin) }
     }
 
-    /// Searches around a point, for screens without a map.
+    /// Searches around a point, for screens without a map. One request.
     func searchArea(center: Coordinate, radiusMeters: Double) async {
-        await searchArea(MapArea(center: center, radiusMeters: radiusMeters))
+        await searchArea(MapArea(center: center, radiusMeters: radiusMeters), grid: 1)
     }
 
     /// The only entry point for area discovery. Bound to the "Search this area" buttons.
-    /// Covers the whole area and fetches up to `maxAreaPages` pages; if a later page fails,
-    /// the pages already loaded are kept.
-    func searchArea(_ area: MapArea) async {
+    /// Searches each of `grid` × `grid` tiles of the area at once. Tiles that fail are left
+    /// out; the search only fails if every tile does.
+    func searchArea(_ area: MapArea, grid: Int = mapSearchGrid) async {
         visibleMapArea = visibleMapArea ?? area
         anchorArea = area
+        let tiles = area.bounds.tiles(grid)
         await run(source: .area) { [provider] in
+            let outcomes = await withTaskGroup(of: (Int, Result<[Place], Error>).self) { group in
+                for (index, tile) in tiles.enumerated() {
+                    group.addTask { @MainActor in
+                        do { return (index, .success(try await provider.searchArea(tile))) } catch { return (index, .failure(error)) }
+                    }
+                }
+                var outcomes: [(Int, Result<[Place], Error>)] = []
+                for await outcome in group { outcomes.append(outcome) }
+                return outcomes.sorted { $0.0 < $1.0 }.map(\.1)
+            }
             var places: [Place] = []
             var seen = Set<String>()
-            var cursor: AreaSearchCursor?
-            for _ in 0..<Self.maxAreaPages {
-                let page: AreaSearchPage
-                do {
-                    page = try await provider.searchArea(area.bounds, after: cursor)
-                } catch where !places.isEmpty {
-                    break
-                }
-                places += page.places.filter { seen.insert($0.placeID).inserted }
-                guard let next = page.next else { break }
-                cursor = next
+            for case .success(let found) in outcomes {
+                places += found.filter { seen.insert($0.placeID).inserted }
+            }
+            if places.isEmpty, case .failure(let error)? = outcomes.first(where: { if case .failure = $0 { true } else { false } }) {
+                throw error
             }
             return places
         }
