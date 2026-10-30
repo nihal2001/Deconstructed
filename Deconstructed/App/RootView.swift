@@ -9,7 +9,7 @@ struct RootView: View {
             switch model.phase {
             case .launching:
                 ZStack {
-                    Theme.canvas.ignoresSafeArea()
+                    AmbientBackground()
                     ProgressView().controlSize(.large)
                 }
             case .signedOut:
@@ -27,27 +27,44 @@ struct MainTabs: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        @Bindable var model = model
-        // The ribbon sits above the tabs so it never covers a navigation bar.
-        VStack(spacing: 0) {
-            if model.isDemo { DemoRibbon() }
-            TabView(selection: $model.selectedTab) {
-                DiscoverView()
-                    .tabItem { Label("Discover", systemImage: "magnifyingglass") }
-                    .tag(AppTab.discover)
-                MapScreen()
-                    .tabItem { Label("Map", systemImage: "map") }
-                    .tag(AppTab.map)
-                RankingsView()
-                    .tabItem { Label("Rankings", systemImage: "list.number") }
-                    .tag(AppTab.rankings)
-                FriendsView()
-                    .tabItem { Label("Friends", systemImage: "person.2") }
-                    .tag(AppTab.friends)
-                ProfileView()
-                    .tabItem { Label("Profile", systemImage: "person.crop.circle") }
-                    .tag(AppTab.profile)
+        if #available(iOS 26, *) {
+            // The ribbon rides on the tab bar, so it never covers a navigation bar.
+            if model.isDemo {
+                tabs.tabBarMinimizeBehavior(.onScrollDown).tabViewBottomAccessory { DemoRibbon() }
+            } else {
+                tabs.tabBarMinimizeBehavior(.onScrollDown)
             }
+        } else {
+            // The ribbon sits above the tabs so it never covers a navigation bar.
+            VStack(spacing: 0) {
+                if model.isDemo {
+                    DemoRibbon()
+                        .padding(.vertical, 5)
+                        .background { Theme.canvas.ignoresSafeArea(edges: .top) }
+                }
+                tabs
+            }
+        }
+    }
+
+    private var tabs: some View {
+        @Bindable var model = model
+        return TabView(selection: $model.selectedTab) {
+            DiscoverView()
+                .tabItem { Label("Discover", systemImage: "magnifyingglass") }
+                .tag(AppTab.discover)
+            MapScreen()
+                .tabItem { Label("Map", systemImage: "map") }
+                .tag(AppTab.map)
+            RankingsView()
+                .tabItem { Label("Rankings", systemImage: "list.number") }
+                .tag(AppTab.rankings)
+            FriendsView()
+                .tabItem { Label("Friends", systemImage: "person.2") }
+                .tag(AppTab.friends)
+            ProfileView()
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                .tag(AppTab.profile)
         }
     }
 }
@@ -56,20 +73,17 @@ struct MainTabs: View {
 struct DemoRibbon: View {
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "theatermasks.fill").imageScale(.small)
-            Text("Demo mode · fictional restaurants and people")
+            Image(systemName: "theatermasks.fill").imageScale(.small).foregroundStyle(Theme.warning)
+            // The tab bar's accessory narrows when the bar minimises.
+            ViewThatFits(in: .horizontal) {
+                Text("Demo mode · fictional restaurants and people")
+                Text("Demo mode")
+            }
         }
         .font(.caption.weight(.semibold))
-        .foregroundStyle(Theme.warning)
+        .foregroundStyle(.primary) // the tab bar's glass turns light over the map, so this must adapt
+        .lineLimit(1)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 5)
-        .background {
-            ZStack {
-                Theme.canvas
-                Theme.warning.opacity(0.14)
-            }
-            .ignoresSafeArea(edges: .top)
-        }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Demo mode. Restaurants and people shown are fictional.")
     }

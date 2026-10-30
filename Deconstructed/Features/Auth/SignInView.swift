@@ -11,7 +11,7 @@ struct SignInView: View {
 
     var body: some View {
         ZStack {
-            Theme.canvas.ignoresSafeArea()
+            AmbientBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
                     VStack(alignment: .leading, spacing: 12) {
@@ -44,7 +44,7 @@ struct SignInView: View {
                         }
                         .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                         .frame(height: 52)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .clipShape(Capsule())
                         .disabled(isWorking)
                     }
                 }

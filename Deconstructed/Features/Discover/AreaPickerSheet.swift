@@ -23,9 +23,8 @@ struct AreaPickerSheet: View {
                 }
                 .padding(Theme.spacing)
             }
-            .screenBackground()
+            .partialSheetBackground()
             .navigationTitle("Search area")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
@@ -74,7 +73,7 @@ struct AreaPickerSheet: View {
             SectionTitle("Set an area", detail: "A neighbourhood, city or postcode")
             HStack {
                 TextField("e.g. Hayes Valley, San Francisco", text: $text)
-                    .textFieldStyle(.roundedBorder)
+                    .inputField()
                     .submitLabel(.search)
                     .onSubmit(lookUp)
                     .accessibilityLabel("Area to search")

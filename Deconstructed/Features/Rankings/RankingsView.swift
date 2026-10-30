@@ -216,7 +216,7 @@ struct RankedRow: View {
         case 1: AnyShapeStyle(Theme.roseGradient)
         case 2: AnyShapeStyle(Theme.seagrassGradient)
         case 3: AnyShapeStyle(Theme.oliveGradient)
-        default: AnyShapeStyle(Theme.heroGradient)
+        default: AnyShapeStyle(Theme.mutedGradient)
         }
     }
 
@@ -229,7 +229,7 @@ struct RankedRow: View {
                     .foregroundStyle(Theme.alabaster)
                     .frame(minWidth: 40, minHeight: 40)
                     .background(medal, in: Circle())
-                    .shadow(color: Theme.jet.opacity(0.18), radius: 5, y: 3)
+                    .shadow(color: .black.opacity(0.2), radius: 5, y: 3)
                 if entry.isTied {
                     Text("tied").font(.caption2.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                 }
@@ -283,11 +283,10 @@ struct FilterMenu: View {
                     Image(systemName: "chevron.down").imageScale(.small)
                 }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(selection == nil ? Theme.ink : Theme.alabaster)
+                .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(selection == nil ? AnyShapeStyle(Theme.surface) : AnyShapeStyle(Theme.seagrassGradient), in: Capsule())
-                .environment(\.colorScheme, .light)
+                .liquidGlass(Capsule(), tint: selection == nil ? nil : Theme.seagrass, interactive: true)
             }
             .accessibilityLabel("\(title) filter: \(selection ?? "any")")
         }

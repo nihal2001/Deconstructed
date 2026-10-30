@@ -24,7 +24,7 @@ Read [Not finished or not verified](#not-finished-or-not-verified) before planni
 
 ## Run the demo
 
-Open `Deconstructed.xcodeproj` in Xcode 16 or later, pick an iPhone simulator, and run. With no credentials the app starts in demo mode: 20 invented restaurants, seven invented people, and an in-memory backend that applies the same rules as the database. A ribbon on every screen and a badge on every listing say it is demo data. Demo edits persist between launches; Profile → Demo tools resets them and can simulate quota exhaustion or no network.
+Open `Deconstructed.xcodeproj` in Xcode 16 or later, pick an iPhone simulator, and run. With no credentials the app starts in demo mode: 20 invented restaurants, seven invented people, and an in-memory backend that applies the same rules as the database. A ribbon on every screen (on the tab bar from iOS 26) and a badge on every listing say it is demo data. Demo edits persist between launches; Profile → Demo tools resets them and can simulate quota exhaustion or no network.
 
 The first build downloads the Google and Supabase packages, which takes a few minutes.
 
@@ -147,7 +147,7 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 - **Cuisine and area filters re-rank within the filter**, and only offer values the provider returned.
 - **A completed visit removes the place from "Want to try."**
 - **"Score all four criteria"** in the brief is read as "score every criterion of the chosen system". Fast Casual has three.
-- **Look.** Every colour is one of the five in `Color-scheme.png` at its exact value (jet `143642`, blush rose `D65780`, alabaster `EAE6E5`, olive `91972A`, seagrass `519E8A`) or a transparency of one. Screens are solid jet; cards and sheets are alabaster. The one exception is the "Google Maps" attribution text in live mode, which follows Google's own styling. Headings and scores are set in Optima, which ships with iOS; body text is the system font. The app has this one appearance and does not follow the system light/dark setting. Small alabaster text on seagrass, olive and rose is below the usual 4.5:1 contrast guideline at these exact values.
+- **Look.** The app follows Liquid Glass, in its two layers. Controls float on real Liquid Glass: tab bar, search, buttons, map controls, toasts and partial-height sheets. Content sits in frosted panels on a jet canvas lit by soft pools of the accent colours, because Apple reserves Liquid Glass for controls and glass needs something behind it to pick up. Every colour the app sets is one of the five in `Color-scheme.png` at its exact value (jet `143642`, blush rose `D65780`, alabaster `EAE6E5`, olive `91972A`, seagrass `519E8A`) or a transparency of one. System glass and materials take their colour from what is behind them, so they are not exact palette values. The other exception is the "Google Maps" attribution text in live mode, which follows Google's own styling. Headings and scores are set in Optima, which ships with iOS; body text is the system font. The app has this one dark appearance and does not follow the system light/dark setting. Liquid Glass needs iOS 26; iOS 17–25 get the same layout on system materials. Small alabaster text on rose, olive and seagrass tags is below the usual 4.5:1 contrast guideline at these exact values.
 
 ## Not finished or not verified
 

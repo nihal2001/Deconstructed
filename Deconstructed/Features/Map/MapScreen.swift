@@ -72,15 +72,21 @@ struct MapScreen: View {
                         group = ids
                         selection = ids.first
                     })
-                    .ignoresSafeArea(edges: .bottom)
+                    .ignoresSafeArea()
+
+                // Keeps the light status bar readable over the pale map.
+                LinearGradient(colors: [Theme.jet.opacity(0.75), Theme.jet.opacity(0)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 110)
+                    .ignoresSafeArea(edges: .top)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
 
                 VStack(spacing: 10) {
                     controls
                     if let error = discovery.error {
                         ErrorBanner(message: error.localizedDescription,
                                     retry: discovery.canRetry ? { Task { await discovery.retry() } } : nil)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .environment(\.colorScheme, .light)
+                            .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                     }
                     if location.access == .denied, location.manualArea == nil {
                         locationOffBanner
@@ -113,10 +119,9 @@ struct MapScreen: View {
                 if let selection, group.contains(selection) { return }
                 group = []
             }
+            // The map runs edge to edge, with its controls floating over it.
             .navigationTitle("Map")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Theme.jet, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
             .appRoutes()
             .sheet(isPresented: $showAreaPicker) { AreaPickerSheet() }
             .task(id: pinSourceKey) { await resolveCoordinates() }
@@ -142,7 +147,7 @@ struct MapScreen: View {
                     .monospacedDigit()
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(.regularMaterial, in: Capsule())
+                    .liquidGlass(Capsule())
                     .accessibilityLabel("Restaurant \(index + 1) of \(group.count). Swipe for the others.")
             }
             ScrollView(.horizontal, showsIndicators: false) {
@@ -163,59 +168,75 @@ struct MapScreen: View {
     }
 
     private var controls: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                Picker("Show", selection: $filter) {
-                    ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .accessibilityLabel("Filter pins")
-
-                Button {
-                    recenter()
-                } label: {
-                    Image(systemName: location.manualArea == nil ? "location.fill" : "mappin.and.ellipse")
-                        .frame(width: 40, height: 32)
-                }
-                .buttonStyle(.bordered)
-                .contextMenu {
-                    Button("Change area", systemImage: "mappin.and.ellipse") { showAreaPicker = true }
-                }
-                .accessibilityLabel("Centre on \(location.originLabel)")
-                .accessibilityHint("Touch and hold to change the area")
-            }
-            .padding(8)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-            // Nearby search costs money per request, so it only ever runs from this button.
-            Button {
-                searchThisArea()
-            } label: {
-                HStack(spacing: 6) {
-                    if discovery.isSearching { ProgressView().controlSize(.small) } else { Image(systemName: "scope") }
-                    Text("Search this area")
-                }
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .foregroundStyle(emphasiseSearch ? Theme.alabaster : Theme.ink)
-                .background(emphasiseSearch ? AnyShapeStyle(Theme.rose) : AnyShapeStyle(.regularMaterial), in: Capsule())
-                .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
-            }
-            .disabled(discovery.isSearching || discovery.visibleMapArea == nil)
-            .animation(.snappy, value: emphasiseSearch)
-
-            if discovery.resultSource != nil, filter == .all {
+        GlassGroup {
+            VStack(spacing: 10) {
                 HStack(spacing: 8) {
-                    Text("\(discovery.results.count) result\(discovery.results.count == 1 ? "" : "s") on the map")
-                    Button("Clear") { discovery.clearResults() }.fontWeight(.semibold)
+                    Picker("Show", selection: $filter) {
+                        ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityLabel("Filter pins")
+                    .padding(6)
+                    .liquidGlass(Capsule())
+
+                    recenterButton
                 }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.regularMaterial, in: Capsule())
+
+                searchButton
+
+                if discovery.resultSource != nil, filter == .all {
+                    HStack(spacing: 8) {
+                        Text("\(discovery.results.count) result\(discovery.results.count == 1 ? "" : "s") on the map")
+                        Button("Clear") { discovery.clearResults() }.fontWeight(.semibold)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .liquidGlass(Capsule())
+                }
             }
         }
+    }
+
+    private var recenterButton: some View {
+        Button {
+            recenter()
+        } label: {
+            Image(systemName: location.manualArea == nil ? "location.fill" : "mappin.and.ellipse")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Theme.ink)
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
+                .liquidGlass(Circle(), interactive: true)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+                    Button("Change area", systemImage: "mappin.and.ellipse") { showAreaPicker = true }
+                }
+        .accessibilityLabel("Centre on \(location.originLabel)")
+        .accessibilityHint("Touch and hold to change the area")
+    }
+
+    /// Nearby search costs money per request, so it only ever runs from this button.
+    private var searchButton: some View {
+        Button {
+            searchThisArea()
+        } label: {
+            HStack(spacing: 6) {
+                if discovery.isSearching { ProgressView().controlSize(.small) } else { Image(systemName: "scope") }
+                Text("Search this area")
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.ink)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .contentShape(Capsule())
+            .liquidGlass(Capsule(), tint: emphasiseSearch ? Theme.rose : nil, interactive: true)
+        }
+        .buttonStyle(.plain)
+        .disabled(discovery.isSearching || discovery.visibleMapArea == nil)
+        .animation(.snappy, value: emphasiseSearch)
     }
 
     private var emphasiseSearch: Bool {
@@ -236,8 +257,7 @@ struct MapScreen: View {
                 Text("Set area").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.rose)
             }
             .padding(12)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .environment(\.colorScheme, .light)
+            .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -251,8 +271,7 @@ struct MapScreen: View {
             Button("Choose an area") { showAreaPicker = true }.buttonStyle(.primary)
         }
         .padding(16)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .environment(\.colorScheme, .light)
+        .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .padding(.top, 40)
     }
 
@@ -353,9 +372,7 @@ struct MapPreviewCard: View {
             }
         }
         .padding(14)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .environment(\.colorScheme, .light)
-        .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+        .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .task(id: "\(placeID)-\(model.placeReloadToken)") {
             await model.ensurePlace(placeID, level: .core)
         }

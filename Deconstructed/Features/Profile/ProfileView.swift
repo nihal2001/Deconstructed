@@ -53,21 +53,27 @@ struct ProfileView: View {
                 Text("@\(profile.username)").font(.subheadline).foregroundStyle(Theme.inkSoft)
             }
             Spacer()
-            Button("Edit") { showEdit = true }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.alabaster)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(.white.opacity(0.18), in: Capsule())
+            Button {
+                showEdit = true
+            } label: {
+                Text("Edit")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .contentShape(Capsule())
+                    .liquidGlass(Capsule(), interactive: true)
+            }
+            .buttonStyle(.plain)
         }
         .hero()
     }
 
     private var stats: some View {
         HStack(spacing: 10) {
-            StatTile(value: model.visitedRestaurantIDs.count, label: "Visited", symbol: "checkmark.circle.fill", fill: Theme.seagrassGradient)
-            StatTile(value: model.saved.count, label: "Want to try", symbol: "bookmark.fill", fill: Theme.oliveGradient)
-            StatTile(value: model.visits.filter(\.isCompleted).count, label: "Ratings", symbol: "star.fill", fill: Theme.roseGradient)
+            StatTile(value: model.visitedRestaurantIDs.count, label: "Visited", symbol: "checkmark.circle.fill", tint: Theme.seagrass)
+            StatTile(value: model.saved.count, label: "Want to try", symbol: "bookmark.fill", tint: Theme.olive)
+            StatTile(value: model.visits.filter(\.isCompleted).count, label: "Ratings", symbol: "star.fill", tint: Theme.rose)
         }
     }
 
@@ -95,7 +101,7 @@ struct ProfileView: View {
                 Chart(Array(buckets.enumerated()), id: \.offset) { total, count in
                     BarMark(x: .value("Total", "\(total)"), y: .value("Restaurants", count))
                         .foregroundStyle(total >= 9 ? Theme.roseGradient : total >= 7 ? Theme.seagrassGradient
-                                         : total >= 4 ? Theme.oliveGradient : Theme.heroGradient)
+                                         : total >= 4 ? Theme.oliveGradient : Theme.mutedGradient)
                         .cornerRadius(5)
                         .accessibilityLabel("\(total) out of 10")
                         .accessibilityValue("\(count) restaurant\(count == 1 ? "" : "s")")
@@ -215,18 +221,17 @@ struct StatTile: View {
     var value: Int
     var label: String
     var symbol: String
-    var fill: LinearGradient
+    var tint: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: symbol).font(.subheadline).foregroundStyle(.white.opacity(0.85)).accessibilityHidden(true)
+            Image(systemName: symbol).font(.subheadline).foregroundStyle(Theme.inkSoft).accessibilityHidden(true)
             Text("\(value)").font(.display(.title, weight: .bold)).foregroundStyle(Theme.alabaster).contentTransition(.numericText())
-            Text(label).font(.caption.weight(.semibold)).foregroundStyle(.white.opacity(0.92))
+            Text(label).font(.caption.weight(.semibold)).foregroundStyle(Theme.ink)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(fill, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .shadow(color: Theme.jet.opacity(0.16), radius: 10, y: 5)
+        .frosted(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous), tint: tint.opacity(0.5))
         .accessibilityElement(children: .combine)
     }
 }
@@ -269,6 +274,7 @@ struct EditProfileSheet: View {
                 Section("Name") {
                     TextField("Display name", text: $displayName)
                 }
+                .listRowBackground(Theme.fill)
                 Section {
                     TextField("username", text: $username)
                         .textInputAutocapitalization(.never)
@@ -278,12 +284,14 @@ struct EditProfileSheet: View {
                 } footer: {
                     Text("3–24 characters: lowercase letters, numbers, dots and underscores. This is how people find you.")
                 }
+                .listRowBackground(Theme.fill)
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(Theme.warning) }
+                        .listRowBackground(Theme.fill)
                 }
             }
+            .partialSheetBackground()
             .navigationTitle("Edit profile")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

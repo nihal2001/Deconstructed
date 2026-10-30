@@ -41,7 +41,6 @@ struct SystemPickerSheet: View {
             }
             .screenBackground()
             .navigationTitle("Ranking system")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -86,13 +85,12 @@ struct SystemOptionCard: View {
                 AllocationStrip(criteria: version.criteria)
             }
         }
-        .padding(Theme.spacing)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .environment(\.colorScheme, .light)
+        .card()
         .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(isSelected ? Theme.rose : Theme.hairline.opacity(0.7), lineWidth: isSelected ? 2 : 1)
+            if isSelected {
+                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                    .strokeBorder(Theme.rose, lineWidth: 2)
+            }
         }
     }
 }

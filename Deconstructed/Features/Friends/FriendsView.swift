@@ -82,10 +82,9 @@ struct FriendsView: View {
                     .onSubmit { Task { await search() } }
                 if isSearching { ProgressView() }
             }
-            .padding(12)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .environment(\.colorScheme, .light)
-            .overlay { RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.hairline) }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .liquidGlass(Capsule())
 
             if !query.isBlank {
                 SectionTitle("Results")
@@ -190,10 +189,11 @@ struct FollowButton: View {
         } label: {
             Text(isFollowing ? "Following" : "Follow")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isFollowing ? Theme.ink : Theme.alabaster)
+                .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isFollowing ? Theme.fill : Theme.rose, in: Capsule())
+                .contentShape(Capsule())
+                .liquidGlass(Capsule(), tint: isFollowing ? nil : Theme.rose, interactive: true)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isFollowing ? "Following \(user.displayName). Tap to unfollow." : "Follow \(user.displayName)")

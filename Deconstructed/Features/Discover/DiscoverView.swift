@@ -258,9 +258,10 @@ struct SaveButton: View {
         } label: {
             Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
                 .font(.title3)
-                .foregroundStyle(isSaved ? Theme.olive : Theme.inkSoft)
+                .foregroundStyle(isSaved ? Theme.olive : Theme.ink)
                 .frame(width: 44, height: 44)
-                .background(isSaved ? Theme.olive.opacity(0.18) : Theme.fill, in: Circle())
+                .contentShape(Circle())
+                .liquidGlass(Circle(), interactive: true)
                 .symbolEffect(.bounce, value: isSaved)
         }
         .buttonStyle(.plain)

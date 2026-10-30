@@ -138,8 +138,8 @@ struct LiveTotalBar: View {
         }
         .padding(.horizontal, Theme.spacing)
         .padding(.vertical, 12)
-        .background(.regularMaterial)
-        .overlay(alignment: .top) { Divider() }
+        .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .padding(.horizontal, 12)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Running total \(RatingEngine.runningTotal(scores: scores, version: version)) out of 10 in \(systemName). \(isComplete ? "All criteria scored." : "\(answered) of \(version.criteria.count) criteria scored.")")
     }

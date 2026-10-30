@@ -58,7 +58,6 @@ struct SystemEditorView: View {
             .scrollDismissesKeyboard(.interactively)
             .screenBackground()
             .navigationTitle(system == nil ? "New ranking system" : "Edit system")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -68,7 +67,7 @@ struct SystemEditorView: View {
                     .disabled(isSaving)
                 }
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) { footer }
+            .floatingFooter { footer }
             .navigationDestination(item: $editingCriterionID) { id in
                 if let index = draft.criteria.firstIndex(where: { $0.id == id }) {
                     CriterionEditorView(criterion: $draft.criteria[index], color: Theme.criterionColor(index),
@@ -104,14 +103,14 @@ struct SystemEditorView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Name").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                 TextField("e.g. Date Night, Ramen, Brunch", text: $draft.name)
-                    .textFieldStyle(.roundedBorder)
+                    .inputField()
                     .accessibilityLabel("System name")
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("Description").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                 TextField("What kind of place is this for, and what does it reward?", text: $draft.summary, axis: .vertical)
                     .lineLimit(2...5)
-                    .textFieldStyle(.roundedBorder)
+                    .inputField()
                     .accessibilityLabel("System description")
             }
         }
@@ -270,7 +269,6 @@ struct SystemEditorView: View {
         }
         .padding(.horizontal, Theme.spacing)
         .padding(.vertical, 10)
-        .background(.regularMaterial)
     }
 
     // MARK: Actions
@@ -335,13 +333,13 @@ struct CriterionEditorView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Criterion name").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                         TextField("e.g. Food, Service, Broth", text: $criterion.name)
-                            .textFieldStyle(.roundedBorder)
+                            .inputField()
                     }
                     VStack(alignment: .leading, spacing: 6) {
                         Text("What it covers").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                         TextField("A sentence on what to judge", text: $criterion.guidance, axis: .vertical)
                             .lineLimit(2...4)
-                            .textFieldStyle(.roundedBorder)
+                            .inputField()
                     }
                     Stepper(value: Binding(get: { criterion.maxPoints }, set: { criterion.setMaxPoints($0) }),
                             in: 1...RankingRules.totalPoints) {
@@ -390,12 +388,12 @@ struct CriterionEditorView: View {
                                 .background(color, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 .accessibilityLabel("\(level.points) point\(level.points == 1 ? "" : "s")")
                             TextField("Short label (optional)", text: $level.label)
-                                .textFieldStyle(.roundedBorder)
+                                .inputField()
                                 .accessibilityLabel("Label for \(level.points) points")
                         }
                         TextField("Describe what earns \(level.points) out of \(criterion.maxPoints)", text: $level.detail, axis: .vertical)
                             .lineLimit(2...5)
-                            .textFieldStyle(.roundedBorder)
+                            .inputField()
                             .accessibilityLabel("Description for \(level.points) points")
                         if level.detail.isBlank {
                             Label("Needs a description", systemImage: "exclamationmark.circle")

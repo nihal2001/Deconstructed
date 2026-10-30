@@ -46,7 +46,7 @@ struct RestaurantMap: View {
     @Binding var selection: String?
     var camera: MapCameraRequest?
     var showsUserLocation: Bool
-    /// How far down from its top edge the app's controls cover the map.
+    /// How far down from the top of the safe area the app's controls cover the map.
     var topInset: CGFloat
     /// How far up from the bottom safe area the preview card covers the map.
     var bottomInset: CGFloat
@@ -293,7 +293,7 @@ struct GoogleMapView: UIViewRepresentable {
             let markerTop = map.projection.point(for: marker.position).y - size.height * marker.groundAnchor.y
             let markerBottom = markerTop + size.height
             let margin: CGFloat = 8
-            let clearTop = state.top + margin
+            let clearTop = map.safeAreaInsets.top + state.top + margin
             let clearBottom = map.bounds.height - map.safeAreaInsets.bottom - state.bottom - margin
             // Clear of the card first, then of the controls if there is not room for both.
             var shift = max(0, markerBottom - clearBottom)

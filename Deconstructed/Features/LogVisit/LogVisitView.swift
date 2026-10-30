@@ -87,10 +87,9 @@ struct LogVisitView: View {
             .scrollDismissesKeyboard(.interactively)
             .screenBackground()
             .navigationTitle(existing == nil ? "Log a visit" : "Edit visit")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
-            .safeAreaInset(edge: .bottom, spacing: 0) { footer }
+            .floatingFooter { footer }
             .interactiveDismissDisabled(isSaving)
             .onAppear(perform: setDefaults)
             .onChange(of: pickerItems) { loadPickedPhotos() }
@@ -193,7 +192,7 @@ struct LogVisitView: View {
             SectionTitle("Details", detail: "All optional")
             TextField("Notes: what stood out?", text: $details.notes, axis: .vertical)
                 .lineLimit(3...8)
-                .textFieldStyle(.roundedBorder)
+                .inputField()
                 .accessibilityLabel("Notes")
 
             VStack(alignment: .leading, spacing: 8) {
@@ -220,7 +219,7 @@ struct LogVisitView: View {
                 }
                 HStack {
                     TextField("Add a dish", text: $dishDraft)
-                        .textFieldStyle(.roundedBorder)
+                        .inputField()
                         .submitLabel(.done)
                         .onSubmit(addDish)
                     Button("Add", action: addDish).disabled(dishDraft.isBlank)
@@ -233,7 +232,7 @@ struct LogVisitView: View {
                 TextField("0", value: $details.spendPerPerson, format: .number.precision(.fractionLength(0...2)))
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .textFieldStyle(.roundedBorder)
+                    .inputField()
                     .frame(maxWidth: 110)
                     .accessibilityLabel("Amount spent per person in \(details.currencyCode)")
                 Text(details.currencyCode).font(.subheadline).foregroundStyle(Theme.inkSoft)
@@ -341,7 +340,6 @@ struct LogVisitView: View {
             }
             .padding(.horizontal, Theme.spacing)
             .padding(.vertical, 10)
-            .background(.regularMaterial)
         }
     }
 
@@ -398,17 +396,15 @@ struct LogVisitView: View {
             }
             .screenBackground()
             .navigationTitle("Check your rating")
-            .modalSurface()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Keep editing") { showPreview = false } }
             }
-            .safeAreaInset(edge: .bottom) {
+            .floatingFooter {
                 Button(isSaving ? "Submitting…" : "Submit rating") { save(rating: ratingInput(complete: true)) }
                     .buttonStyle(.primary)
                     .disabled(isSaving || !isComplete)
                     .padding(Theme.spacing)
-                    .background(.regularMaterial)
             }
         }
         .presentationDetents([.large])

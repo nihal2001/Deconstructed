@@ -18,20 +18,16 @@ struct Tag: View {
     var text: String
     var symbol: String?
     var tone: Tone = .neutral
-    /// Filled with the tone's gradient and white text, for statuses that should stand out.
+    /// Filled with the tone's colour and light text, for statuses that should stand out.
     var solid = false
 
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var solidFill: AnyShapeStyle {
-        // On a coloured panel a same-coloured chip would vanish, so it becomes a frosted one.
-        if colorScheme == .dark { return AnyShapeStyle(.white.opacity(0.22)) }
+    private var solidFill: LinearGradient {
         switch tone {
-        case .rose: return AnyShapeStyle(Theme.roseGradient)
-        case .olive: return AnyShapeStyle(Theme.oliveGradient)
-        case .seagrass: return AnyShapeStyle(Theme.seagrassGradient)
-        case .neutral: return AnyShapeStyle(Theme.heroGradient)
-        case .warning: return AnyShapeStyle(Theme.roseGradient)
+        case .rose: Theme.roseGradient
+        case .olive: Theme.oliveGradient
+        case .seagrass: Theme.seagrassGradient
+        case .neutral: Theme.mutedGradient
+        case .warning: Theme.roseGradient
         }
     }
 
@@ -45,7 +41,7 @@ struct Tag: View {
         .foregroundStyle(solid ? AnyShapeStyle(Theme.alabaster) : AnyShapeStyle(Theme.ink))
         .padding(.horizontal, solid ? 10 : 8)
         .padding(.vertical, solid ? 5 : 4)
-        .background(solid ? solidFill : AnyShapeStyle(tone.color.opacity(tone == .neutral ? 0.14 : 0.32)), in: Capsule())
+        .background(solid ? AnyShapeStyle(solidFill) : AnyShapeStyle(tone.color.opacity(tone == .neutral ? 0.14 : 0.32)), in: Capsule())
         .accessibilityElement(children: .combine)
     }
 }
@@ -97,8 +93,8 @@ struct Avatar: View {
             .foregroundStyle(Theme.alabaster)
             .frame(width: size, height: size)
             .background([Theme.rose, Theme.seagrass, Theme.olive][Int(profile.id.uuid.14 ^ profile.id.uuid.15) % 3], in: Circle())
-            .overlay { Circle().strokeBorder(.white.opacity(0.85), lineWidth: max(2, size * 0.05)) }
-            .shadow(color: Theme.jet.opacity(0.18), radius: 5, y: 2)
+            .overlay { Circle().strokeBorder(Theme.alabaster.opacity(0.7), lineWidth: max(1.5, size * 0.04)) }
+            .shadow(color: .black.opacity(0.2), radius: 5, y: 2)
             .accessibilityHidden(true)
     }
 }
@@ -184,12 +180,12 @@ struct ToastModifier: ViewModifier {
             if let message {
                 Text(message)
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Theme.canvas)
+                    .foregroundStyle(Theme.ink)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Theme.ink, in: Capsule())
-                    .padding(.bottom, 64)
+                    .liquidGlass(Capsule())
+                    .padding(.bottom, 124) // clear of the floating tab bar and its accessory
                     .padding(.horizontal, 24)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .task(id: message) {
