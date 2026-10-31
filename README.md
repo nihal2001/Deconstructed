@@ -38,6 +38,8 @@ cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
 
 `Config/Secrets.xcconfig` is git-ignored. Fill in `GOOGLE_MAPS_API_KEY`, `SUPABASE_PROJECT_HOST` (host only, no `https://`) and `SUPABASE_ANON_KEY`, and set `APP_BUNDLE_ID` and `DEVELOPMENT_TEAM` to yours. The app uses live services only when all three are present; otherwise it stays in demo mode and the sign-in screen lists what is missing.
 
+Release builds, and so archives, fail if any of the three is empty, so a checkout without `Config/Secrets.xcconfig` can't ship the demo by accident. The build log names the missing setting but never prints a value. Debug builds and tests still run in demo mode without secrets. Archive from a checkout that has `Config/Secrets.xcconfig`; a fresh clone or worktree doesn't.
+
 **Google Cloud**
 
 1. Enable *Maps SDK for iOS* and *Places API (New)*.
@@ -160,7 +162,7 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 
 - Your own Terms of Use and Privacy Policy, linked in the app. Google's policies require them and the About screen currently links only Google's.
 - Revoking the Apple token when an account is deleted. The Edge Function deletes the user and their photos but does not call Apple's revoke endpoint, which App Review expects.
-- An App Store privacy manifest review. None was added.
+- A review of the App Store privacy manifest. `Deconstructed/PrivacyInfo.xcprivacy` declares `UserDefaults` (reason `CA92.1`), no tracking, and email, name, user ID, photos and other user content collected for app functionality. It doesn't declare location: decide whether location sent to Google counts as collected, and keep the manifest, the App Privacy labels and the privacy policy in step.
 
 **Known gaps**
 
