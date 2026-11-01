@@ -11,9 +11,13 @@ enum PlacesError: LocalizedError, Equatable {
     /// This app's own guard rail (see `RequestMonitor`) stopped the request before it was sent.
     case localLimitReached(retryAfter: TimeInterval)
     case network
-    case notConfigured(String)
+    /// The provider refused this build's key. The reason goes to the logs, never the screen.
+    case notConfigured
     case notFound
     case other(String)
+
+    /// Shown for failures a person can't fix. The technical detail goes to the logs.
+    static let unavailableMessage = "Search isn't available right now. Try again later."
 
     var errorDescription: String? {
         switch self {
@@ -25,8 +29,8 @@ enum PlacesError: LocalizedError, Equatable {
                 : "Too many searches in a short time. Try again in \(Int(retryAfter.rounded(.up))) seconds."
         case .network:
             "Couldn't reach the restaurant search service. Check your connection and try again."
-        case .notConfigured(let detail):
-            "Restaurant search isn't set up: \(detail)"
+        case .notConfigured:
+            Self.unavailableMessage
         case .notFound:
             "That restaurant's listing is no longer available from the provider. Your visits and scores are still here."
         case .other(let detail):
@@ -111,6 +115,9 @@ protocol PlacesProvider: AnyObject {
 // MARK: - Backend
 
 enum BackendError: LocalizedError, Equatable {
+    /// The server's own error text is for the logs, so this replaces it on screen.
+    static let genericMessage = "Something went wrong. Try again."
+
     case notSignedIn
     case notAllowed(String)
     case invalid(String)
@@ -139,7 +146,9 @@ protocol BackendService: AnyObject {
     func signInWithApple(idToken: String, nonce: String, displayName: String?) async throws -> UserProfile
     func signInDemo() async throws -> UserProfile
     func signOut() async throws
-    func deleteAccount() async throws
+    /// Whether deleting needs a fresh confirmation from Apple, so the token can be revoked.
+    func accountUsesApple() async -> Bool
+    func deleteAccount(appleAuthorizationCode: String?) async throws
     func updateProfile(_ profile: UserProfile) async throws -> UserProfile
 
     // Ranking systems

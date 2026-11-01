@@ -102,7 +102,9 @@ Set these in Google Cloud Console; the app cannot.
 4. **Billing → Budgets & alerts**: a monthly budget with alerts at 50%, 90% and 100%.
 5. Consider App Check for the Places SDK so the key can't be used outside your app.
 
-On the device, `RequestMonitor` enforces `PLACES_MAX_REQUESTS_PER_MINUTE` (30) and `PLACES_MAX_REQUESTS_PER_DAY` (400) from `Config/App.xcconfig`, counts requests by SKU, and shows them under Profile → Search usage. It is a guard against bugs and loops, not a security control.
+On the device, `RequestMonitor` enforces `PLACES_MAX_REQUESTS_PER_MINUTE` (60) and `PLACES_MAX_REQUESTS_PER_DAY` (400) from `Config/App.xcconfig`, counts requests by SKU, and shows them under Profile → Search usage in Debug builds. It is a guard against bugs and loops, not a security control.
+
+The per-minute cap is 60 because a Rankings list asks for all its names at once, since A–Z order within ties needs them, and each map search uses nine requests. A longer list isn't an error: lookups wait for the minute to reset and rows fill in by themselves. Names are never stored, because Google's terms only allow place IDs to be kept. The daily cap of 400 stops lookups until the next day, and the app says so.
 
 When Google reports quota exhaustion, or the local cap is hit, the app shows a plain message with a Try again button. Saved places, rankings, visit logging and the feed keep working because none of them needs a search.
 

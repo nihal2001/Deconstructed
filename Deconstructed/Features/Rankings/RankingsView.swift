@@ -127,6 +127,7 @@ struct RankingsView: View {
             .task(id: "\(model.visits.count)-\(model.placeReloadToken)") {
                 // Names are needed for the list and for A–Z order inside ties.
                 for id in model.visitedRestaurantIDs.union(model.draftVisits.map(\.restaurantID)) {
+                    guard !Task.isCancelled else { return }
                     await model.ensurePlace(for: id)
                 }
             }

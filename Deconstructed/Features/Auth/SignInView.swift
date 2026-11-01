@@ -2,6 +2,46 @@ import AuthenticationServices
 import CryptoKit
 import SwiftUI
 
+/// Asks Apple to confirm the signed-in person, for the code that lets the server revoke their
+/// token. Cancelling throws `CancellationError`, so nothing else happens.
+@MainActor
+final class AppleConfirmation: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+    private var continuation: CheckedContinuation<String, Error>?
+
+    static func authorizationCode() async throws -> String {
+        let confirmation = AppleConfirmation()
+        return try await withCheckedThrowingContinuation { continuation in
+            confirmation.continuation = continuation
+            let controller = ASAuthorizationController(authorizationRequests: [ASAuthorizationAppleIDProvider().createRequest()])
+            controller.delegate = confirmation
+            controller.presentationContextProvider = confirmation
+            controller.performRequests()
+        }
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows).first(where: \.isKeyWindow) ?? ASPresentationAnchor()
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let data = credential.authorizationCode, let code = String(data: data, encoding: .utf8) else {
+            continuation?.resume(throwing: BackendError.other("Apple didn't confirm this account. Nothing was deleted. Try again."))
+            continuation = nil
+            return
+        }
+        continuation?.resume(returning: code)
+        continuation = nil
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        let cancelled = (error as? ASAuthorizationError)?.code == .canceled
+        continuation?.resume(throwing: cancelled ? CancellationError() : BackendError.other("Apple didn't confirm this account. Nothing was deleted. Try again."))
+        continuation = nil
+    }
+}
+
 struct SignInView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
@@ -78,11 +118,13 @@ struct SignInView: View {
                 Text("This build has no Google or Supabase credentials, so it runs a self-contained demo. Every restaurant and person in it is invented, and nothing leaves this device.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.inkSoft)
+                #if DEBUG
                 if !model.environment.config.missingCredentials.isEmpty {
                     Text("Missing: " + model.environment.config.missingCredentials.joined(separator: ", "))
                         .font(.caption.monospaced())
                         .foregroundStyle(Theme.inkSoft)
                 }
+                #endif
             }
             Button {
                 isWorking = true
