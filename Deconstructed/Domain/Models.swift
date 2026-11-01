@@ -63,6 +63,8 @@ struct UserProfile: Identifiable, Codable, Hashable {
     var defaultSystemID: UUID?
     /// Standard systems this person has put away. They stay readable on old ratings.
     var archivedStandardSystemIDs: [UUID] = []
+    /// Nil until the person accepts the terms. Nothing can be posted before that.
+    var termsAcceptedAt: Date?
 
     var initials: String {
         let parts = displayName.split(separator: " ").prefix(2).compactMap(\.first)

@@ -221,6 +221,7 @@ final class RankingSystemTests: XCTestCase {
     func testEditingAStarterCreatesAPersonalCopyAndSwitchesDefault() async throws {
         let model = AppModel(environment: .ephemeralDemo())
         try await model.signInDemo()
+        try await model.acceptTerms()
         let general = try XCTUnwrap(model.systems[StarterSystems.general])
         XCTAssertEqual(model.defaultSystem?.id, general.id)
         let standardVersion = try XCTUnwrap(model.currentVersion(of: general))
@@ -256,6 +257,7 @@ final class RankingSystemTests: XCTestCase {
     func testDuplicateStartsAsAnIndependentDraft() async throws {
         let model = AppModel(environment: .ephemeralDemo())
         try await model.signInDemo()
+        try await model.acceptTerms()
         let fastCasual = try XCTUnwrap(model.systems[StarterSystems.fastCasual])
         let copy = try await model.duplicateSystem(fastCasual)
 

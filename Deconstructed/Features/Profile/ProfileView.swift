@@ -10,7 +10,7 @@ struct ProfileView: View {
     @State private var distributionSystemID: UUID?
 
     private enum Destination: Hashable {
-        case visited, saved, usage, legal
+        case visited, saved, usage, legal, blocked, moderation
     }
 
     var body: some View {
@@ -37,6 +37,8 @@ struct ProfileView: View {
                 case .saved: SavedListView()
                 case .usage: UsageView()
                 case .legal: LegalView()
+                case .blocked: BlockedPeopleView()
+                case .moderation: ModerationQueueView()
                 }
             }
             .sheet(isPresented: $showEdit) { EditProfileSheet() }
@@ -171,6 +173,16 @@ struct ProfileView: View {
             Divider()
             NavigationLink(value: Destination.usage) {
                 SettingsRow(symbol: "gauge.with.dots.needle.33percent", title: "Search usage", detail: "\(model.environment.monitor.todayTotal) today")
+            }
+            Divider()
+            NavigationLink(value: Destination.blocked) {
+                SettingsRow(symbol: "hand.raised", title: "Blocked people", detail: "")
+            }
+            if model.isModerator {
+                Divider()
+                NavigationLink(value: Destination.moderation) {
+                    SettingsRow(symbol: "flag", title: "Moderation queue", detail: "")
+                }
             }
             Divider()
             NavigationLink(value: Destination.legal) {
@@ -457,6 +469,17 @@ struct LegalView: View {
                     if !model.isDemo {
                         Link("Google Maps/Google Earth Additional Terms of Service", destination: URL(string: "https://maps.google.com/help/terms_maps.html")!)
                         Link("Google Privacy Policy", destination: URL(string: "https://policies.google.com/privacy")!)
+                    }
+                }
+                .card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionTitle("Community rules")
+                    Text(CommunityRules.summary).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    Text(CommunityRules.enforcement).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    if let email = model.environment.config.contactEmail,
+                       let url = URL(string: "mailto:\(email)") {
+                        Link("Contact moderation: \(email)", destination: url)
                     }
                 }
                 .card()

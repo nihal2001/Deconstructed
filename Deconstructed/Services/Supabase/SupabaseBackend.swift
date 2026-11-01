@@ -419,6 +419,69 @@ final class SupabaseBackend: BackendService {
         return rows.map(\.model).filter(\.isCompleted)
     }
 
+    // MARK: Safety
+
+    func acceptTerms() async throws -> UserProfile {
+        let uid = try await userID()
+        _ = try await wrap { try await self.client.rpc("accept_terms").execute() }
+        return try await loadProfile(id: uid)
+    }
+
+    func setBlocked(userID target: UUID, blocked: Bool) async throws {
+        let uid = try await userID()
+        _ = try await wrap {
+            if blocked {
+                // The database removes any follow between the two people.
+                try await self.client.from("blocks")
+                    .upsert(BlockInsert(blocker_id: uid, blocked_id: target), onConflict: "blocker_id,blocked_id")
+                    .execute()
+            } else {
+                try await self.client.from("blocks").delete()
+                    .eq("blocker_id", value: uid).eq("blocked_id", value: target).execute()
+            }
+        }
+    }
+
+    func loadBlockedUsers() async throws -> [UserProfile] {
+        let rows: [ProfileRow] = try await wrap {
+            try await self.client.rpc("blocked_users").select(ProfileRow.columns).execute().value
+        }
+        return rows.map(\.model)
+    }
+
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws {
+        _ = try await wrap {
+            try await self.client.rpc("report_content", params: ReportParams(
+                p_target_type: target.kind, p_target_id: target.id, p_reason: reason, p_details: details.trimmed)
+            ).execute()
+        }
+    }
+
+    func isModerator() async throws -> Bool {
+        try await wrap { try await self.client.rpc("is_moderator").execute().value }
+    }
+
+    func loadOpenReports() async throws -> [ContentReport] {
+        // Row-level security returns nothing here for anyone who isn't a moderator.
+        let rows: [ReportRow] = try await wrap {
+            try await self.client.from("reports")
+                .select(ReportRow.columns)
+                .eq("status", value: ReportStatus.open.rawValue)
+                .order("created_at")
+                .execute().value
+        }
+        return rows.map(\.model)
+    }
+
+    func moderate(reportID: UUID, action: ModerationAction) async throws {
+        // An Edge Function does this because it needs the service role to remove photos from
+        // Storage and to ban or delete the auth user. The database checks the moderator.
+        _ = try await wrap {
+            try await self.client.functions.invoke("moderate", options: FunctionInvokeOptions(
+                body: ModerateBody(report_id: reportID, action: action.rawValue)))
+        }
+    }
+
     func communityScores(provider: String, placeID: String) async throws -> [CommunityScore] {
         let rows: [CommunityRow] = try await wrap {
             try await self.client.rpc("community_scores", params: ["p_provider": provider, "p_place_id": placeID]).execute().value
@@ -451,6 +514,13 @@ final class SupabaseBackend: BackendService {
             case "28000": throw BackendError.notSignedIn
             default: throw BackendError.other(error.message.sentenceCased)
             }
+        } catch let error as FunctionsError {
+            if case .httpError(let code, let data) = error {
+                let message = (try? JSONDecoder().decode(FunctionErrorBody.self, from: data))?.error
+                throw code == 403 ? BackendError.notAllowed(message ?? "You can't do that.")
+                                  : BackendError.other(message ?? "The request failed. Try again.")
+            }
+            throw BackendError.other(error.localizedDescription)
         } catch let error as URLError {
             _ = error
             throw BackendError.network
@@ -472,7 +542,7 @@ private extension String {
 // Property names mirror database columns so no key mapping is needed.
 
 private struct ProfileRow: Decodable {
-    static let columns = "id,username,display_name,default_visibility,default_system_id,archived_standard_system_ids"
+    static let columns = "id,username,display_name,default_visibility,default_system_id,archived_standard_system_ids,terms_accepted_at"
 
     var id: UUID
     var username: String
@@ -480,10 +550,12 @@ private struct ProfileRow: Decodable {
     var default_visibility: Visibility
     var default_system_id: UUID?
     var archived_standard_system_ids: [UUID]?
+    var terms_accepted_at: Date?
 
     var model: UserProfile {
         UserProfile(id: id, username: username, displayName: display_name, defaultVisibility: default_visibility,
-                    defaultSystemID: default_system_id, archivedStandardSystemIDs: archived_standard_system_ids ?? [])
+                    defaultSystemID: default_system_id, archivedStandardSystemIDs: archived_standard_system_ids ?? [],
+                    termsAcceptedAt: terms_accepted_at)
     }
 }
 
@@ -524,6 +596,59 @@ private struct FollowRow: Decodable {
 private struct FollowInsert: Encodable {
     var follower_id: UUID
     var followee_id: UUID
+}
+
+private struct BlockInsert: Encodable {
+    var blocker_id: UUID
+    var blocked_id: UUID
+}
+
+private struct ReportParams: Encodable {
+    var p_target_type: ReportTargetKind
+    var p_target_id: UUID
+    var p_reason: ReportReason
+    var p_details: String
+}
+
+private struct ModerateBody: Encodable {
+    var report_id: UUID
+    var action: String
+}
+
+private struct FunctionErrorBody: Decodable {
+    var error: String
+}
+
+private struct ReportRow: Decodable {
+    static let columns = "id,target_type,target_id,reported_user_id,reason,details,snapshot,status,created_at"
+
+    struct Snapshot: Decodable {
+        var username: String?
+        var display_name: String?
+        var notes: String?
+        var dishes: [String]?
+        var system_name: String?
+        var photo_paths: [String]?
+    }
+
+    var id: UUID
+    var target_type: ReportTargetKind
+    var target_id: UUID
+    var reported_user_id: UUID
+    var reason: ReportReason
+    var details: String
+    var snapshot: Snapshot
+    var status: ReportStatus
+    var created_at: Date
+
+    var model: ContentReport {
+        ContentReport(id: id, targetKind: target_type, targetID: target_id, reportedUserID: reported_user_id,
+                      reason: reason, details: details,
+                      snapshot: ReportSnapshot(username: snapshot.username ?? "", displayName: snapshot.display_name ?? "",
+                                               notes: snapshot.notes ?? "", dishes: snapshot.dishes ?? [],
+                                               systemName: snapshot.system_name, photoPaths: snapshot.photo_paths ?? []),
+                      status: status, createdAt: created_at)
+    }
 }
 
 private struct RestaurantRow: Decodable {

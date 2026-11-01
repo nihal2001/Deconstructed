@@ -8,6 +8,9 @@ GOOGLE_MAPS_API_KEY =
 SUPABASE_PROJECT_HOST =
 SUPABASE_ANON_KEY =
 
+// Shown in the app for reports and moderation. Must be set before release.
+CONTACT_EMAIL =
+
 // Client-side guard rails for Google Places traffic (see docs/google-api-usage.md).
 PLACES_MAX_REQUESTS_PER_MINUTE = 30
 PLACES_MAX_REQUESTS_PER_DAY = 400

@@ -38,7 +38,7 @@ struct FriendsView: View {
             .navigationTitle("Friends")
             .appRoutes()
             .refreshable { await reload() }
-            .task { await reload() }
+            .task(id: model.relationshipToken) { await reload() }
         }
     }
 
@@ -245,11 +245,14 @@ struct FeedCard: View {
 /// Another person's profile: only the visits they've allowed you to read.
 struct UserProfileView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
     var user: UserProfile
 
     @State private var visits: [Visit]?
     @State private var isFollowing = false
     @State private var errorMessage: String?
+    @State private var showReport = false
+    @State private var confirmBlock = false
 
     var body: some View {
         ScrollView {
@@ -289,6 +292,30 @@ struct UserProfileView: View {
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if user.id != model.profile?.id {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button("Report \(user.displayName)", systemImage: "flag") { showReport = true }
+                        Button("Block \(user.displayName)", systemImage: "hand.raised", role: .destructive) { confirmBlock = true }
+                    } label: {
+                        Label("Options for \(user.displayName)", systemImage: "ellipsis.circle")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showReport) {
+            ReportSheet(target: .user(user.id), title: "Report \(user.displayName)")
+        }
+        .confirmationDialog("Block \(user.displayName)?", isPresented: $confirmBlock, titleVisibility: .visible) {
+            AsyncButton("Block", role: .destructive) {
+                try await model.setBlocked(user, blocked: true)
+                model.toast = "\(user.displayName) is blocked"
+                dismiss()
+            }
+        } message: {
+            Text("You won't see each other's reviews or find each other in search, and any follow between you ends. They aren't told. You can unblock them from your Profile.")
+        }
         .task { await load() }
     }
 
