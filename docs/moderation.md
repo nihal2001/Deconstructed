@@ -18,7 +18,7 @@ If the email fails, the report is still in the queue. Check the queue daily rath
 | Remove review or photo | Deleted for everyone, including its Storage files. The report keeps a copy of the text | No |
 | Reset names (reports on a person) | Username and display name go back to placeholders | They can pick new ones |
 | Ban account | Sign-in stops, the profile and reviews are hidden from everyone, follows are removed, and the person leaves community scores. Closes every open report against them | See below |
-| Delete account | Removes the account and all its data, as if they had deleted it themselves. Closes every open report against them | No |
+| Delete account | Removes the account and all its data. Closes every open report against them. Apple's token isn't revoked, because that needs the person to confirm with Apple | No |
 | Dismiss | Nothing changes and the report closes | No |
 
 A ban keeps the person's data and stops them signing in with the same identity. A deleted account can sign up again, so ban first if that matters.
@@ -67,6 +67,10 @@ There is no automatic image scanning. Every photo can be reported, moderators ca
    ```bash
    supabase functions deploy report-notify --no-verify-jwt
    ```
+   Then enable `pg_cron` if it isn't on, and schedule the report purge, unless the migration did it (it says so in a notice):
+   ```sql
+   select cron.schedule('purge-closed-reports', '37 3 * * *', 'select app_private.purge_closed_reports()');
+   ```
 3. Set the secrets. `REPORT_EMAIL_FROM` must be an address on a domain verified with Resend, and `REPORT_WEBHOOK_SECRET` is any long random string:
    ```bash
    supabase secrets set RESEND_API_KEY=... MODERATOR_EMAIL=... REPORT_EMAIL_FROM=... REPORT_WEBHOOK_SECRET=...
@@ -80,7 +84,21 @@ There is no automatic image scanning. Every photo can be reported, moderators ca
 
 Then file a test report from a second account and confirm the email arrives and the queue shows it.
 
-## Still to decide
+## How it runs after launch
 
-- How long closed reports are kept. They are kept indefinitely, including snapshots of deleted content and the reported person's ID, and the privacy policy (#11) has to say so.
-- Who covers the queue when the main moderator is away.
+Decided before launch (#30):
+
+- **Who checks the queue.** The owner, once a day, and the report email covers anything urgent in between. The 24-hour target only holds if the queue is checked daily, so when you'll be away for more than a day, add a stand-in with step 5 of Setup before you go.
+- **How long closed reports are kept.** 12 months after they close, then `app_private.purge_closed_reports()` deletes them, including their snapshots. Open reports are never purged. The privacy policy states this.
+- **Photo scanning.** Reports and removal are enough for 1.0. Revisit it if reported photos become a regular problem.
+- **Mild swearing.** Allowed for 1.0 (#29). "The pasta was shit" is a fair review.
+
+## Blocked terms: what was reviewed
+
+The list was reviewed before launch (#29). Everyday text and real names beat strict coverage, so `spic`, `dyke`, `dykes`, `coon`, `coons` and `go die` were removed, because they blocked "spic and span", the surnames Van Dyke and Coon, and sentences like "to go. Die-hard fans". `spics` stays because it has no innocent use. Reports cover the terms that were removed.
+
+Some terms stay even though they have an innocent meaning, because a false match costs little: the person sees a clear message and rewords it. The main ones are `faggot` (also a British meatball dish) and `kike` (also a Spanish nickname). Remove them if real reviews or names run into them:
+
+```sql
+delete from app_private.blocked_terms where term = 'example';
+```
