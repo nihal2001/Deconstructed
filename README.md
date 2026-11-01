@@ -192,7 +192,6 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 - No follow requests.
 - No automatic photo scanning. Photos are moderated through reports. See [docs/moderation.md](docs/moderation.md).
 - The text filter matches whole words, so a blocked word joined to others with no separator gets through.
-- `CONTACT_EMAIL` is empty, so the About screen and `docs/support.html` point to GitHub issues for contact. Those are public, so a real address is better.
 - Profiles are readable by any signed-in user, including default visibility and default system.
 - Reordering criteria uses Move up / Move down, not drag.
 - English only. No UI tests; the walkthrough was manual and did not cover Dynamic Type at large sizes, VoiceOver or dark mode on a device, though the views use text styles, accessibility labels and adaptive colours throughout.
