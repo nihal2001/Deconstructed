@@ -43,7 +43,8 @@ final class DemoBackend: BackendService {
     // MARK: Session
 
     func restoreSession() async throws -> UserProfile? {
-        state.signedInUserID.flatMap(user)
+        try gate()
+        return state.signedInUserID.flatMap(user)
     }
 
     func signInWithApple(idToken: String, nonce: String, displayName: String?) async throws -> UserProfile {
@@ -65,7 +66,9 @@ final class DemoBackend: BackendService {
         persist()
     }
 
-    func deleteAccount() async throws {
+    func accountUsesApple() async -> Bool { false }
+
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
         removeUser(try me().id)
         state.signedInUserID = nil
         persist()

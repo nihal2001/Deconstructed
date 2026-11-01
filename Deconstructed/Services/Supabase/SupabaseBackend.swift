@@ -1,5 +1,8 @@
 import Foundation
+import os
 import Supabase
+
+private let logger = Logger(subsystem: "Deconstructed", category: "Backend")
 
 /// The live backend. It is a thin client: ownership, visibility, score ranges and totals are
 /// all enforced by the database (see supabase/migrations), not by this file.
@@ -17,8 +20,30 @@ final class SupabaseBackend: BackendService {
     // MARK: Session
 
     func restoreSession() async throws -> UserProfile? {
-        guard let session = try? await client.auth.session else { return nil }
+        guard let session = try await currentSession() else { return nil }
         return try await loadProfile(id: session.user.id)
+    }
+
+    /// Nil only when there is really no session. A refresh that couldn't reach the server
+    /// throws instead, so an expired token on a bad connection doesn't look like a sign-out.
+    private func currentSession() async throws -> Session? {
+        do {
+            return try await client.auth.session
+        } catch AuthError.sessionMissing {
+            return nil
+        } catch let AuthError.api(message, _, _, response) where Self.isRefusal(response.statusCode) {
+            // The server answered and won't renew this session, for example after a ban.
+            logger.error("Session refused: \(message, privacy: .public)")
+            try? await client.auth.signOut(scope: .local)
+            return nil
+        } catch {
+            logger.error("Session refresh failed: \(error.localizedDescription, privacy: .public)")
+            throw BackendError.network
+        }
+    }
+
+    private static func isRefusal(_ status: Int) -> Bool {
+        (400..<500).contains(status) && status != 408 && status != 429
     }
 
     func signInWithApple(idToken: String, nonce: String, displayName: String?) async throws -> UserProfile {
@@ -43,10 +68,22 @@ final class SupabaseBackend: BackendService {
         try await wrap { try await self.client.auth.signOut() }
     }
 
-    func deleteAccount() async throws {
-        // An Edge Function does this because it needs the service role: it removes the
-        // user's photos from Storage, then the auth user, which cascades to every table.
-        try await wrap { try await self.client.functions.invoke("delete-account") }
+    func accountUsesApple() async -> Bool {
+        // The function checks this too. An account with no identities listed is treated as
+        // Apple, the only sign-in method in this version.
+        guard let identities = client.auth.currentUser?.identities else { return true }
+        return identities.contains { $0.provider == "apple" }
+    }
+
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
+        // An Edge Function does this because it needs the service role and Apple's key: it
+        // revokes the Apple token, removes the user's photos from Storage, then the auth user,
+        // which cascades to every table.
+        try await wrap {
+            try await self.client.functions.invoke(
+                "delete-account",
+                options: FunctionInvokeOptions(body: DeleteAccountBody(appleAuthorizationCode: appleAuthorizationCode)))
+        }
         try? await client.auth.signOut(scope: .local)
     }
 
@@ -70,7 +107,7 @@ final class SupabaseBackend: BackendService {
     }
 
     private func userID() async throws -> UUID {
-        guard let session = try? await client.auth.session else { throw BackendError.notSignedIn }
+        guard let session = try await currentSession() else { throw BackendError.notSignedIn }
         return session.user.id
     }
 
@@ -512,21 +549,28 @@ final class SupabaseBackend: BackendService {
             case "23514", "22023", "23505", "P0001", "22P02": throw BackendError.invalid(error.message.sentenceCased)
             case "PGRST116", "P0002": throw BackendError.notFound
             case "28000": throw BackendError.notSignedIn
-            default: throw BackendError.other(error.message.sentenceCased)
+            default: throw unexpected(error.message)
             }
         } catch let error as FunctionsError {
             if case .httpError(let code, let data) = error {
                 let message = (try? JSONDecoder().decode(FunctionErrorBody.self, from: data))?.error
-                throw code == 403 ? BackendError.notAllowed(message ?? "You can't do that.")
-                                  : BackendError.other(message ?? "The request failed. Try again.")
+                if code == 403 { throw BackendError.notAllowed(message ?? "You can't do that.") }
+                // A function writes its 4xx messages for people. A 5xx may be anything.
+                if (400..<500).contains(code), let message { throw BackendError.other(message) }
+                throw unexpected("Edge Function failed with \(code): \(message ?? "no message")")
             }
-            throw BackendError.other(error.localizedDescription)
+            throw unexpected(error.localizedDescription)
         } catch let error as URLError {
             _ = error
             throw BackendError.network
         } catch {
-            throw BackendError.other(error.localizedDescription)
+            throw unexpected(error.localizedDescription)
         }
+    }
+
+    private func unexpected(_ detail: String) -> BackendError {
+        logger.error("Backend request failed: \(detail, privacy: .public)")
+        return .other(BackendError.genericMessage)
     }
 }
 
@@ -613,6 +657,10 @@ private struct ReportParams: Encodable {
 private struct ModerateBody: Encodable {
     var report_id: UUID
     var action: String
+}
+
+private struct DeleteAccountBody: Encodable {
+    var appleAuthorizationCode: String?
 }
 
 private struct FunctionErrorBody: Decodable {

@@ -16,6 +16,11 @@ struct TermsGateView: View {
                         SectionTitle("Community rules")
                         Text(CommunityRules.summary).font(.body).foregroundStyle(Theme.ink)
                         Text(CommunityRules.enforcement).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                        HStack(spacing: 16) {
+                            Link("Terms of Use", destination: AppLinks.terms)
+                            Link("Privacy Policy", destination: AppLinks.privacy)
+                        }
+                        .font(.subheadline)
                     }
                     .card()
                     AsyncButton("I agree") { try await model.acceptTerms() }

@@ -2,16 +2,28 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 export const BUCKET = "visit-photos";
 
+// Storage returns at most this many entries per request.
+const PAGE_SIZE = 1000;
+
+async function listAll(admin: SupabaseClient, prefix: string) {
+  const entries: { name: string }[] = [];
+  while (true) {
+    const { data, error } = await admin.storage.from(BUCKET).list(prefix, { limit: PAGE_SIZE, offset: entries.length });
+    if (error) {
+      throw new Error(`Could not list photos: ${error.message}`);
+    }
+    entries.push(...(data ?? []));
+    if ((data ?? []).length < PAGE_SIZE) {
+      return entries;
+    }
+  }
+}
+
 // Removes every photo a person has stored, under "<user id>/<visit id>/<file>".
 export async function removeAllPhotos(admin: SupabaseClient, userID: string): Promise<void> {
-  const { data: visitFolders, error: listError } = await admin.storage.from(BUCKET).list(userID, { limit: 1000 });
-  if (listError) {
-    throw new Error(`Could not list photos: ${listError.message}`);
-  }
-  for (const folder of visitFolders ?? []) {
+  for (const folder of await listAll(admin, userID)) {
     const prefix = `${userID}/${folder.name}`;
-    const { data: files } = await admin.storage.from(BUCKET).list(prefix, { limit: 1000 });
-    const paths = (files ?? []).map((file) => `${prefix}/${file.name}`);
+    const paths = (await listAll(admin, prefix)).map((file) => `${prefix}/${file.name}`);
     if (paths.length > 0) {
       const { error: removeError } = await admin.storage.from(BUCKET).remove(paths);
       if (removeError) {

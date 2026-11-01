@@ -210,7 +210,7 @@ select test.refused(format('insert into public.visits (user_id, restaurant_id, v
                     'a note with a blocked phrase, disguised with swapped letters');
 select test.refused(format('update public.visits set notes = %L where id = %L', 'killl yourselfff', :'v_bob'), 'a blocked phrase with stretched letters');
 select test.refused(format('update public.visits set notes = %L where id = %L', 'kiiill yourself', :'v_bob'), 'a blocked phrase stretched on a single letter');
-select test.refused(format('insert into public.visits (user_id, restaurant_id, visited_on, dishes) values (%L, %L, current_date, %L)', :bob, :'rest', '{Soup,"go die"}'),
+select test.refused(format('insert into public.visits (user_id, restaurant_id, visited_on, dishes) values (%L, %L, current_date, %L)', :bob, :'rest', '{Soup,"kill yourself"}'),
                     'a dish with a blocked phrase');
 select test.refused(format('update public.visits set notes = %L where id = %L', 'kill yourself', :'v_bob'), 'editing a note to add a blocked phrase');
 select test.refused(format('update public.profiles set display_name = %L where id = %L', 'kill yourself', :bob), 'a display name with a blocked phrase');
@@ -372,6 +372,23 @@ update public.restaurants set lat = 1, lng = 2, location_cached_at = now() - int
 select app_private.purge_stale_restaurant_locations() \g /dev/null
 select test.ok((select lat is null and lng is null and provider_place_id = 'place-1' from public.restaurants where id = :'rest'),
                'stale coordinates are purged; the place ID is kept');
+
+-- ------------------------------------------------------------------ pre-launch decisions
+-- Ordinary text that the first version of the list refused.
+select test.ok(not app_private.contains_blocked_term(phrase), format('ordinary text is allowed: %s', phrase))
+from unnest(array['The kitchen was spic and span', 'Dinner with Dick Van Dyke', 'Booked under Coon', 'Great to go. Die-hard fans will love it']) as phrase;
+select test.ok(app_private.contains_blocked_term(phrase), format('still refused: %s', phrase))
+from unnest(array['sieg heil', 'im going to kill you', 'porch monkeys']) as phrase;
+
+-- Closed reports go after 12 months. Open ones stay however old they are.
+insert into public.reports (id, target_type, target_id, reported_user_id, reason, snapshot, status, resolved_at, created_at) values
+  ('e0000000-0000-4000-8000-000000000001', 'user', :bob, :bob, 'spam', '{}', 'actioned', now() - interval '13 months', now() - interval '13 months'),
+  ('e0000000-0000-4000-8000-000000000002', 'user', :bob, :bob, 'spam', '{}', 'dismissed', now() - interval '11 months', now() - interval '11 months'),
+  ('e0000000-0000-4000-8000-000000000003', 'user', :bob, :bob, 'spam', '{}', 'open', null, now() - interval '2 years');
+select app_private.purge_closed_reports() \g /dev/null
+select test.ok(not exists (select 1 from public.reports where id = 'e0000000-0000-4000-8000-000000000001'), 'a report closed 13 months ago is removed');
+select test.ok(exists (select 1 from public.reports where id = 'e0000000-0000-4000-8000-000000000002'), 'a report closed 11 months ago is kept');
+select test.ok(exists (select 1 from public.reports where id = 'e0000000-0000-4000-8000-000000000003'), 'an open report is kept');
 
 -- Account deletion removes everything the person owned and nothing else.
 delete from auth.users where id = :alice;

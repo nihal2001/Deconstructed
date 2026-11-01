@@ -221,6 +221,8 @@ struct AsyncButton<Label: View>: View {
                 defer { isRunning = false }
                 do {
                     try await action()
+                } catch is CancellationError {
+                    // The person backed out, so there's nothing to report.
                 } catch {
                     model.toast = error.localizedDescription
                 }

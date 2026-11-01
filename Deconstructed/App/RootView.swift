@@ -14,6 +14,8 @@ struct RootView: View {
                 }
             case .signedOut:
                 SignInView()
+            case .unavailable:
+                ReconnectView()
             case .signedIn:
                 if model.hasAcceptedTerms {
                     MainTabs()
@@ -24,6 +26,36 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: model.phase)
         .toast($model.toast)
+    }
+}
+
+/// Shown at launch when a signed-in person's session or data can't be reached.
+struct ReconnectView: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        ZStack {
+            AmbientBackground()
+            VStack(alignment: .leading, spacing: Theme.spacing) {
+                Text("Can't connect")
+                    .font(.display(.largeTitle, weight: .bold))
+                    .foregroundStyle(Theme.ink)
+                Text("You're still signed in. Deconstructed needs a connection to load your restaurants, and it will carry on when one is back.")
+                    .font(.body)
+                    .foregroundStyle(Theme.inkSoft)
+                AsyncButton("Try again") { await model.bootstrap() }
+                    .buttonStyle(.primary)
+                Button("Sign out") { Task { await model.signOut() } }
+                    .buttonStyle(.secondary)
+            }
+            .padding(Theme.spacing)
+        }
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(15))
+                if !Task.isCancelled { await model.bootstrap() }
+            }
+        }
     }
 }
 

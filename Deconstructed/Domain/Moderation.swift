@@ -105,7 +105,7 @@ enum CommunityRules {
 enum ContentFilter {
     static let refusal = "That wording isn't allowed under the community rules. Please change it."
 
-    private static let terms = ["kill yourself", "kys", "go die", "hang yourself", "heil hitler"]
+    private static let terms = ["kill yourself", "kys", "hang yourself", "heil hitler"]
 
     static func allows(_ text: String) -> Bool {
         let normalized = normalize(text)

@@ -213,7 +213,7 @@ final class ModerationTests: XCTestCase {
         details.notes = "kill yourself"
         await assertThrows(try await world.backend.createVisit(restaurantID: world.restaurant.id, details: details))
         details.notes = ""
-        details.dishes = ["go die"]
+        details.dishes = ["kill yourself"]
         await assertThrows(try await world.backend.createVisit(restaurantID: world.restaurant.id, details: details))
 
         var profile = try XCTUnwrap(world.backend.state.users.first { $0.id == world.me })

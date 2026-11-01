@@ -4,8 +4,13 @@
 // to clear Storage (Supabase does not allow storage objects to be deleted through SQL).
 // Database rows go with the auth user through ON DELETE CASCADE.
 //
+// Apple requires its token to be revoked when an account is deleted. That happens first, so
+// if Apple refuses, nothing has been deleted and the person can try again.
+//
 // Deploy:  supabase functions deploy delete-account
+// Secrets: APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY, APPLE_CLIENT_ID (see README)
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { revokeAppleToken } from "../_shared/apple.ts";
 import { removeAllPhotos } from "../_shared/photos.ts";
 
 Deno.serve(async (req) => {
@@ -27,17 +32,32 @@ Deno.serve(async (req) => {
     return json({ error: "Not signed in" }, 401);
   }
 
+  if (user.identities?.some((identity) => identity.provider === "apple")) {
+    const body = await req.json().catch(() => ({}));
+    if (typeof body.appleAuthorizationCode !== "string" || body.appleAuthorizationCode === "") {
+      return json({ error: "Confirm with Apple to delete your account." }, 400);
+    }
+    try {
+      await revokeAppleToken(body.appleAuthorizationCode);
+    } catch (error) {
+      console.error(`Apple revocation failed: ${(error as Error).message}`);
+      return json({ error: "Apple couldn't confirm this. Nothing was deleted. Try again." }, 502);
+    }
+  }
+
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   try {
     await removeAllPhotos(admin, user.id);
   } catch (error) {
-    return json({ error: (error as Error).message }, 500);
+    console.error((error as Error).message);
+    return json({ error: "Could not delete your photos. Try again." }, 500);
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
-    return json({ error: `Could not delete account: ${deleteError.message}` }, 500);
+    console.error(`Could not delete account: ${deleteError.message}`);
+    return json({ error: "Could not delete your account. Try again." }, 500);
   }
   return json({ deleted: true }, 200);
 });
