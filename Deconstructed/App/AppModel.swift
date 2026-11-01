@@ -41,6 +41,10 @@ final class AppModel {
     /// Set by "View on map": the Map tab centres on and selects this place.
     var mapFocusPlaceID: String?
     var toast: String?
+    /// Whether this account sees the moderation queue. The backend enforces it either way.
+    private(set) var isModerator = false
+    /// Changing this makes the Friends tab reload after a block or an unblock.
+    private(set) var relationshipToken = 0
 
     @ObservationIgnored private var placeTasks: [String: Task<Place?, Never>] = [:]
 
@@ -115,6 +119,7 @@ final class AppModel {
         merge(loadedCatalog)
         saved = loadedSaved
         visits = loadedVisits
+        isModerator = (try? await backend.isModerator()) ?? false
         try await loadRestaurants(ids: loadedSaved.map(\.restaurantID) + loadedVisits.map(\.restaurantID))
     }
 
@@ -125,6 +130,7 @@ final class AppModel {
         restaurants = [:]
         saved = []
         visits = []
+        isModerator = false
         discovery.reset()
         selectedTab = .discover
         phase = .signedOut
@@ -473,6 +479,32 @@ final class AppModel {
         try await backend.setFollowing(userID: user.id, following: following)
     }
     func removeFollower(_ user: UserProfile) async throws { try await backend.removeFollower(userID: user.id) }
+
+    // MARK: Safety
+
+    var hasAcceptedTerms: Bool { profile?.termsAcceptedAt != nil }
+
+    func acceptTerms() async throws {
+        profile = try await backend.acceptTerms()
+    }
+
+    func setBlocked(_ user: UserProfile, blocked: Bool) async throws {
+        try await backend.setBlocked(userID: user.id, blocked: blocked)
+        relationshipToken += 1
+    }
+
+    func loadBlockedUsers() async throws -> [UserProfile] { try await backend.loadBlockedUsers() }
+
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws {
+        try await backend.report(target, reason: reason, details: details)
+    }
+
+    func loadOpenReports() async throws -> [ContentReport] { try await backend.loadOpenReports() }
+
+    func moderate(_ report: ContentReport, action: ModerationAction) async throws {
+        try await backend.moderate(reportID: report.id, action: action)
+        relationshipToken += 1
+    }
 
     // MARK: Navigation helpers
 

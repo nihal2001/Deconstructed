@@ -15,7 +15,11 @@ struct RootView: View {
             case .signedOut:
                 SignInView()
             case .signedIn:
-                MainTabs()
+                if model.hasAcceptedTerms {
+                    MainTabs()
+                } else {
+                    TermsGateView()
+                }
             }
         }
         .animation(.easeInOut(duration: 0.25), value: model.phase)

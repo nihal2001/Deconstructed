@@ -185,4 +185,17 @@ protocol BackendService: AnyObject {
     /// Another person's completed visits, limited to those the signed-in user may read.
     func loadVisits(ofUser userID: UUID) async throws -> [Visit]
     func communityScores(provider: String, placeID: String) async throws -> [CommunityScore]
+
+    // Safety
+    func acceptTerms() async throws -> UserProfile
+    /// Blocking hides both people from each other and ends any follow between them.
+    func setBlocked(userID: UUID, blocked: Bool) async throws
+    func loadBlockedUsers() async throws -> [UserProfile]
+    /// Reporting the same thing again while the first report is open has no further effect.
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws
+
+    // Moderation. The backend refuses these for anyone who isn't a moderator.
+    func isModerator() async throws -> Bool
+    func loadOpenReports() async throws -> [ContentReport]
+    func moderate(reportID: UUID, action: ModerationAction) async throws
 }

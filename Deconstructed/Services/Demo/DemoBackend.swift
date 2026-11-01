@@ -66,14 +66,7 @@ final class DemoBackend: BackendService {
     }
 
     func deleteAccount() async throws {
-        let id = try me().id
-        let ownedSystems = Set(state.systems.filter { $0.ownerID == id }.map(\.id))
-        state.visits.removeAll { $0.userID == id }
-        state.saved[id] = nil
-        state.follows.removeAll { $0.followerID == id || $0.followeeID == id }
-        state.versions.removeAll { ownedSystems.contains($0.systemID) }
-        state.systems.removeAll { ownedSystems.contains($0.id) }
-        state.users.removeAll { $0.id == id }
+        removeUser(try me().id)
         state.signedInUserID = nil
         persist()
     }
@@ -91,6 +84,8 @@ final class DemoBackend: BackendService {
         var updated = profile
         updated.username = username
         updated.displayName = profile.displayName.trimmed.isEmpty ? username : profile.displayName.trimmed
+        updated.termsAcceptedAt = state.users[index].termsAcceptedAt
+        try screen(updated.username, updated.displayName)
         state.users[index] = updated
         persist()
         return updated
@@ -124,6 +119,7 @@ final class DemoBackend: BackendService {
     func saveDraft(systemID: UUID?, draft: SystemDraft, forkedFrom: UUID?) async throws -> RankingSystem {
         try gate()
         let owner = try me().id
+        try screen(draft.name, draft.summary)
         let now = Date.now
         if let systemID {
             let index = try ownedSystemIndex(systemID, owner: owner)
@@ -155,6 +151,11 @@ final class DemoBackend: BackendService {
         }
         if let issue = SystemValidator.issues(for: draft).first {
             throw BackendError.invalid(issue.message)
+        }
+        try screen(draft.name, draft.summary)
+        for criterion in draft.criteria {
+            try screen(criterion.name, criterion.guidance)
+            for level in criterion.levels { try screen(level.label, level.detail) }
         }
         let existing = state.versions.filter { $0.systemID == systemID }
         let current = existing.first { $0.id == state.systems[index].currentVersionID }
@@ -250,7 +251,11 @@ final class DemoBackend: BackendService {
 
     func createVisit(restaurantID: UUID, details: VisitDetails) async throws -> Visit {
         try gate()
-        let id = try me().id
+        let profile = try me()
+        let id = profile.id
+        guard profile.termsAcceptedAt != nil else {
+            throw BackendError.notAllowed("Accept the community rules before posting.")
+        }
         guard state.restaurants.contains(where: { $0.id == restaurantID }) else { throw BackendError.notFound }
         var visit = Visit(id: UUID(), userID: id, restaurantID: restaurantID, visitedOn: details.visitedOn,
                           visibility: details.visibility, createdAt: .now, updatedAt: .now)
@@ -374,7 +379,8 @@ final class DemoBackend: BackendService {
         let needle = query.trimmed.lowercased()
         guard needle.count >= 2 else { return [] }
         return state.users.filter {
-            $0.id != id && ($0.username.contains(needle) || $0.displayName.lowercased().contains(needle))
+            $0.id != id && canSee($0.id, viewer: id)
+                && ($0.username.contains(needle) || $0.displayName.lowercased().contains(needle))
         }
     }
 
@@ -392,6 +398,7 @@ final class DemoBackend: BackendService {
         try gate()
         let id = try me().id
         guard userID != id else { throw BackendError.invalid("You can't follow yourself.") }
+        guard !following || canSee(userID, viewer: id) else { throw BackendError.notFound }
         state.follows.removeAll { $0.followerID == id && $0.followeeID == userID }
         if following { state.follows.append(DemoFollow(followerID: id, followeeID: userID)) }
         persist()
@@ -429,9 +436,143 @@ final class DemoBackend: BackendService {
             return []
         }
         return CommunityAggregator.scores(
-            restaurantID: restaurant.id, visits: state.visits,
+            restaurantID: restaurant.id, visits: state.visits.filter { !state.banned.contains($0.userID) },
             systems: Dictionary(uniqueKeysWithValues: state.systems.map { ($0.id, $0) }),
             versions: Dictionary(uniqueKeysWithValues: state.versions.map { ($0.id, $0) }))
+    }
+
+    // MARK: Safety
+
+    func acceptTerms() async throws -> UserProfile {
+        try gate()
+        let id = try me().id
+        guard let index = state.users.firstIndex(where: { $0.id == id }) else { throw BackendError.notSignedIn }
+        state.users[index].termsAcceptedAt = state.users[index].termsAcceptedAt ?? .now
+        persist()
+        return state.users[index]
+    }
+
+    func setBlocked(userID: UUID, blocked: Bool) async throws {
+        try gate()
+        let id = try me().id
+        guard userID != id else { throw BackendError.invalid("You can't block yourself.") }
+        state.blocks.removeAll { $0.blockerID == id && $0.blockedID == userID }
+        if blocked {
+            state.blocks.append(DemoBlock(blockerID: id, blockedID: userID))
+            state.follows.removeAll {
+                ($0.followerID == id && $0.followeeID == userID) || ($0.followerID == userID && $0.followeeID == id)
+            }
+        }
+        persist()
+    }
+
+    func loadBlockedUsers() async throws -> [UserProfile] {
+        let id = try me().id
+        return state.blocks.filter { $0.blockerID == id }.compactMap { user($0.blockedID) }
+            .sorted { $0.displayName < $1.displayName }
+    }
+
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws {
+        try gate()
+        let id = try me().id
+        var snapshot = ReportSnapshot()
+        let reportedID: UUID
+        switch target {
+        case .visit(let visitID):
+            guard let visit = state.visits.first(where: { $0.id == visitID }), canView(visit, viewer: id) else {
+                throw BackendError.notFound
+            }
+            reportedID = visit.userID
+            snapshot.notes = visit.notes
+            snapshot.dishes = visit.dishes
+            snapshot.systemName = visit.activeRevision.flatMap { system($0.systemID)?.name }
+            snapshot.photoPaths = visit.photos.map(\.storagePath)
+        case .photo(let photoID):
+            guard let visit = state.visits.first(where: { $0.photos.contains { $0.id == photoID } }),
+                  canView(visit, viewer: id) else { throw BackendError.notFound }
+            reportedID = visit.userID
+            snapshot.photoPaths = visit.photos.filter { $0.id == photoID }.map(\.storagePath)
+        case .user(let userID):
+            guard user(userID) != nil else { throw BackendError.notFound }
+            reportedID = userID
+        }
+        guard reportedID != id else { throw BackendError.invalid("You can't report yourself.") }
+        let alreadyOpen = state.reports.contains {
+            $0.status == .open && $0.reporterID == id && $0.targetKind == target.kind && $0.targetID == target.id
+        }
+        guard !alreadyOpen else { return }
+
+        snapshot.username = user(reportedID)?.username ?? ""
+        snapshot.displayName = user(reportedID)?.displayName ?? ""
+        state.reports.append(ContentReport(
+            id: UUID(), targetKind: target.kind, targetID: target.id, reportedUserID: reportedID, reason: reason,
+            details: String(details.trimmed.prefix(1000)), snapshot: snapshot, createdAt: .now, reporterID: id))
+        persist()
+    }
+
+    /// Everyone is a moderator in the demo, so the queue can be tried without a backend.
+    func isModerator() async throws -> Bool { true }
+
+    func loadOpenReports() async throws -> [ContentReport] {
+        state.reports.filter { $0.status == .open }.sorted { $0.createdAt < $1.createdAt }
+    }
+
+    func moderate(reportID: UUID, action: ModerationAction) async throws {
+        try gate()
+        let moderator = try me().id
+        guard let report = state.reports.first(where: { $0.id == reportID && $0.status == .open }) else {
+            throw BackendError.notFound
+        }
+        switch action {
+        case .dismiss:
+            break
+        case .removeContent:
+            removeContent(of: report)
+        case .ban, .deleteAccount:
+            guard report.reportedUserID != moderator else {
+                throw BackendError.invalid("You can't do this to your own account.")
+            }
+            if action == .ban {
+                state.banned.insert(report.reportedUserID)
+                state.follows.removeAll { $0.followerID == report.reportedUserID || $0.followeeID == report.reportedUserID }
+            } else {
+                removeUser(report.reportedUserID)
+            }
+        }
+        // A ban or deletion settles everything open against that person.
+        let settlesPerson = action == .ban || action == .deleteAccount
+        for index in state.reports.indices where state.reports[index].status == .open {
+            let candidate = state.reports[index]
+            let sameItem = candidate.targetKind == report.targetKind && candidate.targetID == report.targetID
+            if sameItem || (settlesPerson && candidate.reportedUserID == report.reportedUserID) {
+                state.reports[index].status = action == .dismiss ? .dismissed : .actioned
+            }
+        }
+        persist()
+    }
+
+    private func removeContent(of report: ContentReport) {
+        switch report.targetKind {
+        case .visit:
+            state.visits.removeAll { $0.id == report.targetID }
+        case .photo:
+            for index in state.visits.indices { state.visits[index].photos.removeAll { $0.id == report.targetID } }
+        case .user:
+            guard let index = state.users.firstIndex(where: { $0.id == report.targetID }) else { return }
+            state.users[index].username = "user_" + report.targetID.uuidString.prefix(8).lowercased()
+            state.users[index].displayName = "New member"
+        }
+    }
+
+    private func removeUser(_ id: UUID) {
+        let ownedSystems = Set(state.systems.filter { $0.ownerID == id }.map(\.id))
+        state.visits.removeAll { $0.userID == id }
+        state.saved[id] = nil
+        state.follows.removeAll { $0.followerID == id || $0.followeeID == id }
+        state.blocks.removeAll { $0.blockerID == id || $0.blockedID == id }
+        state.versions.removeAll { ownedSystems.contains($0.systemID) }
+        state.systems.removeAll { ownedSystems.contains($0.id) }
+        state.users.removeAll { $0.id == id }
     }
 
     // MARK: Internals
@@ -465,9 +606,25 @@ final class DemoBackend: BackendService {
     private func system(_ id: UUID) -> RankingSystem? { state.systems.first { $0.id == id } }
 
     private func canView(_ visit: Visit, viewer: UUID) -> Bool {
-        VisibilityRules.canView(visit, viewerID: viewer, viewerFollowsAuthor: state.follows.contains {
-            $0.followerID == viewer && $0.followeeID == visit.userID
-        })
+        canSee(visit.userID, viewer: viewer)
+            && VisibilityRules.canView(visit, viewerID: viewer, viewerFollowsAuthor: state.follows.contains {
+                $0.followerID == viewer && $0.followeeID == visit.userID
+            })
+    }
+
+    /// False when a block in either direction or a ban stands between the two people.
+    private func canSee(_ other: UUID, viewer: UUID) -> Bool {
+        guard other != viewer else { return true }
+        let blocked = state.blocks.contains {
+            ($0.blockerID == viewer && $0.blockedID == other) || ($0.blockerID == other && $0.blockedID == viewer)
+        }
+        return !blocked && !state.banned.contains(other)
+    }
+
+    private func screen(_ texts: String...) throws {
+        if texts.contains(where: { !ContentFilter.allows($0) }) {
+            throw BackendError.invalid(ContentFilter.refusal)
+        }
     }
 
     private func ownedSystemIndex(_ id: UUID, owner: UUID) throws -> Int {
@@ -496,6 +653,8 @@ final class DemoBackend: BackendService {
         guard details.visitedOn <= Date.now.addingTimeInterval(86_400) else {
             throw BackendError.invalid("A visit can't be dated in the future.")
         }
+        try screen(details.notes)
+        for dish in details.dishes { try screen(dish) }
         visit.visitedOn = details.visitedOn
         visit.notes = details.notes.trimmed
         visit.dishes = details.dishes.map(\.trimmed).filter { !$0.isEmpty }

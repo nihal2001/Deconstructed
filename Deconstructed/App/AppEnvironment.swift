@@ -6,6 +6,8 @@ struct AppConfig {
     var googleMapsAPIKey: String?
     var supabaseURL: URL?
     var supabaseAnonKey: String?
+    /// Published in the app for reports and moderation. Set CONTACT_EMAIL in Config/App.xcconfig.
+    var contactEmail: String?
     var placesLimits = RequestMonitor.Limits(perMinute: 30, perDay: 400)
     var autocompleteMinCharacters = 3
     var autocompleteDebounce: Duration = .milliseconds(350)
@@ -34,6 +36,7 @@ struct AppConfig {
         }
         googleMapsAPIKey = string("GoogleMapsAPIKey")
         supabaseAnonKey = string("SupabaseAnonKey")
+        contactEmail = string("ContactEmail")
         if let host = string("SupabaseProjectHost") {
             let bare = host.replacingOccurrences(of: "https://", with: "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             supabaseURL = URL(string: "https://\(bare)")

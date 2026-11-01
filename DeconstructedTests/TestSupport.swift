@@ -17,8 +17,8 @@ struct World {
         var state = DemoState()
         state.systems = StarterSystems.catalog.systems
         state.versions = StarterSystems.catalog.versions
-        state.users = [UserProfile(id: DemoSeed.meID, username: "me", displayName: "Me", defaultSystemID: StarterSystems.general)]
-            + (1...people).map { UserProfile(id: World.person($0), username: "person\($0)", displayName: "Person \($0)") }
+        state.users = [UserProfile(id: DemoSeed.meID, username: "me", displayName: "Me", defaultSystemID: StarterSystems.general, termsAcceptedAt: .now)]
+            + (1...people).map { UserProfile(id: World.person($0), username: "person\($0)", displayName: "Person \($0)", termsAcceptedAt: .now) }
         state.signedInUserID = DemoSeed.meID
         backend = DemoBackend(persist: false, seed: state)
         restaurant = try await backend.ensureRestaurant(provider: "demo", placeID: "demo-test", coordinate: nil)

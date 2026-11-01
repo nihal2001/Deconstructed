@@ -30,6 +30,12 @@ set role authenticated;
 select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
 
 select id as rest from public.ensure_restaurant('google', 'place-1') \gset
+select test.refused(format('insert into public.visits (user_id, restaurant_id, visited_on) values (%L, %L, current_date)', :alice, :'rest'),
+                    'posting a review before accepting the terms');
+select test.refused(format('update public.profiles set terms_accepted_at = now() where id = %L', :alice),
+                    'setting the terms date without going through accept_terms()');
+select public.accept_terms() \g /dev/null
+select test.ok((select terms_accepted_at is not null from public.profiles where id = :alice), 'accepting the terms records when');
 insert into public.visits (user_id, restaurant_id, visited_on, visibility)
 values (:alice, :'rest', current_date - 3, 'private') returning id as v_private \gset
 insert into public.visits (user_id, restaurant_id, visited_on, visibility)
@@ -140,6 +146,7 @@ select test.refused(format('insert into public.ranking_systems (id, owner_id, na
 
 -- ------------------------------------------------------------------ as Bob
 select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+select public.accept_terms() \g /dev/null
 
 select test.ok((select array_agg(id order by visited_on) = array[:'v_public'::uuid, :'v_ramen'::uuid] from public.visits where user_id = :alice),
                'a stranger sees only the public reviews');
@@ -198,9 +205,158 @@ delete from public.follows where follower_id = :bob and followee_id = :alice;
 select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
 select test.ok(not exists (select 1 from public.visits where id = :'v_followers'), 'a removed follower loses followers-only access');
 
--- ------------------------------------------------------------------ as the database owner
+-- ------------------------------------------------------------------ text filter
+select test.refused(format('insert into public.visits (user_id, restaurant_id, visited_on, notes) values (%L, %L, current_date, %L)', :bob, :'rest', 'K1LL   y0urs3lf!!'),
+                    'a note with a blocked phrase, disguised with swapped letters');
+select test.refused(format('update public.visits set notes = %L where id = %L', 'killl yourselfff', :'v_bob'), 'a blocked phrase with stretched letters');
+select test.refused(format('update public.visits set notes = %L where id = %L', 'kiiill yourself', :'v_bob'), 'a blocked phrase stretched on a single letter');
+select test.refused(format('insert into public.visits (user_id, restaurant_id, visited_on, dishes) values (%L, %L, current_date, %L)', :bob, :'rest', '{Soup,"go die"}'),
+                    'a dish with a blocked phrase');
+select test.refused(format('update public.visits set notes = %L where id = %L', 'kill yourself', :'v_bob'), 'editing a note to add a blocked phrase');
+select test.refused(format('update public.profiles set display_name = %L where id = %L', 'kill yourself', :bob), 'a display name with a blocked phrase');
+select test.refused(format('update public.profiles set username = %L where id = %L', 'kill_yourself', :bob), 'a username with a blocked phrase');
+select test.refused(format('insert into public.ranking_systems (owner_id, name) values (%L, %L)', :bob, 'kill yourself'), 'a system name with a blocked phrase');
+\set rude_criteria '[{"name":"kill yourself","max_points":10,"levels":[{"points":0,"description":"a"},{"points":1,"description":"a"},{"points":2,"description":"a"},{"points":3,"description":"a"},{"points":4,"description":"a"},{"points":5,"description":"a"},{"points":6,"description":"a"},{"points":7,"description":"a"},{"points":8,"description":"a"},{"points":9,"description":"a"},{"points":10,"description":"a"}]}]'
+insert into public.ranking_systems (id, owner_id, name) values ('c0000000-0000-4000-8000-000000000002', :bob, 'Bob scale');
+select test.refused(format('select public.publish_system_version(%L, ''Bob scale'', '''', %L::jsonb)', 'c0000000-0000-4000-8000-000000000002', :'rude_criteria'),
+                    'a criterion name with a blocked phrase');
+delete from public.ranking_systems where id = 'c0000000-0000-4000-8000-000000000002';
+update public.visits set notes = 'Skillful cooking, and the pasta was shit-hot. Pros and cons, like Niger stew' where id = :'v_bob';
+select test.ok((select notes like 'Skillful%' from public.visits where id = :'v_bob'), 'ordinary words and mild swearing are allowed');
+
+-- ------------------------------------------------------------------ reporting
+select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
+select test.refused(format('select public.report_content(''visit'', %L, ''spam'')', :'v_public'), 'reporting your own review');
+select test.refused(format('select public.report_content(''user'', %L, ''spam'')', :alice), 'reporting yourself');
+select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+select test.refused(format('select public.report_content(''visit'', %L, ''spam'')', :'v_private'), 'reporting a review you cannot read');
+select test.refused($$insert into public.reports (target_type, target_id, reported_user_id, reason, snapshot)
+                      values ('user', gen_random_uuid(), gen_random_uuid(), 'spam', '{}')$$, 'writing a report directly');
+select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
+update public.visits set notes = 'Reported words', dishes = '{Soup}' where id = :'v_public';
+insert into public.visit_photos (visit_id, user_id, storage_path)
+values (:'v_public', :alice, :alice || '/' || :'v_public' || '/one.jpg') returning id as photo_one \gset
+select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+select public.report_content('visit', :'v_public', 'harassment', 'Mean about me') \g /dev/null
+select public.report_content('visit', :'v_public', 'harassment', 'Twice') \g /dev/null
+select public.report_content('photo', :'photo_one', 'sexual') \g /dev/null
+select public.report_content('user', :alice, 'hate') \g /dev/null
+select test.ok(not exists (select 1 from public.reports), 'nobody but a moderator can read reports, including the reporter');
+select test.refused(format('select public.moderate_report(gen_random_uuid(), %L)', 'dismiss'), 'moderating without being a moderator');
+select test.refused(format('select public.finish_report(gen_random_uuid(), %L)', 'dismiss'), 'closing a report without being a moderator');
+select test.ok(not public.is_moderator(), 'ordinary members are not moderators');
+
 reset role;
-select test.refused(format('update public.rating_revisions set total = 1 where id = %L', :'rev_public'),
+select test.ok((select count(*) = 3 from public.reports), 'each report arrives once; a repeat of an open report adds nothing');
+select test.ok((select snapshot ->> 'notes' = 'Reported words' and snapshot -> 'dishes' ? 'Soup' and snapshot ->> 'username' like 'user_%'
+                       and snapshot ->> 'system_name' = 'General' and jsonb_array_length(snapshot -> 'photo_paths') = 1
+                from public.reports where target_type = 'visit'), 'a report keeps a snapshot of what was reported');
+-- Carol moderates. She has no follow or block links to anyone.
+\set carol '''b0000000-0000-4000-8000-000000000001'''
+\set dave  '''b0000000-0000-4000-8000-000000000002'''
+insert into app_private.moderators (user_id) values (:carol);
+insert into storage.objects (bucket_id, name) values ('visit-photos', :alice || '/' || :'v_public' || '/one.jpg');
+select id as report_visit from public.reports where target_type = 'visit' \gset
+select id as report_photo from public.reports where target_type = 'photo' \gset
+select id as report_user from public.reports where target_type = 'user' \gset
+set role authenticated;
+
+select set_config('request.jwt.claim.sub', :carol, false) \g /dev/null
+select test.ok(public.is_moderator(), 'a moderator is recognised');
+select test.ok((select count(*) = 3 from public.reports where status = 'open'), 'a moderator can read the queue');
+select test.ok((select count(*) = 1 from storage.objects where name like '%/one.jpg'), 'a moderator can open a reported photo');
+select test.refused(format('select public.moderate_report(%L, %L)', :'report_visit', 'nonsense'), 'an unknown moderation action');
+select public.finish_report(:'report_photo', 'dismiss') \g /dev/null
+select test.ok((select status = 'dismissed' and resolved_by = :carol from public.reports where id = :'report_photo'), 'dismissing closes the report and records who did it');
+select public.moderate_report(:'report_visit', 'remove_content') as removal \gset
+select test.ok((:'removal')::jsonb -> 'storage_paths' ? (:alice || '/' || :'v_public' || '/one.jpg'), 'removing a review says which photo files to delete');
+select test.ok(not exists (select 1 from public.visits where id = :'v_public'), 'removing a review deletes it, whatever its owner');
+select test.ok((select status = 'open' from public.reports where id = :'report_visit'), 'a report stays open until every removal step has finished');
+select public.finish_report(:'report_visit', 'remove_content') \g /dev/null
+select test.ok((select status = 'actioned' and resolution = 'remove_content' from public.reports where id = :'report_visit'), 'finishing closes the report');
+select test.ok((select snapshot ->> 'notes' = 'Reported words' from public.reports where id = :'report_visit'), 'the snapshot survives the removal');
+select test.ok(not exists (select 1 from storage.objects where name like '%/one.jpg'), 'a moderator can no longer open a photo once its report is closed');
+select test.refused(format('select public.moderate_report(%L, %L)', :'report_visit', 'dismiss'), 'moderating a closed report');
+select public.moderate_report(:'report_user', 'remove_content') \g /dev/null
+select test.ok((select username like 'user_%' and display_name = 'New member' from public.profiles where id = :alice), 'removing a person''s content resets their names');
+select public.finish_report(:'report_user', 'remove_content') \g /dev/null
+-- The rest of the file expects Alice's public review to exist.
+select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
+insert into public.visits (user_id, restaurant_id, visited_on, visibility)
+values (:alice, :'rest', current_date - 1, 'public') returning id as v_public \gset
+select public.save_rating(:'v_public', :general_v1,
+  jsonb_build_object(:'g_food', 5, :'g_serv', 2, :'g_value', 2, :'g_atmo', 1), true) as rev_public \gset
+update public.profiles set username = 'alice', display_name = 'Alice' where id = :alice;
+
+-- ------------------------------------------------------------------ blocking
+insert into public.follows (follower_id, followee_id) values (:alice, :bob);
+select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+insert into public.follows (follower_id, followee_id) values (:bob, :alice);
+select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
+insert into public.blocks (blocker_id, blocked_id) values (:alice, :bob);
+select test.ok(not exists (select 1 from public.follows where :alice in (follower_id, followee_id)), 'blocking removes the follow in both directions');
+select test.ok((select array_agg(id) = array[:bob::uuid] from public.blocked_users()), 'the blocker can list who they blocked');
+select test.ok(not exists (select 1 from public.profiles where id = :bob), 'the blocker no longer finds the blocked person');
+select test.ok(not exists (select 1 from public.visits where user_id = :bob), 'the blocker no longer sees the blocked person''s reviews');
+select test.refused(format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', :bob, :carol), 'blocking on someone else''s behalf');
+
+select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+select test.ok(not exists (select 1 from public.blocks), 'the blocked person cannot see that they were blocked');
+select test.ok(not exists (select 1 from public.profiles where id = :alice), 'the blocked person cannot find the blocker');
+select test.ok(not exists (select 1 from public.profiles where username = 'alice' or display_name = 'Alice'), 'the blocked person cannot search for the blocker');
+select test.ok(not exists (select 1 from public.visits where user_id = :alice), 'the blocked person cannot read the blocker''s public reviews');
+select test.ok(not exists (select 1 from public.rating_revisions where visit_id = :'v_public'), 'the blocked person cannot read the blocker''s ratings');
+select test.ok(not exists (select 1 from public.criterion_scores where revision_id = :'rev_public'), 'the blocked person cannot read the blocker''s scores');
+select test.ok(not exists (select 1 from public.ranking_systems where owner_id = :alice), 'the blocked person cannot read custom systems through the blocker''s reviews');
+select test.refused(format('insert into public.follows (follower_id, followee_id) values (%L, %L)', :bob, :alice), 'following someone who blocked you');
+select test.refused(format('select public.report_content(''visit'', %L, ''spam'')', :'v_public'), 'reporting a review a block hides');
+select test.ok((select user_count = 2 from public.community_scores('google', 'place-1') where system_id = :general),
+               'community scores are anonymous averages, so a block does not change them');
+
+select set_config('request.jwt.claim.sub', :alice, false) \g /dev/null
+select test.refused(format('insert into public.follows (follower_id, followee_id) values (%L, %L)', :alice, :bob), 'following someone you blocked');
+select public.report_content('user', :bob, 'harassment') \g /dev/null
+delete from public.blocks where blocker_id = :alice and blocked_id = :bob;
+select test.ok(exists (select 1 from public.profiles where id = :bob), 'unblocking restores the person');
+select test.ok(exists (select 1 from public.visits where user_id = :bob), 'unblocking restores their reviews');
+select set_config('request.jwt.claim.sub', :bob, false) \g /dev/null
+select test.ok(exists (select 1 from public.visits where id = :'v_public'), 'unblocking restores the blocker''s reviews to the other person');
+select test.ok(not exists (select 1 from public.follows where :bob in (follower_id, followee_id)), 'unblocking does not restore the old follows');
+
+-- ------------------------------------------------------------------ bans
+select set_config('request.jwt.claim.sub', :dave, false) \g /dev/null
+select public.accept_terms() \g /dev/null
+select public.report_content('user', :bob, 'spam') \g /dev/null
+insert into public.follows (follower_id, followee_id) values (:dave, :bob);
+reset role;
+select id as report_bob from public.reports where reported_user_id = :bob and status = 'open' and reporter_id = :dave \gset
+set role authenticated;
+select set_config('request.jwt.claim.sub', :carol, false) \g /dev/null
+select public.moderate_report(:'report_bob', 'ban') as ban \gset
+select test.ok((:'ban')::jsonb ->> 'ban_user_id' = :bob, 'a ban tells the Edge Function whose sign-in to stop');
+select test.refused(format('select public.moderate_report(%L, %L)', :'report_user', 'ban'), 'acting on a report already closed');
+select public.finish_report(:'report_bob', 'ban') \g /dev/null
+select test.ok(not exists (select 1 from public.reports where reported_user_id = :bob and status = 'open'), 'a ban closes every open report against that person');
+select set_config('request.jwt.claim.sub', :dave, false) \g /dev/null
+select test.ok(not exists (select 1 from public.profiles where id = :bob), 'a banned person can no longer be found');
+select test.ok(not exists (select 1 from public.visits where user_id = :bob), 'a banned person''s reviews disappear');
+select test.ok(not exists (select 1 from public.follows where :bob in (follower_id, followee_id)), 'a ban removes their follows');
+select test.ok((select user_count = 1 and average = 10 from public.community_scores('google', 'place-1') where system_id = :general),
+               'a banned person no longer counts toward community scores');
+select test.refused(format('insert into public.follows (follower_id, followee_id) values (%L, %L)', :dave, :bob), 'following a banned person');
+
+reset role;
+select test.ok(exists (select 1 from app_private.banned_users where user_id = :bob), 'the ban is recorded');
+delete from app_private.banned_users where user_id = :bob;
+
+-- A name from the sign-in provider is dropped rather than refusing the account.
+insert into auth.users (id, raw_user_meta_data) values ('b0000000-0000-4000-8000-000000000009', '{"full_name": "Kill Yourself"}');
+select test.ok((select display_name = 'New member' from public.profiles where id = 'b0000000-0000-4000-8000-000000000009'),
+               'a blocked name from the sign-in provider does not stop the account being created');
+
+-- ------------------------------------------------------------------ as the database owner
+select test.refused(format('update public.rating_revisions set total = 1 where id = %L', (
+                      select id from public.rating_revisions where state = 'superseded' limit 1)),
                     'even a privileged writer cannot rewrite a superseded rating');
 select test.refused(format('update public.ranking_criteria set max_points = 9 where version_id = %L', :general_v1), 'changing a published criterion');
 select test.refused(format('update public.criterion_score_levels set description = ''x'' where criterion_id = %L', :'g_food'), 'changing a published score description');

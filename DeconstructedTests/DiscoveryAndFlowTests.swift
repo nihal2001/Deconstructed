@@ -98,6 +98,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
         let provider = RecordingPlacesProvider()
         let model = AppModel(environment: .ephemeralDemo(places: provider))
         try await model.signInDemo()
+        try await model.acceptTerms()
         let discovery = DiscoveryModel(provider: provider, config: config())
 
         discovery.query = "saltm"
@@ -131,6 +132,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
         let provider = RecordingPlacesProvider()
         let model = AppModel(environment: .ephemeralDemo(places: provider))
         try await model.signInDemo()
+        try await model.acceptTerms()
 
         model.discovery.query = "ramen"
         await model.discovery.searchText(near: center)
@@ -171,6 +173,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
         let environment = AppEnvironment.ephemeralDemo()
         let model = AppModel(environment: environment)
         try await model.signInDemo()
+        try await model.acceptTerms()
         let visitsBefore = model.visits.count
         let place = try XCTUnwrap(DemoCatalog.restaurants.first { $0.placeID == "demo-fig-ember" }?.place)
 
@@ -229,6 +232,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
     func testEverythingWorksWithoutLocationAccess() async throws {
         let model = AppModel(environment: .ephemeralDemo())
         try await model.signInDemo()
+        try await model.acceptTerms()
         // No device location in the test host: a manual area stands in for it.
         model.location.manualArea = NamedArea(name: "Mission", coordinate: Coordinate(latitude: 37.7599, longitude: -122.4148))
         XCTAssertEqual(model.location.originLabel, "Mission")
@@ -254,6 +258,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
     func testSearchSaveLogVisitAndSeeRanking() async throws {
         let model = AppModel(environment: .ephemeralDemo())
         try await model.signInDemo()
+        try await model.acceptTerms()
 
         // Search
         model.discovery.query = "Fig"
@@ -333,6 +338,7 @@ final class DiscoveryAndFlowTests: XCTestCase {
     func testSeededDemoShowsTiesDraftsAndHistory() async throws {
         let model = AppModel(environment: .ephemeralDemo())
         try await model.signInDemo()
+        try await model.acceptTerms()
 
         let all = model.ranked(scope: .allSystems)
         XCTAssertEqual(all.count, 6)
