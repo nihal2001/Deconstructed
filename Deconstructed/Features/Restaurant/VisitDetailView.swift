@@ -11,6 +11,13 @@ struct VisitDetailView: View {
 
     @State private var showEdit = false
     @State private var confirmDelete = false
+    @State private var reportTarget: ReportRequest?
+
+    private struct ReportRequest: Identifiable {
+        var target: ReportTarget
+        var title: String
+        var id: ReportTarget { target }
+    }
 
     private var visit: Visit { model.visits.first { $0.id == visitID } ?? snapshot }
     private var isMine: Bool { visit.userID == model.profile?.id }
@@ -71,7 +78,26 @@ struct VisitDetailView: View {
                     }
                     .disabled(place == nil)
                 }
+            } else {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button("Report review", systemImage: "flag") {
+                            reportTarget = ReportRequest(target: .visit(visit.id), title: "Report review")
+                        }
+                        ForEach(Array(visit.photos.enumerated()), id: \.element.id) { index, photo in
+                            let title = visit.photos.count == 1 ? "Report photo" : "Report photo \(index + 1)"
+                            Button(title, systemImage: "photo") {
+                                reportTarget = ReportRequest(target: .photo(photo.id), title: title)
+                            }
+                        }
+                    } label: {
+                        Label("Review options", systemImage: "ellipsis.circle")
+                    }
+                }
             }
+        }
+        .sheet(item: $reportTarget) { request in
+            ReportSheet(target: request.target, title: request.title)
         }
         .task(id: model.placeReloadToken) {
             await model.ensurePlace(for: visit.restaurantID)

@@ -1,12 +1,21 @@
 import Foundation
 
+/// Public pages, served from docs/ by GitHub Pages.
+enum AppLinks {
+    static let privacy = URL(string: "https://nihal2001.github.io/Deconstructed/privacy.html")!
+    static let terms = URL(string: "https://nihal2001.github.io/Deconstructed/terms.html")!
+    static let support = URL(string: "https://nihal2001.github.io/Deconstructed/support.html")!
+}
+
 /// Build-time configuration, read from Info.plist values that xcconfig files fill in.
 /// Nothing secret is compiled into source; see Config/Secrets.example.xcconfig.
 struct AppConfig {
     var googleMapsAPIKey: String?
     var supabaseURL: URL?
     var supabaseAnonKey: String?
-    var placesLimits = RequestMonitor.Limits(perMinute: 30, perDay: 400)
+    /// Published in the app for reports and moderation. Set CONTACT_EMAIL in Config/App.xcconfig.
+    var contactEmail: String?
+    var placesLimits = RequestMonitor.Limits(perMinute: 60, perDay: 400)
     var autocompleteMinCharacters = 3
     var autocompleteDebounce: Duration = .milliseconds(350)
 
@@ -34,6 +43,7 @@ struct AppConfig {
         }
         googleMapsAPIKey = string("GoogleMapsAPIKey")
         supabaseAnonKey = string("SupabaseAnonKey")
+        contactEmail = string("ContactEmail")
         if let host = string("SupabaseProjectHost") {
             let bare = host.replacingOccurrences(of: "https://", with: "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             supabaseURL = URL(string: "https://\(bare)")

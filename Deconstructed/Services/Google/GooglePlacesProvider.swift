@@ -2,6 +2,9 @@ import CoreLocation
 import Foundation
 import GoogleMaps
 import GooglePlaces
+import os
+
+private let logger = Logger(subsystem: "Deconstructed", category: "Places")
 
 /// Google Places (New) behind the `PlacesProvider` interface.
 ///
@@ -165,7 +168,8 @@ final class GooglePlacesProvider: PlacesProvider {
     private nonisolated static func map(_ error: Error, isLookup: Bool = false) -> PlacesError {
         let nsError = error as NSError
         guard nsError.domain == kGMSPlacesErrorDomain, let code = GMSPlacesErrorCode(rawValue: nsError.code) else {
-            return nsError.domain == NSURLErrorDomain ? .network : .other(error.localizedDescription)
+            if nsError.domain == NSURLErrorDomain { return .network }
+            return unavailable(nsError)
         }
         switch code {
         case .networkError:
@@ -173,11 +177,17 @@ final class GooglePlacesProvider: PlacesProvider {
         case .usageLimitExceeded, .rateLimitExceeded, .deviceRateLimitExceeded:
             return .quotaExhausted
         case .keyInvalid, .keyExpired, .accessNotConfigured, .incorrectBundleIdentifier:
-            return .notConfigured("the Google API key was rejected (\(nsError.localizedDescription)). Check the key, its iOS app restriction and that Places API (New) is enabled.")
+            logger.error("Google rejected the API key (code \(nsError.code)): \(nsError.localizedDescription, privacy: .public). Check the key, its iOS app restriction and that Places API (New) is enabled.")
+            return .notConfigured
         case .invalidRequest:
-            return isLookup ? .notFound : .other(error.localizedDescription)
+            return isLookup ? .notFound : unavailable(nsError)
         default:
-            return .other(error.localizedDescription)
+            return unavailable(nsError)
         }
+    }
+
+    private nonisolated static func unavailable(_ error: NSError) -> PlacesError {
+        logger.error("Places request failed (\(error.domain, privacy: .public) \(error.code)): \(error.localizedDescription, privacy: .public)")
+        return .other(PlacesError.unavailableMessage)
     }
 }

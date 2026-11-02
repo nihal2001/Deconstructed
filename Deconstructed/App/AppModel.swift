@@ -18,6 +18,8 @@ struct RatingInput {
 final class AppModel {
     enum Phase {
         case launching, signedOut, signedIn
+        /// Signed in, but the session or the account's data couldn't be loaded.
+        case unavailable
     }
 
     let environment: AppEnvironment
@@ -41,8 +43,16 @@ final class AppModel {
     /// Set by "View on map": the Map tab centres on and selects this place.
     var mapFocusPlaceID: String?
     var toast: String?
+    /// Whether this account sees the moderation queue. The backend enforces it either way.
+    private(set) var isModerator = false
+    /// Changing this makes the Friends tab reload after a block or an unblock.
+    private(set) var relationshipToken = 0
 
     @ObservationIgnored private var placeTasks: [String: Task<Place?, Never>] = [:]
+    /// How a place lookup waits out the per-minute limit. Tests replace it.
+    @ObservationIgnored var waitForPlaceLimit: (TimeInterval) async -> Void = {
+        try? await Task.sleep(for: .seconds($0))
+    }
 
     var isDemo: Bool { environment.isDemo }
     private var backend: BackendService { environment.backend }
@@ -63,12 +73,13 @@ final class AppModel {
                 try await loadAll()
                 phase = .signedIn
             } else {
-                phase = .signedOut
+                clear()
             }
+        } catch BackendError.notSignedIn {
+            clear()
         } catch {
-            // A failed refresh at launch should not strand the user on a spinner.
-            phase = profile == nil ? .signedOut : .signedIn
-            toast = error.localizedDescription
+            // Only a real sign-out leads to the sign-in screen. This could be the network.
+            phase = .unavailable
         }
     }
 
@@ -94,7 +105,9 @@ final class AppModel {
     }
 
     func deleteAccount() async throws {
-        try await backend.deleteAccount()
+        // Apple requires its token to be revoked, which needs a code from a fresh confirmation.
+        let code = await backend.accountUsesApple() ? try await AppleConfirmation.authorizationCode() : nil
+        try await backend.deleteAccount(appleAuthorizationCode: code)
         clear()
     }
 
@@ -115,6 +128,7 @@ final class AppModel {
         merge(loadedCatalog)
         saved = loadedSaved
         visits = loadedVisits
+        isModerator = (try? await backend.isModerator()) ?? false
         try await loadRestaurants(ids: loadedSaved.map(\.restaurantID) + loadedVisits.map(\.restaurantID))
     }
 
@@ -125,6 +139,7 @@ final class AppModel {
         restaurants = [:]
         saved = []
         visits = []
+        isModerator = false
         discovery.reset()
         selectedTab = .discover
         phase = .signedOut
@@ -293,6 +308,9 @@ final class AppModel {
         for ref in try await backend.loadRestaurants(ids: Array(missing)) { restaurants[ref.id] = ref }
     }
 
+    /// The per-minute limit is waited out. The daily one is longer than this, so it's an error.
+    private static let longestPlaceWait: TimeInterval = 90
+
     /// Loads provider content for a place if it isn't already in memory at this level.
     /// Concurrent callers share one request, and a quota error pauses automatic retries.
     @discardableResult
@@ -305,13 +323,18 @@ final class AppModel {
         let key = "\(placeID)|\(level.rawValue)"
         if let running = placeTasks[key] { return await running.value }
         let task = Task { [provider] () -> Place? in
-            do {
-                let place = try await provider.details(placeID: placeID, level: level, session: session)
-                self.remember([place])
-                return self.places[placeID]
-            } catch {
-                self.placeLoadError = (error as? PlacesError) ?? .other(error.localizedDescription)
-                return self.places[placeID]
+            while true {
+                do {
+                    let place = try await provider.details(placeID: placeID, level: level, session: session)
+                    self.remember([place])
+                    return self.places[placeID]
+                } catch PlacesError.localLimitReached(let retryAfter) where session == nil && retryAfter <= Self.longestPlaceWait {
+                    // Rows keep showing "Loading…" and fill in when the minute resets.
+                    await self.waitForPlaceLimit(retryAfter)
+                } catch {
+                    self.placeLoadError = (error as? PlacesError) ?? .other(error.localizedDescription)
+                    return self.places[placeID]
+                }
             }
         }
         placeTasks[key] = task
@@ -473,6 +496,32 @@ final class AppModel {
         try await backend.setFollowing(userID: user.id, following: following)
     }
     func removeFollower(_ user: UserProfile) async throws { try await backend.removeFollower(userID: user.id) }
+
+    // MARK: Safety
+
+    var hasAcceptedTerms: Bool { profile?.termsAcceptedAt != nil }
+
+    func acceptTerms() async throws {
+        profile = try await backend.acceptTerms()
+    }
+
+    func setBlocked(_ user: UserProfile, blocked: Bool) async throws {
+        try await backend.setBlocked(userID: user.id, blocked: blocked)
+        relationshipToken += 1
+    }
+
+    func loadBlockedUsers() async throws -> [UserProfile] { try await backend.loadBlockedUsers() }
+
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws {
+        try await backend.report(target, reason: reason, details: details)
+    }
+
+    func loadOpenReports() async throws -> [ContentReport] { try await backend.loadOpenReports() }
+
+    func moderate(_ report: ContentReport, action: ModerationAction) async throws {
+        try await backend.moderate(reportID: report.id, action: action)
+        relationshipToken += 1
+    }
 
     // MARK: Navigation helpers
 

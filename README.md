@@ -16,8 +16,8 @@ Swift and SwiftUI, iOS 17+, iPhone only. Google Maps SDK and Places for search a
 | | Status |
 |---|---|
 | Demo mode (no credentials) | Builds, runs and was walked through in the iOS 27 simulator on all five tabs |
-| App logic | 40 unit tests pass |
-| Database rules | 62 checks pass against the real migrations on Postgres 17 |
+| App logic | 57 unit tests pass |
+| Database rules | 128 checks pass against the real migrations on Postgres 17 |
 | Live Google and Supabase paths | **Compile against the current SDKs but have never been run.** No credentials were available, so nothing has talked to a real Google project or Supabase project |
 
 Read [Not finished or not verified](#not-finished-or-not-verified) before planning a release.
@@ -50,13 +50,22 @@ Release builds, and so archives, fail if any of the three is empty, so a checkou
 
 1. Apply the migrations in `supabase/migrations`: paste them into the SQL editor in filename order, or run `supabase init`, `supabase link` and `supabase db push` (the folder has no `config.toml` yet).
 2. Authentication → Providers → Apple: enable it and add your bundle ID as a client ID.
-3. Deploy the account-deletion function: `supabase functions deploy delete-account`.
-4. Database → Extensions: enable `pg_cron`, then schedule the daily purge of stale coordinates:
+3. Deploy the account-deletion function, which revokes the Apple token before it deletes anything. In your Apple Developer account, create a key with *Sign in with Apple* enabled, then set its secrets and deploy. `APPLE_PRIVATE_KEY` is the contents of the `.p8` file and `APPLE_CLIENT_ID` is your bundle ID. Deleting an account fails, with nothing deleted, until these are set.
+   ```bash
+   supabase secrets set APPLE_TEAM_ID=... APPLE_KEY_ID=... APPLE_CLIENT_ID=... APPLE_PRIVATE_KEY="$(cat AuthKey.p8)"
+   ```
+   ```bash
+   supabase functions deploy delete-account
+   ```
+4. Set up moderation: deploy the `moderate` and `report-notify` functions, connect the webhook and add a moderator. [docs/moderation.md](docs/moderation.md) has the steps.
+5. Database → Extensions: enable `pg_cron`, then schedule the daily purge of stale coordinates:
    ```sql
    select cron.schedule('purge-stale-restaurant-locations', '17 3 * * *',
                         'select app_private.purge_stale_restaurant_locations()');
+   select cron.schedule('purge-closed-reports', '37 3 * * *',
+                        'select app_private.purge_closed_reports()');
    ```
-   (The migration schedules this itself if `pg_cron` is already enabled when it runs.)
+   (The migrations schedule these themselves if `pg_cron` is already enabled when they run.)
 
 **Xcode**: add the *Sign in with Apple* capability under your team. The entitlement file is already in `Config/`.
 
@@ -80,7 +89,7 @@ The starter rubrics are defined once, in `Deconstructed/Resources/StarterSystems
 - Field masks are tiered: coordinate only for pins, six core fields for search and profiles, hours and contact only when the user asks. Photos and ratings are never requested.
 - Opening a search result reuses what the search returned.
 - Only place IDs are stored. Coordinates are cached for at most 30 days. Names are not stored at all, so lists fetch them once per launch. That is the app's main ongoing cost, and the doc below sizes it.
-- Requests are counted and capped on the device (Profile → Search usage) and quota errors show a message with a retry.
+- Requests are counted and capped on the device, and quota errors show a message with a retry. Lists wait out the per-minute cap and fill in on their own. In Debug builds, Profile → Search usage shows the counts.
 
 Full table of requests, SKUs, prices, policy constraints and a monthly estimate: [docs/google-api-usage.md](docs/google-api-usage.md).
 
@@ -100,10 +109,12 @@ Deconstructed/
 DeconstructedTests/     unit tests
 supabase/
   migrations/           schema, row-level security, functions, standard systems
-  functions/            delete-account Edge Function
+  functions/            delete-account, moderate and report-notify Edge Functions
   tests/                SQL rule tests and the script that runs them
-docs/                   Google usage and cost notes, screenshots
+docs/                   Public pages (privacy, terms, support), App Store text, Google usage, moderation runbook, screenshots
 ```
+
+The public pages are plain HTML in `docs/`, served by GitHub Pages from `main`. Their addresses are in `AppLinks`.
 
 Screens depend only on the two protocols in `Services/ServiceProtocols.swift`, so either provider can be replaced. The rating form is one view (`RatingForm`) generated from a system version; no system has its own form.
 
@@ -135,13 +146,21 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 | Users edit only systems they own | standard and other people's systems refused | policies and function checks |
 | Historical versions never change | version and rating identical after an edit | update triggers refuse changes |
 | Client totals are not trusted | no total parameter exists | direct writes denied; trigger sets the total |
+| Blocking hides both people | reviews, feed, search and follows, both directions | row-level security on profiles, reviews, ratings, scores and systems |
+| Reports reach a moderator and keep the evidence | repeats ignored; snapshot survives deletion | direct writes denied; only moderators read or act |
+| Bans and removals work | content, names, bans, deletion | same, plus community scores |
+| Objectionable text is refused | every write path | triggers on notes, dishes, names and systems |
+| Terms come before posting | visit refused until accepted | policy on visits; date can't be set directly |
 
 ## Decisions and assumptions
 
 - **Demo map.** Google requires Places content to be shown on a Google map, so the live app uses the Maps SDK. The demo has no key and shows only fictional places, so it uses Apple's MapKit. Both cluster pins.
 - **The whole app is live or demo, never half.** A partial set of credentials falls back to demo so real search results are never mixed with fictional accounts.
 - **Only public reviews feed community scores.** Followers-only and private reviews are excluded.
-- **Following is open.** Anyone can follow anyone; "followers" visibility is protected by letting you remove a follower. There is no follow-request approval.
+- **Following is open.** Anyone can follow anyone; "followers" visibility is protected by letting you remove a follower or block them. There is no follow-request approval.
+- **Blocks don't change community scores**, because those are anonymous averages. Bans do.
+- **Moderators work in the app.** The queue is under Profile, for accounts in `app_private.moderators`. In the demo everyone is a moderator.
+- **The text filter allows mild swearing** and also applies to private reviews, since they can be made public later.
 - **Saving a draft is always allowed**, including with a changed maximum awaiting review. Review is required before *publishing*.
 - **Renaming a system doesn't create a version.** Ratings show the system's current name with the version they used.
 - **New ratings use a system's latest version.** An existing rating can still be corrected under its own, older version.
@@ -155,23 +174,24 @@ The second needs Docker. It applies the migrations to a throwaway Postgres 17 an
 
 **Never run for real**
 
-- Sign in with Apple, every Supabase call, the Edge Function, Storage uploads, and all Google Places and Maps calls. The Swift compiles against supabase-swift 2.55 and the Google SDKs 11.2, and the SQL passes its tests, but the two halves have not met. Expect to fix query-shape or decoding mismatches in `SupabaseBackend.swift` on first contact.
+- Sign in with Apple, every Supabase call, the Edge Functions (including moderation and report emails), Storage uploads, and all Google Places and Maps calls. The Swift compiles against supabase-swift 2.55 and the Google SDKs 11.2, and the SQL passes its tests, but the two halves have not met. Expect to fix query-shape or decoding mismatches in `SupabaseBackend.swift` on first contact.
 - The SQL tests use a small shim for Supabase's `auth` and `storage` schemas. The Storage policies were applied but not exercised.
 
 **Required before release**
 
-- Your own Terms of Use and Privacy Policy, linked in the app. Google's policies require them and the About screen currently links only Google's.
-- Revoking the Apple token when an account is deleted. The Edge Function deletes the user and their photos but does not call Apple's revoke endpoint, which App Review expects.
-- A review of the App Store privacy manifest. `Deconstructed/PrivacyInfo.xcprivacy` declares `UserDefaults` (reason `CA92.1`), no tracking, and email, name, user ID, photos and other user content collected for app functionality. It doesn't declare location: decide whether location sent to Google counts as collected, and keep the manifest, the App Privacy labels and the privacy policy in step.
+- The open [`pre-launch` issues](https://github.com/nihal2001/Deconstructed/issues?q=is%3Aissue+is%3Aopen+label%3Apre-launch). What's left needs your accounts or a real device.
+- The privacy policy and terms in `docs/` haven't had a legal review, and they name no company, address or governing law.
 
 **Known gaps**
 
 - No pagination. Rankings, the feed (capped at 60) and visit lists load everything, and long lists fetch every name.
 - A photo uploaded to Storage whose database row then fails to insert is left orphaned.
 - Saving a visit is several requests (visit, photos, rating), not one transaction. A failure midway can leave a visit saved without its rating; it shows up as a draft.
-- No offline cache in live mode. Without a network, lists are empty until it returns.
-- No follow requests, blocking or reporting.
+- No offline cache in live mode. Launching without a network shows a "Can't connect" screen that retries by itself.
+- Deleting an account from the moderation queue doesn't revoke its Apple token, because that needs the person to confirm with Apple.
+- No follow requests.
+- No automatic photo scanning. Photos are moderated through reports. See [docs/moderation.md](docs/moderation.md).
+- The text filter matches whole words, so a blocked word joined to others with no separator gets through.
 - Profiles are readable by any signed-in user, including default visibility and default system.
 - Reordering criteria uses Move up / Move down, not drag.
 - English only. No UI tests; the walkthrough was manual and did not cover Dynamic Type at large sizes, VoiceOver or dark mode on a device, though the views use text styles, accessibility labels and adaptive colours throughout.
-- The app icon is a generated placeholder.

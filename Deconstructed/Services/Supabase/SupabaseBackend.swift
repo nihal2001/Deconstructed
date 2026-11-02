@@ -1,5 +1,8 @@
 import Foundation
+import os
 import Supabase
+
+private let logger = Logger(subsystem: "Deconstructed", category: "Backend")
 
 /// The live backend. It is a thin client: ownership, visibility, score ranges and totals are
 /// all enforced by the database (see supabase/migrations), not by this file.
@@ -17,8 +20,30 @@ final class SupabaseBackend: BackendService {
     // MARK: Session
 
     func restoreSession() async throws -> UserProfile? {
-        guard let session = try? await client.auth.session else { return nil }
+        guard let session = try await currentSession() else { return nil }
         return try await loadProfile(id: session.user.id)
+    }
+
+    /// Nil only when there is really no session. A refresh that couldn't reach the server
+    /// throws instead, so an expired token on a bad connection doesn't look like a sign-out.
+    private func currentSession() async throws -> Session? {
+        do {
+            return try await client.auth.session
+        } catch AuthError.sessionMissing {
+            return nil
+        } catch let AuthError.api(message, _, _, response) where Self.isRefusal(response.statusCode) {
+            // The server answered and won't renew this session, for example after a ban.
+            logger.error("Session refused: \(message, privacy: .public)")
+            try? await client.auth.signOut(scope: .local)
+            return nil
+        } catch {
+            logger.error("Session refresh failed: \(error.localizedDescription, privacy: .public)")
+            throw BackendError.network
+        }
+    }
+
+    private static func isRefusal(_ status: Int) -> Bool {
+        (400..<500).contains(status) && status != 408 && status != 429
     }
 
     func signInWithApple(idToken: String, nonce: String, displayName: String?) async throws -> UserProfile {
@@ -43,10 +68,22 @@ final class SupabaseBackend: BackendService {
         try await wrap { try await self.client.auth.signOut() }
     }
 
-    func deleteAccount() async throws {
-        // An Edge Function does this because it needs the service role: it removes the
-        // user's photos from Storage, then the auth user, which cascades to every table.
-        try await wrap { try await self.client.functions.invoke("delete-account") }
+    func accountUsesApple() async -> Bool {
+        // The function checks this too. An account with no identities listed is treated as
+        // Apple, the only sign-in method in this version.
+        guard let identities = client.auth.currentUser?.identities else { return true }
+        return identities.contains { $0.provider == "apple" }
+    }
+
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
+        // An Edge Function does this because it needs the service role and Apple's key: it
+        // revokes the Apple token, removes the user's photos from Storage, then the auth user,
+        // which cascades to every table.
+        try await wrap {
+            try await self.client.functions.invoke(
+                "delete-account",
+                options: FunctionInvokeOptions(body: DeleteAccountBody(appleAuthorizationCode: appleAuthorizationCode)))
+        }
         try? await client.auth.signOut(scope: .local)
     }
 
@@ -70,7 +107,7 @@ final class SupabaseBackend: BackendService {
     }
 
     private func userID() async throws -> UUID {
-        guard let session = try? await client.auth.session else { throw BackendError.notSignedIn }
+        guard let session = try await currentSession() else { throw BackendError.notSignedIn }
         return session.user.id
     }
 
@@ -419,6 +456,69 @@ final class SupabaseBackend: BackendService {
         return rows.map(\.model).filter(\.isCompleted)
     }
 
+    // MARK: Safety
+
+    func acceptTerms() async throws -> UserProfile {
+        let uid = try await userID()
+        _ = try await wrap { try await self.client.rpc("accept_terms").execute() }
+        return try await loadProfile(id: uid)
+    }
+
+    func setBlocked(userID target: UUID, blocked: Bool) async throws {
+        let uid = try await userID()
+        _ = try await wrap {
+            if blocked {
+                // The database removes any follow between the two people.
+                try await self.client.from("blocks")
+                    .upsert(BlockInsert(blocker_id: uid, blocked_id: target), onConflict: "blocker_id,blocked_id")
+                    .execute()
+            } else {
+                try await self.client.from("blocks").delete()
+                    .eq("blocker_id", value: uid).eq("blocked_id", value: target).execute()
+            }
+        }
+    }
+
+    func loadBlockedUsers() async throws -> [UserProfile] {
+        let rows: [ProfileRow] = try await wrap {
+            try await self.client.rpc("blocked_users").select(ProfileRow.columns).execute().value
+        }
+        return rows.map(\.model)
+    }
+
+    func report(_ target: ReportTarget, reason: ReportReason, details: String) async throws {
+        _ = try await wrap {
+            try await self.client.rpc("report_content", params: ReportParams(
+                p_target_type: target.kind, p_target_id: target.id, p_reason: reason, p_details: details.trimmed)
+            ).execute()
+        }
+    }
+
+    func isModerator() async throws -> Bool {
+        try await wrap { try await self.client.rpc("is_moderator").execute().value }
+    }
+
+    func loadOpenReports() async throws -> [ContentReport] {
+        // Row-level security returns nothing here for anyone who isn't a moderator.
+        let rows: [ReportRow] = try await wrap {
+            try await self.client.from("reports")
+                .select(ReportRow.columns)
+                .eq("status", value: ReportStatus.open.rawValue)
+                .order("created_at")
+                .execute().value
+        }
+        return rows.map(\.model)
+    }
+
+    func moderate(reportID: UUID, action: ModerationAction) async throws {
+        // An Edge Function does this because it needs the service role to remove photos from
+        // Storage and to ban or delete the auth user. The database checks the moderator.
+        _ = try await wrap {
+            try await self.client.functions.invoke("moderate", options: FunctionInvokeOptions(
+                body: ModerateBody(report_id: reportID, action: action.rawValue)))
+        }
+    }
+
     func communityScores(provider: String, placeID: String) async throws -> [CommunityScore] {
         let rows: [CommunityRow] = try await wrap {
             try await self.client.rpc("community_scores", params: ["p_provider": provider, "p_place_id": placeID]).execute().value
@@ -449,14 +549,28 @@ final class SupabaseBackend: BackendService {
             case "23514", "22023", "23505", "P0001", "22P02": throw BackendError.invalid(error.message.sentenceCased)
             case "PGRST116", "P0002": throw BackendError.notFound
             case "28000": throw BackendError.notSignedIn
-            default: throw BackendError.other(error.message.sentenceCased)
+            default: throw unexpected(error.message)
             }
+        } catch let error as FunctionsError {
+            if case .httpError(let code, let data) = error {
+                let message = (try? JSONDecoder().decode(FunctionErrorBody.self, from: data))?.error
+                if code == 403 { throw BackendError.notAllowed(message ?? "You can't do that.") }
+                // A function writes its 4xx messages for people. A 5xx may be anything.
+                if (400..<500).contains(code), let message { throw BackendError.other(message) }
+                throw unexpected("Edge Function failed with \(code): \(message ?? "no message")")
+            }
+            throw unexpected(error.localizedDescription)
         } catch let error as URLError {
             _ = error
             throw BackendError.network
         } catch {
-            throw BackendError.other(error.localizedDescription)
+            throw unexpected(error.localizedDescription)
         }
+    }
+
+    private func unexpected(_ detail: String) -> BackendError {
+        logger.error("Backend request failed: \(detail, privacy: .public)")
+        return .other(BackendError.genericMessage)
     }
 }
 
@@ -472,7 +586,7 @@ private extension String {
 // Property names mirror database columns so no key mapping is needed.
 
 private struct ProfileRow: Decodable {
-    static let columns = "id,username,display_name,default_visibility,default_system_id,archived_standard_system_ids"
+    static let columns = "id,username,display_name,default_visibility,default_system_id,archived_standard_system_ids,terms_accepted_at"
 
     var id: UUID
     var username: String
@@ -480,10 +594,12 @@ private struct ProfileRow: Decodable {
     var default_visibility: Visibility
     var default_system_id: UUID?
     var archived_standard_system_ids: [UUID]?
+    var terms_accepted_at: Date?
 
     var model: UserProfile {
         UserProfile(id: id, username: username, displayName: display_name, defaultVisibility: default_visibility,
-                    defaultSystemID: default_system_id, archivedStandardSystemIDs: archived_standard_system_ids ?? [])
+                    defaultSystemID: default_system_id, archivedStandardSystemIDs: archived_standard_system_ids ?? [],
+                    termsAcceptedAt: terms_accepted_at)
     }
 }
 
@@ -524,6 +640,63 @@ private struct FollowRow: Decodable {
 private struct FollowInsert: Encodable {
     var follower_id: UUID
     var followee_id: UUID
+}
+
+private struct BlockInsert: Encodable {
+    var blocker_id: UUID
+    var blocked_id: UUID
+}
+
+private struct ReportParams: Encodable {
+    var p_target_type: ReportTargetKind
+    var p_target_id: UUID
+    var p_reason: ReportReason
+    var p_details: String
+}
+
+private struct ModerateBody: Encodable {
+    var report_id: UUID
+    var action: String
+}
+
+private struct DeleteAccountBody: Encodable {
+    var appleAuthorizationCode: String?
+}
+
+private struct FunctionErrorBody: Decodable {
+    var error: String
+}
+
+private struct ReportRow: Decodable {
+    static let columns = "id,target_type,target_id,reported_user_id,reason,details,snapshot,status,created_at"
+
+    struct Snapshot: Decodable {
+        var username: String?
+        var display_name: String?
+        var notes: String?
+        var dishes: [String]?
+        var system_name: String?
+        var photo_paths: [String]?
+    }
+
+    var id: UUID
+    var target_type: ReportTargetKind
+    var target_id: UUID
+    var reported_user_id: UUID
+    var reason: ReportReason
+    var details: String
+    var snapshot: Snapshot
+    var status: ReportStatus
+    var created_at: Date
+
+    var model: ContentReport {
+        ContentReport(id: id, targetKind: target_type, targetID: target_id, reportedUserID: reported_user_id,
+                      reason: reason, details: details,
+                      snapshot: ReportSnapshot(username: snapshot.username ?? "", displayName: snapshot.display_name ?? "",
+                                               notes: snapshot.notes ?? "", dishes: snapshot.dishes ?? [],
+                                               systemName: snapshot.system_name, photoPaths: snapshot.photo_paths ?? []),
+                      status: status, createdAt: created_at)
+    }
 }
 
 private struct RestaurantRow: Decodable {

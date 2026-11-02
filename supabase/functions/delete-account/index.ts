@@ -4,10 +4,14 @@
 // to clear Storage (Supabase does not allow storage objects to be deleted through SQL).
 // Database rows go with the auth user through ON DELETE CASCADE.
 //
+// Apple requires its token to be revoked when an account is deleted. That happens first, so
+// if Apple refuses, nothing has been deleted and the person can try again.
+//
 // Deploy:  supabase functions deploy delete-account
+// Secrets: APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY, APPLE_CLIENT_ID (see README)
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const BUCKET = "visit-photos";
+import { revokeAppleToken } from "../_shared/apple.ts";
+import { removeAllPhotos } from "../_shared/photos.ts";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -28,28 +32,32 @@ Deno.serve(async (req) => {
     return json({ error: "Not signed in" }, 401);
   }
 
+  if (user.identities?.some((identity) => identity.provider === "apple")) {
+    const body = await req.json().catch(() => ({}));
+    if (typeof body.appleAuthorizationCode !== "string" || body.appleAuthorizationCode === "") {
+      return json({ error: "Confirm with Apple to delete your account." }, 400);
+    }
+    try {
+      await revokeAppleToken(body.appleAuthorizationCode);
+    } catch (error) {
+      console.error(`Apple revocation failed: ${(error as Error).message}`);
+      return json({ error: "Apple couldn't confirm this. Nothing was deleted. Try again." }, 502);
+    }
+  }
+
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  // Photos are stored under "<user id>/<visit id>/<file>".
-  const { data: visitFolders, error: listError } = await admin.storage.from(BUCKET).list(user.id, { limit: 1000 });
-  if (listError) {
-    return json({ error: `Could not list photos: ${listError.message}` }, 500);
-  }
-  for (const folder of visitFolders ?? []) {
-    const prefix = `${user.id}/${folder.name}`;
-    const { data: files } = await admin.storage.from(BUCKET).list(prefix, { limit: 1000 });
-    const paths = (files ?? []).map((file) => `${prefix}/${file.name}`);
-    if (paths.length > 0) {
-      const { error: removeError } = await admin.storage.from(BUCKET).remove(paths);
-      if (removeError) {
-        return json({ error: `Could not delete photos: ${removeError.message}` }, 500);
-      }
-    }
+  try {
+    await removeAllPhotos(admin, user.id);
+  } catch (error) {
+    console.error((error as Error).message);
+    return json({ error: "Could not delete your photos. Try again." }, 500);
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
-    return json({ error: `Could not delete account: ${deleteError.message}` }, 500);
+    console.error(`Could not delete account: ${deleteError.message}`);
+    return json({ error: "Could not delete your account. Try again." }, 500);
   }
   return json({ deleted: true }, 200);
 });

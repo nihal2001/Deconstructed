@@ -5,9 +5,14 @@ struct DemoFollow: Codable, Hashable {
     var followeeID: UUID
 }
 
+struct DemoBlock: Codable, Hashable {
+    var blockerID: UUID
+    var blockedID: UUID
+}
+
 struct DemoState: Codable {
     /// Bump when the shape or the seed changes so stale demo files are discarded.
-    static let currentSchema = 3
+    static let currentSchema = 4
 
     var schema = DemoState.currentSchema
     var signedInUserID: UUID?
@@ -18,6 +23,9 @@ struct DemoState: Codable {
     var saved: [UUID: [SavedPlace]] = [:]
     var visits: [Visit] = []
     var follows: [DemoFollow] = []
+    var blocks: [DemoBlock] = []
+    var banned: Set<UUID> = []
+    var reports: [ContentReport] = []
 }
 
 /// Builds the fictional world the demo starts with: one "you", seven invented people, and

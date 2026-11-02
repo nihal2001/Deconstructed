@@ -10,7 +10,10 @@ struct ProfileView: View {
     @State private var distributionSystemID: UUID?
 
     private enum Destination: Hashable {
-        case visited, saved, usage, legal
+        case visited, saved, legal, blocked, moderation
+        #if DEBUG
+        case usage
+        #endif
     }
 
     var body: some View {
@@ -35,8 +38,12 @@ struct ProfileView: View {
                 switch destination {
                 case .visited: VisitedListView()
                 case .saved: SavedListView()
-                case .usage: UsageView()
                 case .legal: LegalView()
+                case .blocked: BlockedPeopleView()
+                case .moderation: ModerationQueueView()
+                #if DEBUG
+                case .usage: UsageView()
+                #endif
                 }
             }
             .sheet(isPresented: $showEdit) { EditProfileSheet() }
@@ -169,8 +176,20 @@ struct ProfileView: View {
                 SettingsRow(symbol: "slider.horizontal.3", title: "Ranking Systems", detail: model.defaultSystem?.name ?? "")
             }
             Divider()
+            #if DEBUG
             NavigationLink(value: Destination.usage) {
                 SettingsRow(symbol: "gauge.with.dots.needle.33percent", title: "Search usage", detail: "\(model.environment.monitor.todayTotal) today")
+            }
+            Divider()
+            #endif
+            NavigationLink(value: Destination.blocked) {
+                SettingsRow(symbol: "hand.raised", title: "Blocked people", detail: "")
+            }
+            if model.isModerator {
+                Divider()
+                NavigationLink(value: Destination.moderation) {
+                    SettingsRow(symbol: "flag", title: "Moderation queue", detail: "")
+                }
             }
             Divider()
             NavigationLink(value: Destination.legal) {
@@ -212,7 +231,7 @@ struct ProfileView: View {
                 try await model.deleteAccount()
             }
         } message: {
-            Text("This permanently removes your profile, visits, ratings, photos, saved places, custom ranking systems and follows. It can't be undone.")
+            Text("This permanently removes your profile, visits, ratings, photos, saved places, custom ranking systems and follows. It can't be undone. You'll be asked to confirm with Apple.")
         }
     }
 }
@@ -391,8 +410,9 @@ struct SavedListView: View {
     }
 }
 
+#if DEBUG
 /// Request monitoring: what this device has asked the places provider for today, and the
-/// local caps that stop a bug or a runaway loop from running up a bill.
+/// local caps that stop a bug or a runaway loop from running up a bill. Developers only.
 struct UsageView: View {
     @Environment(AppModel.self) private var model
 
@@ -441,6 +461,7 @@ struct UsageView: View {
         .navigationTitle("Search usage")
     }
 }
+#endif
 
 struct LegalView: View {
     @Environment(AppModel.self) private var model
@@ -448,6 +469,15 @@ struct LegalView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.spacing) {
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionTitle("Deconstructed")
+                    Link("Privacy Policy", destination: AppLinks.privacy)
+                    Link("Terms of Use", destination: AppLinks.terms)
+                    Link("Help and support", destination: AppLinks.support)
+                }
+                .font(.subheadline)
+                .card()
+
                 VStack(alignment: .leading, spacing: 8) {
                     SectionTitle("Restaurant listings")
                     Text(model.isDemo
@@ -457,6 +487,19 @@ struct LegalView: View {
                     if !model.isDemo {
                         Link("Google Maps/Google Earth Additional Terms of Service", destination: URL(string: "https://maps.google.com/help/terms_maps.html")!)
                         Link("Google Privacy Policy", destination: URL(string: "https://policies.google.com/privacy")!)
+                    }
+                }
+                .card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionTitle("Community rules")
+                    Text(CommunityRules.summary).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    Text(CommunityRules.enforcement).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    if let email = model.environment.config.contactEmail,
+                       let url = URL(string: "mailto:\(email)") {
+                        Link("Contact moderation: \(email)", destination: url)
+                    } else {
+                        Link("Contact moderation", destination: AppLinks.support)
                     }
                 }
                 .card()
