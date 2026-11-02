@@ -45,17 +45,20 @@ A short, plain sentence starting with a verb, in sentence case: "Remove develope
 
 ## Labels
 
-Every issue gets exactly one of the first two. Add `pre-launch` when it applies.
+Every issue gets exactly one of the first two. Add `pre-launch` and `testing-only` when they apply.
 
 | Label | Meaning |
 | --- | --- |
 | `ai-solo` | Simple and low-risk. AI can ship it without human confirmation. |
 | `human-needed` | Needs a person to review, decide or act before shipping. |
 | `pre-launch` | Must be done or decided before the first App Store release. |
+| `testing-only` | Only testing is left before the issue can close. |
 
 Use `human-needed` for anything that changes navigation or the app's overall flow, needs the owner's accounts (Supabase, Resend, App Store Connect, Google Cloud), or makes a product, brand, legal, privacy or App Review commitment. Also use it for anything you can't verify yourself, such as a check on a real device.
 
 `ai-solo` is a permission as much as a description, so when in doubt use `human-needed`.
+
+An issue always gets `testing-only` when testing is all it contains, or all that's left of it. Testing means running checks and confirming results, including on a device or in production, and an issue blocked only on tests in another issue counts too. Check this every time you create or change an issue. Remove the label if other work turns up.
 
 The GitHub default labels (`bug`, `enhancement`, `accessibility` and so on) exist but the backlog doesn't rely on them. Add one only if the user asks. Don't invent new labels without asking.
 
@@ -137,7 +140,7 @@ gh issue view <N> --json number,title,state,labels,body,comments
 
 - **Comments:** `gh issue comment <N> --body-file -`. Prefer a comment for progress updates and findings, and edit the body when the plan itself has changed, so the body always reads as the current state.
 
-- **Progress:** tick boxes only for work you've confirmed is done. Merged code isn't proof that a device test or a production setup step happened.
+- **Progress:** tick boxes only for work you've confirmed is done. Merged code isn't proof that a device test or a production setup step happened. If only testing is left afterwards, add `testing-only`.
 
 ## Closing and reopening
 
