@@ -1,136 +1,55 @@
 import SwiftUI
 
-/// The scoring form, generated entirely from a system version. Any system — standard,
-/// edited or custom, with any number of criteria — renders through this one view.
-///
-/// One criterion per page in a horizontal pager that always snaps to a whole page. Picking a
-/// score moves on to the next criterion; the last page sends the user on to review.
-struct RatingForm: View {
-    var version: SystemVersion
-    @Binding var scores: [UUID: Int]
-    /// Opens the review step. Called from the final page once everything is scored.
-    var onReview: () -> Void
-    /// Called when the form moves to another page by itself or from a button, so the screen
-    /// can bring the card fully into view. Not called for swipes: the card is already in view,
-    /// and scrolling under a moving finger can carry the swipe on to a second page.
-    var onPageChange: () -> Void = {}
+/// One position in the Log a visit progress row.
+struct StepDot: Identifiable {
+    var id: Int
+    /// A criterion's colour. Other steps show `symbol` instead of a dot.
+    var color: Color?
+    var symbol: String = "circle.fill"
+    var isDone: Bool
+}
 
-    @State private var page = 0
-    @State private var advance: Task<Void, Never>?
-
-    private var criteria: [Criterion] { version.criteria }
-    /// One page per criterion, plus the review page at the end.
-    private var pageCount: Int { criteria.count + 1 }
-    private var current: Int { min(max(page, 0), pageCount - 1) }
-    private var isReviewPage: Bool { current == criteria.count }
-    /// Side insets match the screen's, and the bottom leaves room for the card's shadow,
-    /// which the pager would otherwise clip.
-    private let pageInsets = EdgeInsets(top: 0, leading: Theme.spacing, bottom: 18, trailing: Theme.spacing)
+/// Where the user is in Log a visit: a title, a dot per step (tap to jump), back and forward
+/// arrows, and the running total while scoring.
+struct StepProgressHeader: View {
+    var title: String
+    var dots: [StepDot]
+    var current: Int
+    var total: Int?
+    var go: (Int) -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
-            progressHeader
-                .padding(.horizontal, 4)
-
-            // A paged TabView snaps to whole pages and reports which one is showing. It can't
-            // size itself to its content, so a hidden copy of every page sets the height:
-            // that of the tallest, which also keeps the pager from jumping between pages.
-            ZStack {
-                ForEach(0..<pageCount, id: \.self) { index in
-                    pageView(index).padding(pageInsets).hidden()
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .overlay {
-                TabView(selection: $page) {
-                    ForEach(0..<pageCount, id: \.self) { index in
-                        pageView(index)
-                            .padding(pageInsets)
-                            .frame(maxHeight: .infinity, alignment: .top)
-                            .tag(index)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-            }
-            // Run edge to edge so neighbouring cards slide in from the screen's edge.
-            .padding(.horizontal, -Theme.spacing)
-        }
-        .onAppear { page = firstUnscored }
-        .onChange(of: version.id) { page = firstUnscored }
-        .onChange(of: page) { advance?.cancel() }
-    }
-
-    private var firstUnscored: Int {
-        criteria.firstIndex { scores[$0.id] == nil } ?? criteria.count
-    }
-
-    @ViewBuilder
-    private func pageView(_ index: Int) -> some View {
-        if index < criteria.count {
-            let criterion = criteria[index]
-            CriterionScorePicker(
-                criterion: criterion,
-                color: Theme.criterionColor(index),
-                selection: Binding(
-                    get: { scores[criterion.id] },
-                    set: { scores[criterion.id] = $0 }),
-                onPick: { scheduleAdvance(from: index) })
-        } else {
-            reviewPage
-        }
-    }
-
-    /// Moves on after a short beat, so the selection registers before the card slides away.
-    private func scheduleAdvance(from index: Int) {
-        advance?.cancel()
-        advance = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(280))
-            guard !Task.isCancelled, current == index else { return }
-            go(to: index + 1)
-        }
-    }
-
-    private func go(to index: Int) {
-        withAnimation(.smooth(duration: 0.35)) { page = min(max(index, 0), pageCount - 1) }
-        onPageChange()
-    }
-
-    // MARK: Progress
-
-    private var progressHeader: some View {
         HStack(spacing: 6) {
-            Button { go(to: current - 1) } label: {
+            Button { go(current - 1) } label: {
                 Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
                     .frame(width: 30, height: 30)
             }
             .disabled(current == 0)
-            .accessibilityLabel("Previous criterion")
+            .accessibilityLabel("Previous step")
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(isReviewPage ? "Review" : "\(current + 1) of \(criteria.count) · \(criteria[current].name)")
+                Text(title)
                     .font(.footnote.weight(.semibold).monospacedDigit())
                     .foregroundStyle(Theme.ink)
                     .lineLimit(1)
-                dots
+                dotRow
             }
+            .layoutPriority(1)
             Spacer(minLength: 8)
-            runningTotal
+            if let total { runningTotal(total) }
 
-            Button { go(to: current + 1) } label: {
+            Button { go(current + 1) } label: {
                 Image(systemName: "chevron.right").font(.subheadline.weight(.semibold))
                     .frame(width: 30, height: 30)
             }
-            .disabled(isReviewPage)
-            .accessibilityLabel("Next criterion")
+            .disabled(current >= dots.count - 1)
+            .accessibilityLabel("Next step")
         }
         .foregroundStyle(Theme.ink)
     }
 
-    /// The total so far. It lives here rather than in a bar under the form so a whole
-    /// criterion fits on screen above the save buttons.
-    private var runningTotal: some View {
-        let total = RatingEngine.runningTotal(scores: scores, version: version)
-        return HStack(alignment: .firstTextBaseline, spacing: 0) {
+    private func runningTotal(_ total: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
             Text("\(total)")
                 .font(.display(.title3, weight: .bold).monospacedDigit())
                 .foregroundStyle(Theme.ink)
@@ -144,76 +63,30 @@ struct RatingForm: View {
         .accessibilityLabel("Running total \(total) out of \(RankingRules.totalPoints)")
     }
 
-    private var dots: some View {
+    private var dotRow: some View {
         HStack(spacing: 6) {
-            ForEach(0..<pageCount, id: \.self) { index in
-                let isCurrent = index == current
+            ForEach(dots) { dot in
+                let isCurrent = dot.id == current
                 Group {
-                    if index < criteria.count {
-                        let color = Theme.criterionColor(index)
+                    if let color = dot.color {
                         Capsule()
-                            .fill(scores[criteria[index].id] != nil ? AnyShapeStyle(color) : AnyShapeStyle(Theme.fill))
+                            .fill(dot.isDone ? AnyShapeStyle(color) : AnyShapeStyle(Theme.fill))
                             .overlay { Capsule().strokeBorder(color.opacity(isCurrent ? 1 : 0.5), lineWidth: 1) }
                             .frame(width: isCurrent ? 20 : 8, height: 8)
                     } else {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 8, weight: .heavy))
+                        Image(systemName: dot.symbol)
+                            .font(.system(size: 9, weight: .bold))
                             .foregroundStyle(isCurrent ? Theme.ink : Theme.inkSoft)
-                            .frame(width: 10, height: 8)
+                            .frame(width: isCurrent ? 16 : 10, height: 8)
                     }
                 }
                 .contentShape(Rectangle().inset(by: -6))
-                .onTapGesture { go(to: index) }
+                .onTapGesture { go(dot.id) }
             }
         }
         .animation(.snappy(duration: 0.25), value: current)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(isReviewPage ? "Review page" : "Criterion \(current + 1) of \(criteria.count)")
-        .accessibilityValue("\(RatingEngine.answeredCount(scores: scores, version: version)) scored")
-    }
-
-    // MARK: Review page
-
-    private var missing: [(index: Int, criterion: Criterion)] {
-        criteria.enumerated().filter { scores[$0.element.id] == nil }.map { ($0.offset, $0.element) }
-    }
-
-    private var reviewPage: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            if missing.isEmpty {
-                Label("Everything's scored", systemImage: "checkmark.seal.fill")
-                    .font(.display(.title3)).foregroundStyle(Theme.ink)
-                    .symbolRenderingMode(.hierarchical)
-                Text("Check the breakdown, then submit. You can swipe back to change any score first.")
-                    .font(.footnote).foregroundStyle(Theme.inkSoft)
-                ScoreBar(version: version, scores: scores, height: 12)
-                Button("Review and submit", action: onReview)
-                    .buttonStyle(.primary)
-                    .accessibilityHint("Review the breakdown before submitting")
-            } else {
-                Text("Almost there").font(.display(.title3)).foregroundStyle(Theme.ink)
-                Text("Score \(missing.count == 1 ? "this criterion" : "these criteria") before you can review.")
-                    .font(.footnote).foregroundStyle(Theme.inkSoft)
-                VStack(spacing: 8) {
-                    ForEach(missing, id: \.criterion.id) { item in
-                        Button { go(to: item.index) } label: {
-                            HStack {
-                                Circle().fill(Theme.criterionColor(item.index)).frame(width: 10, height: 10)
-                                Text(item.criterion.name).font(.subheadline.weight(.semibold))
-                                Spacer()
-                                Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
-                            }
-                            .foregroundStyle(Theme.ink)
-                            .padding(12)
-                            .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Score \(item.criterion.name)")
-                    }
-                }
-            }
-        }
-        .card()
+        .accessibilityLabel("Step \(current + 1) of \(dots.count)")
     }
 }
 

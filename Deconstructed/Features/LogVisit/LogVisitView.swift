@@ -3,6 +3,11 @@ import SwiftUI
 
 /// Log a new visit, finish a draft, or edit an existing visit.
 ///
+/// One question per slide, swiped or advanced through, with nothing that scrolls vertically:
+/// the visit (date and system), one slide per criterion, notes and photos, then a summary to
+/// submit from. Picking a score moves straight on, so a visit takes one tap per criterion
+/// plus three more: start, skip or continue past details, submit.
+///
 /// Scores can only be entered through the criteria of the chosen system. There is no field
 /// for an overall number anywhere in this flow.
 struct LogVisitView: View {
@@ -18,7 +23,25 @@ struct LogVisitView: View {
         case keeping(RatingRevision)
     }
 
+    /// One slide of the flow.
+    private enum Step: Hashable {
+        case visit
+        case criterion(Int)
+        case details
+        case summary
+    }
+
+    private enum Field: Hashable {
+        case notes, dish, spend
+    }
+
     @State private var mode: Mode
+    @State private var step: Step = .visit
+    @State private var advance: Task<Void, Never>?
+    /// True while the pager animates to a slide it was sent to. A touch in that moment stops
+    /// the paged TabView where it is while its selection has already moved on, so slides
+    /// ignore touches until the move finishes.
+    @State private var isMoving = false
     @State private var details: VisitDetails
     @State private var versionID: UUID?
     @State private var scores: [UUID: Int]
@@ -28,11 +51,11 @@ struct LogVisitView: View {
     @State private var removedPhotoIDs: Set<UUID> = []
     @State private var showSystemPicker = false
     @State private var pendingSystem: RankingSystem?
-    @State private var showPreview = false
     @State private var confirmDelete = false
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var didSetDefaults = false
+    @FocusState private var focus: Field?
 
     init(place: Place, existing: Visit?) {
         self.place = place
@@ -53,58 +76,78 @@ struct LogVisitView: View {
         }
     }
 
-    private static let ratingAnchor = "rating-form"
-
     private var version: SystemVersion? { model.version(versionID) }
     private var system: RankingSystem? { version.flatMap { model.systems[$0.systemID] } }
     private var isComplete: Bool { version.map { RatingEngine.isComplete(scores: scores, version: $0) } ?? false }
+    private var criteria: [Criterion] { mode == .scoring ? version?.criteria ?? [] : [] }
+
+    private var steps: [Step] {
+        [.visit] + criteria.indices.map(Step.criterion) + [.details, .summary]
+    }
+    private var stepIndex: Int { steps.firstIndex(of: step) ?? 0 }
+
+    /// The first criterion still to score, or details once everything is scored.
+    private var firstUnscoredStep: Step {
+        criteria.firstIndex { scores[$0.id] == nil }.map(Step.criterion) ?? .details
+    }
+
+    private var missing: [(index: Int, criterion: Criterion)] {
+        criteria.enumerated().filter { scores[$0.element.id] == nil }.map { ($0.offset, $0.element) }
+    }
+
+    private var keptPhotos: [VisitPhoto] {
+        (existing?.photos ?? []).filter { !removedPhotoIDs.contains($0.id) }
+    }
+
+    private var hasDetails: Bool {
+        !details.notes.isBlank || !details.dishes.isEmpty || details.spendPerPerson != nil
+            || !newPhotos.isEmpty || !keptPhotos.isEmpty
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        visitHeader
-                        if let errorMessage { ErrorBanner(message: errorMessage) }
-
-                        switch mode {
-                        case .keeping(let revision):
-                            currentRating(revision)
-                        case .scoring:
-                            systemCard
-                            if let version {
-                                RatingForm(version: version, scores: $scores,
-                                           onReview: { showPreview = true },
-                                           onPageChange: {
-                                               // Keep the whole card on screen while moving through it.
-                                               withAnimation(.smooth) { proxy.scrollTo(Self.ratingAnchor, anchor: .top) }
-                                           })
-                                    .id(Self.ratingAnchor)
-                            }
-                        }
-
-                        detailsSection
-                        photosSection
-                        visibilitySection
-                    }
-                    .padding(Theme.spacing)
+            VStack(spacing: 10) {
+                if let errorMessage {
+                    ErrorBanner(message: errorMessage).padding(.horizontal, Theme.spacing)
                 }
+                StepProgressHeader(title: title(for: step), dots: dots, current: stepIndex,
+                                   total: mode == .scoring ? version.map { RatingEngine.runningTotal(scores: scores, version: $0) } : nil,
+                                   go: { go(toIndex: $0) })
+                    .padding(.horizontal, Theme.spacing + 4)
+
+                // A paged TabView snaps to whole slides. Each slide is laid out to fit the
+                // screen, so nothing scrolls vertically.
+                TabView(selection: $step) {
+                    ForEach(steps, id: \.self) { step in
+                        slide(step)
+                            .padding(.horizontal, Theme.spacing)
+                            .padding(.bottom, 18)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .tag(step)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .allowsHitTesting(!isMoving)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .padding(.top, 8)
+            // The keyboard covers the lower part of a slide rather than squashing it.
+            .ignoresSafeArea(.keyboard)
             .screenBackground()
             .navigationTitle(existing == nil ? "Log a visit" : "Edit visit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
-            .floatingFooter { footer }
             .interactiveDismissDisabled(isSaving)
             .onAppear(perform: setDefaults)
+            .onChange(of: step) {
+                advance?.cancel()
+                focus = nil
+            }
             .onChange(of: pickerItems) { loadPickedPhotos() }
             .sheet(isPresented: $showSystemPicker) {
                 SystemPickerSheet(selectedSystemID: system?.id) { chosen in
                     choose(chosen)
                 }
             }
-            .sheet(isPresented: $showPreview) { previewSheet }
             .confirmationDialog(
                 "Switch to \(pendingSystem?.name ?? "this system")?",
                 isPresented: Binding(get: { pendingSystem != nil }, set: { if !$0 { pendingSystem = nil } }),
@@ -129,12 +172,94 @@ struct LogVisitView: View {
         }
     }
 
-    // MARK: Sections
+    // MARK: Navigation
+
+    private func title(for step: Step) -> String {
+        switch step {
+        case .visit: "The visit"
+        case .criterion(let index): "\(index + 1) of \(criteria.count) · \(criteria[index].name)"
+        case .details: "Notes and photos"
+        case .summary: "Summary"
+        }
+    }
+
+    private var dots: [StepDot] {
+        steps.enumerated().map { index, step in
+            switch step {
+            case .visit:
+                StepDot(id: index, symbol: "calendar", isDone: version != nil)
+            case .criterion(let c):
+                StepDot(id: index, color: Theme.criterionColor(c), isDone: scores[criteria[c].id] != nil)
+            case .details:
+                StepDot(id: index, symbol: "square.and.pencil", isDone: hasDetails)
+            case .summary:
+                StepDot(id: index, symbol: "checkmark", isDone: false)
+            }
+        }
+    }
+
+    private func go(to target: Step) {
+        guard target != step else { return }
+        focus = nil
+        isMoving = true
+        withAnimation(.smooth(duration: 0.35)) { step = target }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(450))
+            isMoving = false
+        }
+    }
+
+    private func go(toIndex index: Int) {
+        guard steps.indices.contains(index) else { return }
+        go(to: steps[index])
+    }
+
+    /// Moves on after a short beat, so the selection registers before the slide moves away.
+    private func scheduleAdvance(from current: Step) {
+        advance?.cancel()
+        advance = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(280))
+            guard !Task.isCancelled, step == current else { return }
+            go(toIndex: stepIndex + 1)
+        }
+    }
+
+    @ViewBuilder
+    private func slide(_ step: Step) -> some View {
+        switch step {
+        case .visit: visitSlide
+        case .criterion(let index): criterionSlide(index)
+        case .details: detailsSlide
+        case .summary: summarySlide
+        }
+    }
+
+    // MARK: Visit
+
+    private var visitSlide: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            visitHeader
+            switch mode {
+            case .keeping(let revision):
+                currentRating(revision)
+                Spacer(minLength: 0)
+                Button("Continue") { go(to: .details) }
+                    .buttonStyle(.primary)
+            case .scoring:
+                systemCard
+                Spacer(minLength: 0)
+                Button(scores.isEmpty ? "Start scoring" : "Continue scoring") { go(to: firstUnscoredStep) }
+                    .buttonStyle(.primary)
+                    .disabled(version == nil)
+            }
+        }
+    }
 
     private var visitHeader: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(place.name ?? "Restaurant").font(.display(.title2, weight: .bold)).foregroundStyle(Theme.ink)
+                    .lineLimit(2)
                 if place.isDemo { DemoBadge() }
             }
             DatePicker("Date of visit", selection: $details.visitedOn, in: ...Date.now, displayedComponents: .date)
@@ -159,7 +284,7 @@ struct LogVisitView: View {
                     if system.currentVersionID != version.id { Tag(text: "v\(version.number) · older version", tone: .warning) }
                 }
                 if !system.summary.isBlank {
-                    Text(system.summary).font(.footnote).foregroundStyle(Theme.inkSoft)
+                    Text(system.summary).font(.footnote).foregroundStyle(Theme.inkSoft).lineLimit(4)
                 }
                 AllocationStrip(criteria: version.criteria)
             } else {
@@ -175,14 +300,15 @@ struct LogVisitView: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Current rating").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
             RatingSummary(revision: revision, showsDescriptions: false)
-            Divider()
-            Text("Changing the scores saves a new rating and keeps this one in the visit's history. Nothing is recalculated automatically.")
+            Text("Changing the scores saves a new rating and keeps this one in the visit's history.")
                 .font(.footnote).foregroundStyle(Theme.inkSoft)
             HStack(spacing: 10) {
                 Button("Edit scores") {
                     scores = revision.scores
                     versionID = revision.versionID
-                    withAnimation(.snappy) { mode = .scoring }
+                    mode = .scoring
+                    // Let the criterion slides appear before moving onto the first.
+                    Task { @MainActor in go(to: .criterion(0)) }
                 }
                 .buttonStyle(.secondary)
                 Button("Re-rate…") { showSystemPicker = true }
@@ -193,102 +319,141 @@ struct LogVisitView: View {
         .card()
     }
 
-    private var detailsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionTitle("Details", detail: "All optional")
-            TextField("Notes: what stood out?", text: $details.notes, axis: .vertical)
-                .lineLimit(3...8)
-                .inputField()
-                .accessibilityLabel("Notes")
+    // MARK: Criteria
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Dishes ordered").font(.subheadline.weight(.medium)).foregroundStyle(Theme.ink)
-                if !details.dishes.isEmpty {
-                    FlowLayout(spacing: 6) {
-                        ForEach(details.dishes, id: \.self) { dish in
-                            Button {
-                                details.dishes.removeAll { $0 == dish }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Text(dish)
-                                    Image(systemName: "xmark").imageScale(.small)
-                                }
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Theme.ink)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Theme.fill, in: Capsule())
-                            }
-                            .accessibilityLabel("Remove \(dish)")
-                        }
-                    }
+    private func criterionSlide(_ index: Int) -> some View {
+        let criterion = criteria[index]
+        return CriterionScorePicker(
+            criterion: criterion,
+            color: Theme.criterionColor(index),
+            selection: Binding(
+                get: { scores[criterion.id] },
+                set: { scores[criterion.id] = $0 }),
+            onPick: { scheduleAdvance(from: .criterion(index)) })
+    }
+
+    // MARK: Notes and photos
+
+    private var detailsSlide: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Notes and photos").font(.display(.title3)).foregroundStyle(Theme.ink)
+                    Spacer()
+                    Text("All optional").font(.caption).foregroundStyle(Theme.inkSoft)
                 }
+                TextField("Notes: what stood out?", text: $details.notes, axis: .vertical)
+                    .lineLimit(2...4)
+                    .focused($focus, equals: .notes)
+                    .inputField()
+                    .accessibilityLabel("Notes")
+
                 HStack {
                     TextField("Add a dish", text: $dishDraft)
+                        .focused($focus, equals: .dish)
                         .inputField()
                         .submitLabel(.done)
                         .onSubmit(addDish)
                     Button("Add", action: addDish).disabled(dishDraft.isBlank)
                 }
-            }
+                if !details.dishes.isEmpty { dishChips }
 
-            HStack {
-                Text("Spent per person").font(.subheadline.weight(.medium)).foregroundStyle(Theme.ink)
-                Spacer()
-                TextField("0", value: $details.spendPerPerson, format: .number.precision(.fractionLength(0...2)))
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .inputField()
-                    .frame(maxWidth: 110)
-                    .accessibilityLabel("Amount spent per person in \(details.currencyCode)")
-                Text(details.currencyCode).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                HStack {
+                    Text("Spent per person").font(.subheadline.weight(.medium)).foregroundStyle(Theme.ink)
+                    Spacer()
+                    TextField("0", value: $details.spendPerPerson, format: .number.precision(.fractionLength(0...2)))
+                        .keyboardType(.decimalPad)
+                        .focused($focus, equals: .spend)
+                        .multilineTextAlignment(.trailing)
+                        .inputField()
+                        .frame(maxWidth: 100)
+                        .accessibilityLabel("Amount spent per person in \(details.currencyCode)")
+                    Text(details.currencyCode).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                }
+
+                photosRow
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("Who can see this review", selection: $details.visibility) {
+                        ForEach(Visibility.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    Label(details.visibility.detail, systemImage: details.visibility.symbol)
+                        .font(.caption)
+                        .foregroundStyle(Theme.inkSoft)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .card()
+
+            Spacer(minLength: 0)
+            Button(hasDetails ? "Continue" : "Skip") { go(to: .summary) }
+                .buttonStyle(.primary)
         }
-        .card()
     }
 
-    private var photosSection: some View {
-        let kept = (existing?.photos ?? []).filter { !removedPhotoIDs.contains($0.id) }
-        return VStack(alignment: .leading, spacing: 12) {
-            SectionTitle("Your photos", detail: "Only photos you add are shown in the app")
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    PhotosPicker(selection: $pickerItems, maxSelectionCount: max(1, 6 - kept.count - newPhotos.count), matching: .images) {
-                        VStack(spacing: 6) {
-                            Image(systemName: "plus").font(.title3)
-                            Text("Add").font(.caption.weight(.semibold))
-                        }
-                        .foregroundStyle(Theme.rose)
-                        .frame(width: 84, height: 84)
-                        .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    private var dishChips: some View {
+        FlowLayout(spacing: 6) {
+            ForEach(details.dishes, id: \.self) { dish in
+                Button {
+                    details.dishes.removeAll { $0 == dish }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(dish)
+                        Image(systemName: "xmark").imageScale(.small)
                     }
-                    .disabled(kept.count + newPhotos.count >= 6)
-                    .accessibilityLabel("Add photos")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Theme.fill, in: Capsule())
+                }
+                .accessibilityLabel("Remove \(dish)")
+            }
+        }
+    }
 
-                    ForEach(kept) { photo in
-                        removable { PhotoThumbnail(photo: photo) } remove: { removedPhotoIDs.insert(photo.id) }
+    private var photosRow: some View {
+        let kept = keptPhotos
+        let size: CGFloat = 60
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                PhotosPicker(selection: $pickerItems, maxSelectionCount: max(1, 6 - kept.count - newPhotos.count), matching: .images) {
+                    VStack(spacing: 4) {
+                        Image(systemName: "camera").font(.headline)
+                        Text("Photos").font(.caption2.weight(.semibold))
                     }
-                    ForEach(Array(newPhotos.enumerated()), id: \.offset) { index, data in
-                        removable {
-                            if let image = UIImage(data: data) {
-                                Image(uiImage: image).resizable().scaledToFill()
-                                    .frame(width: 84, height: 84)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                    .accessibilityLabel("New photo \(index + 1)")
-                            }
-                        } remove: { newPhotos.remove(at: index) }
-                    }
+                    .foregroundStyle(Theme.rose)
+                    .frame(width: size, height: size)
+                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .disabled(kept.count + newPhotos.count >= 6)
+                .accessibilityLabel("Add photos")
+
+                ForEach(kept) { photo in
+                    removable { PhotoThumbnail(photo: photo, size: size) } remove: { removedPhotoIDs.insert(photo.id) }
+                }
+                ForEach(Array(newPhotos.enumerated()), id: \.offset) { index, data in
+                    removable {
+                        if let image = UIImage(data: data) {
+                            Image(uiImage: image).resizable().scaledToFill()
+                                .frame(width: size, height: size)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .accessibilityLabel("New photo \(index + 1)")
+                        }
+                    } remove: { newPhotos.remove(at: index) }
                 }
             }
         }
-        .card()
+        .accessibilityLabel("Your photos")
     }
 
     private func removable(@ViewBuilder _ content: () -> some View, remove: @escaping () -> Void) -> some View {
         content().overlay(alignment: .topTrailing) {
             Button(action: remove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
+                    .font(.body)
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.white, .black.opacity(0.6))
             }
@@ -297,53 +462,116 @@ struct LogVisitView: View {
         }
     }
 
-    private var visibilitySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionTitle("Who can see this review")
-            Picker("Visibility", selection: $details.visibility) {
-                ForEach(Visibility.allCases) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            Label(details.visibility.detail, systemImage: details.visibility.symbol)
-                .font(.footnote)
-                .foregroundStyle(Theme.inkSoft)
-        }
-        .card()
-    }
-
-    // MARK: Footer and toolbar
+    // MARK: Summary
 
     @ViewBuilder
-    private var footer: some View {
-        VStack(spacing: 8) {
+    private var summarySlide: some View {
+        VStack(alignment: .leading, spacing: 14) {
             switch mode {
-            case .keeping:
+            case .keeping(let revision):
+                VStack(alignment: .leading, spacing: 14) {
+                    summaryHeading
+                    RatingSummary(revision: revision, showsDescriptions: false)
+                    detailsLine
+                }
+                .card()
+                Spacer(minLength: 0)
                 Button(isSaving ? "Saving…" : "Save changes") { save(rating: nil) }
                     .buttonStyle(.primary)
                     .disabled(isSaving)
             case .scoring:
-                // What's still unscored is shown by the pager's dots and its last page,
-                // which keeps this bar short enough for a full criterion to fit above it.
-                HStack(spacing: 10) {
-                    Button("Save draft") { save(rating: ratingInput(complete: false)) }
-                        .buttonStyle(.secondary)
-                        .disabled(isSaving || version == nil)
-                        .accessibilityHint("Saves this visit without ranking it")
-                    Button("Preview") { showPreview = true }
+                if let version {
+                    VStack(alignment: .leading, spacing: 14) {
+                        summaryHeading
+                        HStack(spacing: 14) {
+                            ScoreRing(version: version, scores: scores,
+                                      total: RatingEngine.completedTotal(scores: scores, version: version), diameter: 80)
+                            ScoreBadge(total: RatingEngine.completedTotal(scores: scores, version: version),
+                                       systemName: system?.name ?? "", size: .large,
+                                       isCustom: !(system?.isStandard ?? true))
+                        }
+                        ScoreBar(version: version, scores: scores, height: 12)
+                        BreakdownList(version: version, scores: scores, showsDescriptions: false)
+                        detailsLine
+                    }
+                    .card()
+                }
+                if !missing.isEmpty { missingList }
+                Spacer(minLength: 0)
+                if isComplete {
+                    Button(isSaving ? "Submitting…" : "Submit rating") { save(rating: ratingInput(complete: true)) }
                         .buttonStyle(.primary)
-                        .disabled(isSaving || !isComplete)
-                        .accessibilityHint(isComplete ? "Review the breakdown before submitting" : "Score every criterion first")
+                        .disabled(isSaving)
+                } else if version == nil {
+                    Button("Choose a system") { go(to: .visit) }
+                        .buttonStyle(.primary)
                 }
             }
         }
-        .padding(.horizontal, Theme.spacing)
-        .padding(.vertical, 10)
     }
+
+    private var summaryHeading: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(place.name ?? "Restaurant").font(.display(.title3, weight: .bold)).foregroundStyle(Theme.ink)
+                .lineLimit(1)
+            Text("Visited \(details.visitedOn.visitFormatted) · \(details.visibility.title)")
+                .font(.footnote).foregroundStyle(Theme.inkSoft)
+        }
+    }
+
+    /// One line on what else is attached, so the summary covers the whole visit.
+    @ViewBuilder
+    private var detailsLine: some View {
+        let photoCount = keptPhotos.count + newPhotos.count
+        let parts = [
+            details.notes.isBlank ? nil : "Notes",
+            details.dishes.isEmpty ? nil : "\(details.dishes.count) dish\(details.dishes.count == 1 ? "" : "es")",
+            details.spendPerPerson.map { "\($0.formatted()) \(details.currencyCode) pp" },
+            photoCount == 0 ? nil : "\(photoCount) photo\(photoCount == 1 ? "" : "s")",
+        ].compactMap { $0 }
+        if !parts.isEmpty {
+            Label(parts.joined(separator: " · "), systemImage: "square.and.pencil")
+                .font(.caption).foregroundStyle(Theme.inkSoft).lineLimit(1)
+        }
+    }
+
+    private var missingList: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Score \(missing.count == 1 ? "this" : "these") to submit")
+                .font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
+            ForEach(missing, id: \.criterion.id) { item in
+                Button { go(to: .criterion(item.index)) } label: {
+                    HStack {
+                        Circle().fill(Theme.criterionColor(item.index)).frame(width: 10, height: 10)
+                        Text(item.criterion.name).font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                    }
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Score \(item.criterion.name)")
+            }
+        }
+    }
+
+    // MARK: Toolbar
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button("Cancel") { dismiss() }.disabled(isSaving)
+        }
+        if mode == .scoring, version != nil, !scores.isEmpty || hasDetails {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save draft") { save(rating: ratingInput(complete: false)) }
+                    .fontWeight(.regular)
+                    .disabled(isSaving)
+                    .accessibilityHint("Saves this visit without ranking it")
+            }
         }
         if let existing {
             ToolbarItem(placement: .primaryAction) {
@@ -360,51 +588,10 @@ struct LogVisitView: View {
                 }
             }
         }
-    }
-
-    private var previewSheet: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(place.name ?? "Restaurant").font(.display(.title2, weight: .bold)).foregroundStyle(Theme.ink)
-                        Text("Visited \(details.visitedOn.visitFormatted) · \(details.visibility.title)")
-                            .font(.subheadline).foregroundStyle(Theme.inkSoft)
-                    }
-                    if let version {
-                        VStack(alignment: .leading, spacing: 14) {
-                            HStack(spacing: 14) {
-                                ScoreRing(version: version, scores: scores,
-                                          total: RatingEngine.completedTotal(scores: scores, version: version), diameter: 96)
-                                ScoreBadge(total: RatingEngine.completedTotal(scores: scores, version: version),
-                                           systemName: system?.name ?? "", size: .large,
-                                           isCustom: !(system?.isStandard ?? true))
-                            }
-                            ScoreBar(version: version, scores: scores, height: 16)
-                            BreakdownList(version: version, scores: scores)
-                        }
-                        .card()
-                        Text("The total is the sum of your criterion scores. It can't be set directly.")
-                            .font(.footnote).foregroundStyle(Theme.inkSoft)
-                    }
-                    if let errorMessage { ErrorBanner(message: errorMessage) }
-                }
-                .padding(Theme.spacing)
-            }
-            .screenBackground()
-            .navigationTitle("Check your rating")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Keep editing") { showPreview = false } }
-            }
-            .floatingFooter {
-                Button(isSaving ? "Submitting…" : "Submit rating") { save(rating: ratingInput(complete: true)) }
-                    .buttonStyle(.primary)
-                    .disabled(isSaving || !isComplete)
-                    .padding(Theme.spacing)
-            }
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button("Done") { focus = nil }
         }
-        .presentationDetents([.large])
     }
 
     // MARK: Actions
@@ -419,6 +606,8 @@ struct LogVisitView: View {
             // Start from the user's default system. Scores are never pre-selected.
             versionID = model.defaultSystem?.currentVersionID
         }
+        // A draft picks up where it was left.
+        if existing?.draftRevision != nil, !scores.isEmpty { step = firstUnscoredStep }
     }
 
     /// Called with the user's pick. If scores exist for a different rubric, ask before clearing.
@@ -435,7 +624,9 @@ struct LogVisitView: View {
         let changed = chosen.currentVersionID != versionID
         versionID = chosen.currentVersionID
         if changed || mode != .scoring { scores = [:] }
-        withAnimation(.snappy) { mode = .scoring }
+        mode = .scoring
+        // Choosing a system is the last thing the visit slide asks, so go straight to scoring.
+        Task { @MainActor in go(to: firstUnscoredStep) }
     }
 
     private func ratingInput(complete: Bool) -> RatingInput? {
@@ -477,7 +668,6 @@ struct LogVisitView: View {
                 } else if rating != nil {
                     model.toast = "Draft saved. It won't affect your rankings until you submit."
                 }
-                showPreview = false
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription
