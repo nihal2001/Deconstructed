@@ -103,27 +103,31 @@ enum MapStyle {
 
     // MARK: Pins
 
-    /// A round badge in the pin's colour, ringed in alabaster, with the pin's symbol.
+    /// A round badge with the pin's symbol. Normally the pin's colour ringed in alabaster; when
+    /// selected it is larger and inverted (alabaster, ringed and marked in the pin's colour), so the
+    /// tapped pin stands out among pins of the same kind.
     static func badge(for pin: MapPin, selected: Bool) -> UIImage {
         let diameter: CGFloat = selected ? 44 : 32
+        let ring: CGFloat = selected ? 3 : 2
         let margin: CGFloat = 4 // room for the shadow
         let size = CGSize(width: diameter + margin * 2, height: diameter + margin * 2)
         return UIGraphicsImageRenderer(size: size).image { context in
             let circle = CGRect(x: margin, y: margin, width: diameter, height: diameter)
             let alabaster = UIColor(hex: Theme.alabasterHex)
+            let (ringColor, fill, glyph) = selected ? (pin.color, alabaster, pin.color) : (alabaster, pin.color, alabaster)
 
-            context.cgContext.setShadow(offset: CGSize(width: 0, height: 1), blur: 3,
+            context.cgContext.setShadow(offset: CGSize(width: 0, height: 1), blur: selected ? 5 : 3,
                                         color: UIColor.black.withAlphaComponent(0.4).cgColor)
-            alabaster.setFill()
+            ringColor.setFill()
             UIBezierPath(ovalIn: circle).fill()
             context.cgContext.setShadow(offset: .zero, blur: 0, color: nil)
 
-            pin.color.setFill()
-            UIBezierPath(ovalIn: circle.insetBy(dx: 2, dy: 2)).fill()
+            fill.setFill()
+            UIBezierPath(ovalIn: circle.insetBy(dx: ring, dy: ring)).fill()
 
             let weight = UIImage.SymbolConfiguration(pointSize: diameter * 0.38, weight: .bold)
             if let symbol = UIImage(systemName: pin.symbol, withConfiguration: weight)?
-                .withTintColor(alabaster, renderingMode: .alwaysOriginal) {
+                .withTintColor(glyph, renderingMode: .alwaysOriginal) {
                 symbol.draw(at: CGPoint(x: circle.midX - symbol.size.width / 2, y: circle.midY - symbol.size.height / 2))
             }
         }

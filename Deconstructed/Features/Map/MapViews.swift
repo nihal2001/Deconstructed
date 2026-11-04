@@ -112,6 +112,27 @@ struct AppleMapView: UIViewRepresentable {
             context.coordinator.hasSetCamera = true
         }
 
+        // Restyle the pins whose selected state changed. A tapped pin is restyled in place. A pin
+        // chosen another way (from a group's cards) may be hidden inside a cluster, so it is re-added,
+        // which draws it on its own in the selected style.
+        let coordinator = context.coordinator
+        if coordinator.styledSelection != selection {
+            let changed = Set([coordinator.styledSelection, selection].compactMap { $0 })
+            coordinator.styledSelection = selection
+            var readd: [PinAnnotation] = []
+            for annotation in map.annotations.compactMap({ $0 as? PinAnnotation }) where changed.contains(annotation.pin.id) {
+                let isSelected = annotation.pin.id == selection
+                let tapped = map.selectedAnnotations.contains { $0 === annotation }
+                if let view = map.view(for: annotation) as? MKMarkerAnnotationView, !isSelected || tapped {
+                    Coordinator.style(view, for: annotation.pin, selected: isSelected)
+                } else {
+                    readd.append(annotation)
+                }
+            }
+            map.removeAnnotations(readd)
+            map.addAnnotations(readd.map { PinAnnotation(pin: $0.pin) })
+        }
+
         let selected = map.selectedAnnotations.compactMap { ($0 as? PinAnnotation)?.pin.id }.first
         if selection != selected {
             map.selectedAnnotations.forEach { map.deselectAnnotation($0, animated: true) }
@@ -125,6 +146,8 @@ struct AppleMapView: UIViewRepresentable {
         var parent: AppleMapView
         var lastCameraID: UUID?
         var hasSetCamera = false
+        /// The selection the pin views were last styled for.
+        var styledSelection: String?
 
         init(_ parent: AppleMapView) { self.parent = parent }
 
@@ -140,17 +163,24 @@ struct AppleMapView: UIViewRepresentable {
             }
             guard let annotation = annotation as? PinAnnotation else { return nil }
             let view = mapView.dequeueReusableAnnotationView(withIdentifier: "pin", for: annotation) as? MKMarkerAnnotationView
-            view?.clusteringIdentifier = "restaurant"
-            view?.markerTintColor = annotation.pin.color
-            view?.glyphTintColor = UIColor(hex: Theme.alabasterHex)
             view?.glyphImage = UIImage(systemName: annotation.pin.symbol)
-            view?.displayPriority = annotation.pin.kind == .result ? .defaultHigh : .required
             view?.accessibilityLabel = switch annotation.pin.kind {
             case .wantToTry: "Want to try"
             case .visited: "Visited"
             case .result: "Search result"
             }
+            if let view { Self.style(view, for: annotation.pin, selected: annotation.pin.id == parent.selection) }
             return view
+        }
+
+        /// The selected pin is inverted (alabaster with the symbol in the pin's colour), always shown,
+        /// and kept out of clusters so it can't be hidden inside a count marker.
+        static func style(_ view: MKMarkerAnnotationView, for pin: MapPin, selected: Bool) {
+            let alabaster = UIColor(hex: Theme.alabasterHex)
+            view.markerTintColor = selected ? alabaster : pin.color
+            view.glyphTintColor = selected ? pin.color : alabaster
+            view.clusteringIdentifier = selected ? nil : "restaurant"
+            view.displayPriority = selected || pin.kind != .result ? .required : .defaultHigh
         }
 
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -351,11 +381,12 @@ struct GoogleMapView: UIViewRepresentable {
             marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
             marker.userData = [pin.id]
             marker.zIndex = isSelected ? 10 : 1
-            marker.accessibilityLabel = switch pin.kind {
+            let label = switch pin.kind {
             case .wantToTry: "Want to try"
             case .visited: "Visited"
             case .result: "Search result"
             }
+            marker.accessibilityLabel = isSelected ? "\(label), selected" : label
             return marker
         }
 
