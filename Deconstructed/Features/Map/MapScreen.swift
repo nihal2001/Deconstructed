@@ -349,8 +349,12 @@ struct MapPreviewCard: View {
                             .foregroundStyle(Theme.ink)
                         if place?.isDemo == true { DemoBadge() }
                     }
-                    if let subtitle = place?.subtitle, !subtitle.isEmpty {
-                        Text(subtitle).font(.subheadline).foregroundStyle(Theme.inkSoft)
+                    if let details = place.map(Self.details), !details.isEmpty {
+                        Text(details)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.inkSoft)
+                            .accessibilityLabel([place?.subtitle, place?.priceAccessibilityLabel]
+                                .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
                     }
                     PlaceStatusTags(placeID: placeID)
                 }
@@ -374,7 +378,16 @@ struct MapPreviewCard: View {
         .padding(14)
         .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .task(id: "\(placeID)-\(model.placeReloadToken)") {
-            await model.ensurePlace(placeID, level: .core)
+            // Extended so the tile can show the price level. One Place Details Enterprise request per
+            // place per launch; the restaurant page then opens with hours and contact already loaded.
+            // When the name is already here (a search result), a failure only leaves the price out.
+            let hasName = model.places[placeID]?.name != nil
+            await model.ensurePlace(placeID, level: .extended, reportsErrors: !hasName)
         }
+    }
+
+    /// Cuisine, area and price on one line, such as "Izakaya · Japantown · $$".
+    private static func details(_ place: Place) -> String {
+        [place.subtitle, place.priceSymbols].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 }

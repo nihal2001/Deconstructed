@@ -166,9 +166,9 @@ struct RestaurantProfileView: View {
             SectionTitle("About this place")
             VStack(alignment: .leading, spacing: 10) {
                 if let address = place.address { LabeledRow(symbol: "mappin", text: address) }
-                if let price = place.priceLevel {
-                    LabeledRow(symbol: "banknote", text: String(repeating: "$", count: price))
-                        .accessibilityLabel("Price level \(price) of 4")
+                if let price = place.priceSymbols {
+                    LabeledRow(symbol: "banknote", text: price)
+                        .accessibilityLabel(place.priceAccessibilityLabel ?? price)
                 }
                 if let phone = place.phone { LabeledRow(symbol: "phone", text: phone) }
                 if let website = place.website {

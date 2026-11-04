@@ -313,8 +313,11 @@ final class AppModel {
 
     /// Loads provider content for a place if it isn't already in memory at this level.
     /// Concurrent callers share one request, and a quota error pauses automatic retries.
+    /// Pass `reportsErrors: false` for an upgrade the screen can do without, so its failure
+    /// doesn't pause loading elsewhere.
     @discardableResult
-    func ensurePlace(_ placeID: String, level: PlaceDetailLevel = .core, session: PlacesSession? = nil) async -> Place? {
+    func ensurePlace(_ placeID: String, level: PlaceDetailLevel = .core, session: PlacesSession? = nil,
+                     reportsErrors: Bool = true) async -> Place? {
         if let cached = places[placeID], cached.level >= level, level != .location || cached.coordinate != nil {
             return cached
         }
@@ -332,7 +335,7 @@ final class AppModel {
                     // Rows keep showing "Loading…" and fill in when the minute resets.
                     await self.waitForPlaceLimit(retryAfter)
                 } catch {
-                    self.placeLoadError = (error as? PlacesError) ?? .other(error.localizedDescription)
+                    if reportsErrors { self.placeLoadError = (error as? PlacesError) ?? .other(error.localizedDescription) }
                     return self.places[placeID]
                 }
             }

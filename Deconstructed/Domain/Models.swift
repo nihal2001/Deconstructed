@@ -131,6 +131,16 @@ struct Place: Identifiable, Hashable {
         [cuisine, area].compactMap { $0 }.joined(separator: " · ")
     }
 
+    /// The price level as `$` to `$$$$`, or nil when the provider doesn't know it.
+    var priceSymbols: String? {
+        priceLevel.map { String(repeating: "$", count: $0) }
+    }
+
+    /// What VoiceOver reads for the price level.
+    var priceAccessibilityLabel: String? {
+        priceLevel.map { "Price level \($0) of 4" }
+    }
+
     /// Keeps the richer of two copies so a cheap refresh never throws away loaded fields.
     func merged(with newer: Place) -> Place {
         var result = newer.level >= level ? newer : self

@@ -13,9 +13,10 @@ Prices and policies were checked on **7 October 2026** against the pages linked 
 | Pressing Search on the keyboard | Text Search (New) | Text Search Pro | same six fields |
 | Tapping **Search this area** on the map | Text Search (New), the screen split into a 3 × 3 grid, up to 20 results per tile | Text Search Pro, **nine per tap** | same six fields |
 | Opening a result from a search | none: the search already returned what the profile header needs | – | – |
-| Tapping **Show hours and contact details** | Place Details | Place Details Enterprise | adds price level, website, phone, current opening hours |
+| Opening a map tile: tapping a pin, or swiping to a card in a group | Place Details, once per place per launch | Place Details Enterprise | the six core fields plus price level, website, phone, current opening hours. The tile shows the price level, and the restaurant page then needs no further request |
+| Tapping **Show hours and contact details** on a restaurant page not opened from the map | Place Details | Place Details Enterprise | adds price level, website, phone, current opening hours |
 | Map tab drawing a saved or visited pin with no fresh coordinate | Place Details | Place Details Essentials | ID, coordinate |
-| Tapping a saved pin, or a row in Rankings, Saved or the feed whose name isn't in memory | Place Details | Place Details Pro | the six core fields |
+| A row in Rankings, Saved or the feed whose name isn't in memory | Place Details | Place Details Pro | the six core fields |
 | Panning or zooming the map | **nothing** | – | – |
 
 Never requested: photos, ratings, review text, editorial summaries. Photos in the app are the user's own.
@@ -61,7 +62,7 @@ Consequences worth knowing:
 
 ## Rough monthly estimate
 
-For one fairly active user: 20 search sessions, 8 "Search this area", 30 app launches, 25 saved or rated places, 5 "show hours".
+For one fairly active user: 20 search sessions, 8 "Search this area", 30 app launches, 25 saved or rated places, 20 map tiles opened, 5 "show hours".
 
 | Flow | Requests | SKU |
 |---|---|---|
@@ -71,9 +72,10 @@ For one fairly active user: 20 search sessions, 8 "Search this area", 30 app lau
 | Search this area (9 tiles each) | 72 | Text Search Pro |
 | Names for lists (25 places, on perhaps 10 of 30 launches) | 250 | Details Pro |
 | Pin coordinates past 30 days | up to 25 | Details Essentials |
+| Map tiles opened | 20 | Details Enterprise |
 | Hours and contact | 5 | Details Enterprise |
 
-Roughly 264 Details Pro, 78 Text Search Pro, 24 Autocomplete, 25 Essentials and 5 Enterprise requests. About 19 such users fit inside the monthly free allowance for Details Pro; past that, each costs about $4.50 a month in Details Pro and about $2.50 in Text Search Pro (about 64 users fit inside its free allowance), plus well under $0.50 for everything else. **Name lookups and map searches dominate.**
+Roughly 264 Details Pro, 78 Text Search Pro, 24 Autocomplete, 25 Essentials and 25 Enterprise requests. About 19 such users fit inside the monthly free allowance for Details Pro; past that, each costs about $4.50 a month in Details Pro and about $2.50 in Text Search Pro (about 64 users fit inside its free allowance), plus about $0.50 in Details Enterprise (about 40 users fit inside its free allowance of 1,000) and well under $0.50 for everything else. **Name lookups and map searches dominate.**
 
 ## If name lookups get expensive
 
