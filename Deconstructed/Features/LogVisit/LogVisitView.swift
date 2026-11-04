@@ -53,36 +53,42 @@ struct LogVisitView: View {
         }
     }
 
+    private static let ratingAnchor = "rating-form"
+
     private var version: SystemVersion? { model.version(versionID) }
     private var system: RankingSystem? { version.flatMap { model.systems[$0.systemID] } }
     private var isComplete: Bool { version.map { RatingEngine.isComplete(scores: scores, version: $0) } ?? false }
-    private var missingNames: [String] {
-        guard let version else { return [] }
-        return version.criteria.filter { scores[$0.id] == nil }.map(\.name)
-    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    visitHeader
-                    if let errorMessage { ErrorBanner(message: errorMessage) }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        visitHeader
+                        if let errorMessage { ErrorBanner(message: errorMessage) }
 
-                    switch mode {
-                    case .keeping(let revision):
-                        currentRating(revision)
-                    case .scoring:
-                        systemCard
-                        if let version {
-                            RatingForm(version: version, scores: $scores)
+                        switch mode {
+                        case .keeping(let revision):
+                            currentRating(revision)
+                        case .scoring:
+                            systemCard
+                            if let version {
+                                RatingForm(version: version, scores: $scores,
+                                           onReview: { showPreview = true },
+                                           onPageChange: {
+                                               // Keep the whole card on screen while moving through it.
+                                               withAnimation(.smooth) { proxy.scrollTo(Self.ratingAnchor, anchor: .top) }
+                                           })
+                                    .id(Self.ratingAnchor)
+                            }
                         }
-                    }
 
-                    detailsSection
-                    photosSection
-                    visibilitySection
+                        detailsSection
+                        photosSection
+                        visibilitySection
+                    }
+                    .padding(Theme.spacing)
                 }
-                .padding(Theme.spacing)
             }
             .scrollDismissesKeyboard(.interactively)
             .screenBackground()
@@ -309,38 +315,29 @@ struct LogVisitView: View {
 
     @ViewBuilder
     private var footer: some View {
-        VStack(spacing: 0) {
-            if mode == .scoring, let version {
-                LiveTotalBar(version: version, scores: scores, systemName: system?.name ?? "")
-            }
-            VStack(spacing: 8) {
-                switch mode {
-                case .keeping:
-                    Button(isSaving ? "Saving…" : "Save changes") { save(rating: nil) }
+        VStack(spacing: 8) {
+            switch mode {
+            case .keeping:
+                Button(isSaving ? "Saving…" : "Save changes") { save(rating: nil) }
+                    .buttonStyle(.primary)
+                    .disabled(isSaving)
+            case .scoring:
+                // What's still unscored is shown by the pager's dots and its last page,
+                // which keeps this bar short enough for a full criterion to fit above it.
+                HStack(spacing: 10) {
+                    Button("Save draft") { save(rating: ratingInput(complete: false)) }
+                        .buttonStyle(.secondary)
+                        .disabled(isSaving || version == nil)
+                        .accessibilityHint("Saves this visit without ranking it")
+                    Button("Preview") { showPreview = true }
                         .buttonStyle(.primary)
-                        .disabled(isSaving)
-                case .scoring:
-                    if !isComplete, version != nil {
-                        Text(missingNames.isEmpty ? "" : "Still to score: " + missingNames.joined(separator: ", "))
-                            .font(.caption)
-                            .foregroundStyle(Theme.inkSoft)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 10) {
-                        Button("Save draft") { save(rating: ratingInput(complete: false)) }
-                            .buttonStyle(.secondary)
-                            .disabled(isSaving || version == nil)
-                            .accessibilityHint("Saves this visit without ranking it")
-                        Button("Preview") { showPreview = true }
-                            .buttonStyle(.primary)
-                            .disabled(isSaving || !isComplete)
-                            .accessibilityHint(isComplete ? "Review the breakdown before submitting" : "Score every criterion first")
-                    }
+                        .disabled(isSaving || !isComplete)
+                        .accessibilityHint(isComplete ? "Review the breakdown before submitting" : "Score every criterion first")
                 }
             }
-            .padding(.horizontal, Theme.spacing)
-            .padding(.vertical, 10)
         }
+        .padding(.horizontal, Theme.spacing)
+        .padding(.vertical, 10)
     }
 
     @ToolbarContentBuilder
