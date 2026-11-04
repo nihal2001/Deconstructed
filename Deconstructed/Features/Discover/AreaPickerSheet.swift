@@ -44,7 +44,7 @@ struct AreaPickerSheet: View {
                 } label: {
                     Label(location.manualArea == nil ? "Using current location" : "Use current location", systemImage: "location.fill")
                 }
-                .buttonStyle(.secondary(tint: Theme.seagrass))
+                .buttonStyle(.secondary(tint: Theme.positive))
             case .notDetermined:
                 Text("Allow location to centre the map and searches on where you are.")
                     .font(.subheadline).foregroundStyle(Theme.inkSoft)

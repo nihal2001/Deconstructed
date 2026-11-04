@@ -22,10 +22,7 @@ struct FriendsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.spacing) {
-                    Picker("Section", selection: $pane) {
-                        ForEach(Pane.allCases) { Text($0.rawValue).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
+                    SegmentedChips(title: "Section", options: Array(Pane.allCases), selection: $pane) { $0.rawValue }
 
                     switch pane {
                     case .feed: feedPane
@@ -189,11 +186,13 @@ struct FollowButton: View {
         } label: {
             Text(isFollowing ? "Following" : "Follow")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(isFollowing ? Theme.ink : Theme.onTint)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
+                .frame(minHeight: 36)
                 .contentShape(Capsule())
-                .liquidGlass(Capsule(), tint: isFollowing ? nil : Theme.rose, interactive: true)
+                .background(isFollowing ? Theme.plate : Theme.tint, in: Capsule())
+                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isFollowing ? "Following \(user.displayName). Tap to unfollow." : "Follow \(user.displayName)")
@@ -235,9 +234,6 @@ struct FeedCard: View {
             }
         }
         .card()
-        .overlay(alignment: .top) {
-            Capsule().fill(Theme.spectrum).frame(height: 4).padding(.horizontal, 28)
-        }
         .task(id: model.placeReloadToken) { await model.ensurePlace(for: item.visit.restaurantID) }
     }
 }

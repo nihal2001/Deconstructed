@@ -15,9 +15,9 @@ struct MapPin: Identifiable, Hashable {
 
     var color: UIColor {
         switch kind {
-        case .wantToTry: UIColor(hex: 0x91972A)
-        case .visited: UIColor(hex: 0x519E8A)
-        case .result: UIColor(hex: 0xD65780)
+        case .wantToTry: UIColor(hex: Theme.ultramarineHex)
+        case .visited: UIColor(hex: Theme.tealHex)
+        case .result: UIColor(hex: Theme.tomatoHex)
         }
     }
 
@@ -155,8 +155,8 @@ struct AppleMapView: UIViewRepresentable {
             if let cluster = annotation as? MKClusterAnnotation {
                 let view = mapView.dequeueReusableAnnotationView(
                     withIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier, for: annotation) as? MKMarkerAnnotationView
-                view?.markerTintColor = UIColor(hex: Theme.jetHex)
-                view?.glyphTintColor = UIColor(hex: Theme.alabasterHex)
+                view?.markerTintColor = UIColor(hex: Theme.inkHex)
+                view?.glyphTintColor = .white
                 view?.glyphText = "\(cluster.memberAnnotations.count)"
                 view?.accessibilityLabel = "\(cluster.memberAnnotations.count) restaurants. Double tap to see them."
                 return view
@@ -173,12 +173,11 @@ struct AppleMapView: UIViewRepresentable {
             return view
         }
 
-        /// The selected pin is inverted (alabaster with the symbol in the pin's colour), always shown,
+        /// The selected pin is inverted (white with the symbol in the pin's colour), always shown,
         /// and kept out of clusters so it can't be hidden inside a count marker.
         static func style(_ view: MKMarkerAnnotationView, for pin: MapPin, selected: Bool) {
-            let alabaster = UIColor(hex: Theme.alabasterHex)
-            view.markerTintColor = selected ? alabaster : pin.color
-            view.glyphTintColor = selected ? pin.color : alabaster
+            view.markerTintColor = selected ? .white : pin.color
+            view.glyphTintColor = selected ? pin.color : .white
             view.clusteringIdentifier = selected ? nil : "restaurant"
             view.displayPriority = selected || pin.kind != .result ? .required : .defaultHigh
         }
@@ -403,11 +402,11 @@ struct GoogleMapView: UIViewRepresentable {
             label.text = "\(count)"
             label.textAlignment = .center
             label.font = .systemFont(ofSize: 15, weight: .bold)
-            label.textColor = UIColor(hex: Theme.alabasterHex)
-            label.backgroundColor = UIColor(hex: Theme.jetHex)
+            label.textColor = .white
+            label.backgroundColor = UIColor(hex: Theme.inkHex)
             label.layer.cornerRadius = 20
             label.layer.borderWidth = 2
-            label.layer.borderColor = UIColor(hex: Theme.alabasterHex).cgColor
+            label.layer.borderColor = UIColor.white.cgColor
             label.clipsToBounds = true
             return label
         }

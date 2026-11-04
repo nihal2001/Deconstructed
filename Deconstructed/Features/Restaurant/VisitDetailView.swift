@@ -200,7 +200,7 @@ struct PhotoThumbnail: View {
             }
         }
         .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .task(id: photo.id) {
             if let data = await model.photoData(photo) { image = UIImage(data: data) }
         }

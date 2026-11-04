@@ -96,7 +96,7 @@ struct RankingsView: View {
                             ForEach(ranked) { entry in
                                 if let ref = model.restaurants[entry.restaurantID] {
                                     NavigationLink(value: Route.restaurant(placeID: ref.providerPlaceID)) {
-                                        RankedRow(entry: entry)
+                                        RankedRow(entry: entry, showsSystem: scope == .allSystems)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -139,7 +139,7 @@ struct RankingsView: View {
     private var scopeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Ranked with").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
+                Text("RANKED WITH").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
                 Spacer()
                 Menu {
                     Picker("System", selection: Binding(get: { resolvedChoice }, set: { newValue in
@@ -163,12 +163,11 @@ struct RankingsView: View {
 
             if let version = selectedVersion {
                 if versionOptions.count > 1 {
-                    Picker("Version", selection: Binding(get: { version.id }, set: { versionOverride = $0 })) {
-                        ForEach(versionOptions) { option in
-                            Text("Version \(option.number)\(option.id == selectedSystem?.currentVersionID ? " · current" : "")").tag(option.id)
-                        }
+                    SegmentedChips(title: "Version", options: versionOptions.map(\.id),
+                                   selection: Binding(get: { version.id }, set: { versionOverride = $0 })) { id in
+                        let option = versionOptions.first { $0.id == id }
+                        return "Version \(option?.number ?? 0)\(id == selectedSystem?.currentVersionID ? " · current" : "")"
                     }
-                    .pickerStyle(.segmented)
                     Text("Versions are ranked separately because their criteria differ. Re-rate a visit to move it to another version.")
                         .font(.caption).foregroundStyle(Theme.inkSoft)
                 }
@@ -210,35 +209,37 @@ struct RankingsView: View {
 struct RankedRow: View {
     @Environment(AppModel.self) private var model
     var entry: RankedRestaurant
+    /// Under "All systems" each score carries the name of the system that produced it.
+    var showsSystem = false
 
-    /// The podium places get a palette colour each. Tied ranks share one, like the rank itself.
-    private var medal: AnyShapeStyle {
+    /// The podium places get an ink each. Tied ranks share one, like the rank itself.
+    private var medal: Color {
         switch entry.rank {
-        case 1: AnyShapeStyle(Theme.roseGradient)
-        case 2: AnyShapeStyle(Theme.seagrassGradient)
-        case 3: AnyShapeStyle(Theme.oliveGradient)
-        default: AnyShapeStyle(Theme.mutedGradient)
+        case 1: Theme.tomato
+        case 2: Theme.teal
+        case 3: Theme.ultramarine
+        default: Theme.plate
         }
     }
 
     var body: some View {
         let place = model.place(for: entry.restaurantID)
+        let systemName = model.systemName(entry.revision.systemID)
         HStack(alignment: .top, spacing: 12) {
             VStack(spacing: 4) {
                 Text("\(entry.rank)")
-                    .font(.display(.title3, weight: .bold).monospacedDigit())
-                    .foregroundStyle(Theme.alabaster)
-                    .frame(minWidth: 40, minHeight: 40)
-                    .background(medal, in: Circle())
-                    .shadow(color: .black.opacity(0.2), radius: 5, y: 3)
+                    .font(.display(.title3, weight: .heavy).monospacedDigit())
+                    .foregroundStyle(Theme.text(on: medal))
+                    .frame(width: 40, height: 40)
+                    .background(medal, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+                    .overlay { RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(Theme.rule, lineWidth: Theme.ruleWidth) }
                 if entry.isTied {
                     Text("tied").font(.caption2.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                 }
             }
-            .frame(minWidth: 44)
 
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(model.displayName(for: entry.restaurantID))
                         .font(.display(.headline))
                         .foregroundStyle(Theme.ink)
@@ -248,20 +249,37 @@ struct RankedRow: View {
                 if let subtitle = place?.subtitle, !subtitle.isEmpty {
                     Text(subtitle).font(.footnote).foregroundStyle(Theme.inkSoft)
                 }
-                ScoreBadge(total: entry.total, systemName: model.systemName(entry.revision.systemID), size: .compact,
-                           isCustom: model.systems[entry.revision.systemID].map { !$0.isStandard } ?? false)
                 if let version = model.versions[entry.revision.versionID] {
                     ScoreBar(version: version, scores: entry.revision.scores, height: 8)
+                        .padding(.top, 2)
                 }
                 if entry.completedVisitCount > 1 {
                     Text("\(entry.completedVisitCount) visits · latest \(entry.visit.visitedOn.visitFormatted)")
                         .font(.caption).foregroundStyle(Theme.inkSoft)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(alignment: .trailing, spacing: 0) {
+                HStack(alignment: .firstTextBaseline, spacing: 1) {
+                    Text("\(entry.total)")
+                        .font(.display(.title, weight: .heavy).monospacedDigit())
+                        .tracking(-1)
+                        .foregroundStyle(Theme.ink)
+                    Text("/\(RankingRules.totalPoints)")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                if showsSystem {
+                    Text(systemName).font(.caption2.weight(.semibold)).foregroundStyle(Theme.inkSoft).lineLimit(1)
+                }
+            }
+            .fixedSize()
         }
-        .card(padding: 14)
+        // Only the podium casts a shadow, in its own ink, so the top three lift off the list.
+        .card(padding: 14, shadow: entry.rank <= 3 ? medal : nil)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank)\(entry.isTied ? ", tied" : ""). \(model.displayName(for: entry.restaurantID)). \(entry.total) out of 10, \(model.systemName(entry.revision.systemID)) system.")
+        .accessibilityLabel("Rank \(entry.rank)\(entry.isTied ? ", tied" : ""). \(model.displayName(for: entry.restaurantID)). \(entry.total) out of 10, \(systemName) system.")
         .accessibilityHint("Opens the restaurant")
     }
 }
@@ -284,10 +302,11 @@ struct FilterMenu: View {
                     Image(systemName: "chevron.down").imageScale(.small)
                 }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .liquidGlass(Capsule(), tint: selection == nil ? nil : Theme.seagrass, interactive: true)
+                .foregroundStyle(selection == nil ? Theme.ink : Theme.onTint)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 36)
+                .background(selection == nil ? Theme.plate : Theme.tint, in: Capsule())
+                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
             }
             .accessibilityLabel("\(title) filter: \(selection ?? "any")")
         }

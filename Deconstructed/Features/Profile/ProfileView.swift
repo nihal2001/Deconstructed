@@ -65,11 +65,11 @@ struct ProfileView: View {
             } label: {
                 Text("Edit")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Theme.tint)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
+                    .frame(minHeight: 44)
                     .contentShape(Capsule())
-                    .liquidGlass(Capsule(), interactive: true)
             }
             .buttonStyle(.plain)
         }
@@ -78,9 +78,9 @@ struct ProfileView: View {
 
     private var stats: some View {
         HStack(spacing: 10) {
-            StatTile(value: model.visitedRestaurantIDs.count, label: "Visited", symbol: "checkmark.circle.fill", tint: Theme.seagrass)
-            StatTile(value: model.saved.count, label: "Want to try", symbol: "bookmark.fill", tint: Theme.olive)
-            StatTile(value: model.visits.filter(\.isCompleted).count, label: "Ratings", symbol: "star.fill", tint: Theme.rose)
+            StatTile(value: model.visitedRestaurantIDs.count, label: "Visited", symbol: "checkmark.circle.fill", tint: Theme.positive)
+            StatTile(value: model.saved.count, label: "Want to try", symbol: "bookmark.fill", tint: Theme.saved)
+            StatTile(value: model.visits.filter(\.isCompleted).count, label: "Ratings", symbol: "star.fill", tint: Theme.tint)
         }
     }
 
@@ -107,9 +107,9 @@ struct ProfileView: View {
                 let buckets = RankingEngine.distribution(of: model.ranked(scope: scope))
                 Chart(Array(buckets.enumerated()), id: \.offset) { total, count in
                     BarMark(x: .value("Total", "\(total)"), y: .value("Restaurants", count))
-                        .foregroundStyle(total >= 9 ? Theme.roseGradient : total >= 7 ? Theme.seagrassGradient
-                                         : total >= 4 ? Theme.oliveGradient : Theme.mutedGradient)
-                        .cornerRadius(5)
+                        .foregroundStyle(total >= 9 ? Theme.tomato : total >= 7 ? Theme.teal
+                                         : total >= 4 ? Theme.ultramarine : Theme.hairline)
+                        .cornerRadius(1)
                         .accessibilityLabel("\(total) out of 10")
                         .accessibilityValue("\(count) restaurant\(count == 1 ? "" : "s")")
                 }
@@ -144,17 +144,14 @@ struct ProfileView: View {
     private var privacy: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionTitle("Privacy", detail: "The starting visibility for new reviews. You can change it on each visit.")
-            Picker("Default review visibility", selection: Binding(
+            SegmentedChips(title: "Default review visibility", options: Array(Visibility.allCases), selection: Binding(
                 get: { model.profile?.defaultVisibility ?? .followers },
                 set: { newValue in
                     Task {
                         do { try await model.updateProfile { $0.defaultVisibility = newValue } }
                         catch { model.toast = error.localizedDescription }
                     }
-                })) {
-                ForEach(Visibility.allCases) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
+                })) { $0.title }
             ForEach(Visibility.allCases) { option in
                 Label {
                     Text("\(Text(option.title).fontWeight(.semibold)): \(option.detail)")
@@ -212,7 +209,7 @@ struct ProfileView: View {
                 .buttonStyle(.secondary)
         }
         .font(.subheadline)
-        .tint(Theme.rose)
+        .tint(Theme.tint)
         .card()
     }
 
@@ -221,7 +218,7 @@ struct ProfileView: View {
             Button("Sign out") { confirmSignOut = true }
                 .buttonStyle(.secondary)
             Button("Delete account", role: .destructive) { confirmDelete = true }
-                .buttonStyle(.secondary(tint: Theme.rose))
+                .buttonStyle(.secondary(tint: Theme.tint))
         }
         .confirmationDialog("Sign out?", isPresented: $confirmSignOut, titleVisibility: .visible) {
             Button("Sign out") { Task { await model.signOut() } }
@@ -244,13 +241,13 @@ struct StatTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: symbol).font(.subheadline).foregroundStyle(Theme.inkSoft).accessibilityHidden(true)
-            Text("\(value)").font(.display(.title, weight: .bold)).foregroundStyle(Theme.alabaster).contentTransition(.numericText())
-            Text(label).font(.caption.weight(.semibold)).foregroundStyle(Theme.ink)
+            Image(systemName: symbol).font(.subheadline).foregroundStyle(tint).accessibilityHidden(true)
+            Text("\(value)").font(.display(.title, weight: .heavy).monospacedDigit()).foregroundStyle(Theme.ink).contentTransition(.numericText())
+            Text(label).font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .frosted(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous), tint: tint.opacity(0.5))
+        .plate(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
@@ -264,9 +261,9 @@ struct SettingsRow: View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.alabaster)
+                .foregroundStyle(Theme.tint)
                 .frame(width: 30, height: 30)
-                .background(Theme.roseGradient, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Theme.tint.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 .accessibilityHidden(true)
             Text(title).font(.subheadline.weight(.medium)).foregroundStyle(Theme.ink)
             Spacer()
@@ -427,7 +424,7 @@ struct UsageView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     SectionTitle("Today", detail: "\(monitor.todayTotal) of \(monitor.limits.perDay) allowed on this device")
                     ProgressView(value: Double(min(monitor.todayTotal, monitor.limits.perDay)), total: Double(monitor.limits.perDay))
-                        .tint(monitor.todayTotal >= monitor.limits.perDay ? Theme.warning : Theme.seagrass)
+                        .tint(monitor.todayTotal >= monitor.limits.perDay ? Theme.warning : Theme.positive)
                     ForEach(PlacesRequestKind.allCases) { kind in
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 1) {

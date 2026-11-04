@@ -270,19 +270,19 @@ struct LogVisitView: View {
 
     private var systemCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Ranking system").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkSoft)
-                Spacer()
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("SYSTEM").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
+                if let system {
+                    Text(system.name).font(.display(.title3)).foregroundStyle(Theme.ink)
+                    SystemKindTag(system: system)
+                }
+                Spacer(minLength: 4)
                 Button("Change") { showSystemPicker = true }
                     .font(.subheadline.weight(.semibold))
                     .accessibilityHint("Choose a different ranking system or create a new one")
             }
             if let system, let version {
-                HStack(spacing: 8) {
-                    Text(system.name).font(.display(.title3)).foregroundStyle(Theme.ink)
-                    SystemKindTag(system: system)
-                    if system.currentVersionID != version.id { Tag(text: "v\(version.number) · older version", tone: .warning) }
-                }
+                if system.currentVersionID != version.id { Tag(text: "v\(version.number) · older version", tone: .warning) }
                 if !system.summary.isBlank {
                     Text(system.summary).font(.footnote).foregroundStyle(Theme.inkSoft).lineLimit(4)
                 }
@@ -374,10 +374,8 @@ struct LogVisitView: View {
                 photosRow
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Picker("Who can see this review", selection: $details.visibility) {
-                        ForEach(Visibility.allCases) { Text($0.title).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
+                    SegmentedChips(title: "Who can see this review", options: Array(Visibility.allCases),
+                                   selection: $details.visibility) { $0.title }
                     Label(details.visibility.detail, systemImage: details.visibility.symbol)
                         .font(.caption)
                         .foregroundStyle(Theme.inkSoft)
@@ -424,9 +422,9 @@ struct LogVisitView: View {
                         Image(systemName: "camera").font(.headline)
                         Text("Photos").font(.caption2.weight(.semibold))
                     }
-                    .foregroundStyle(Theme.rose)
+                    .foregroundStyle(Theme.tint)
                     .frame(width: size, height: size)
-                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 }
                 .disabled(kept.count + newPhotos.count >= 6)
                 .accessibilityLabel("Add photos")
@@ -439,7 +437,7 @@ struct LogVisitView: View {
                         if let image = UIImage(data: data) {
                             Image(uiImage: image).resizable().scaledToFill()
                                 .frame(width: size, height: size)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                                 .accessibilityLabel("New photo \(index + 1)")
                         }
                     } remove: { newPhotos.remove(at: index) }
@@ -550,7 +548,7 @@ struct LogVisitView: View {
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
-                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.fill, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Score \(item.criterion.name)")

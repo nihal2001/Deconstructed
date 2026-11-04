@@ -105,7 +105,7 @@ struct CriterionScorePicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Circle().fill(color).frame(width: 10, height: 10).accessibilityHidden(true)
+                Rectangle().fill(color).frame(width: 10, height: 10).accessibilityHidden(true)
                 Text(criterion.name).font(.display(.title3)).foregroundStyle(Theme.ink)
                 Spacer()
                 Text(selection.map { "\($0)/\(criterion.maxPoints)" } ?? "up to \(criterion.maxPoints)")
@@ -157,12 +157,12 @@ struct CriterionScorePicker: View {
                     Button { pick(level) } label: {
                         Text("\(level.points)")
                             .font(.display(.title3, weight: .bold).monospacedDigit())
-                            .foregroundStyle(isSelected ? Theme.alabaster : Theme.ink)
+                            .foregroundStyle(isSelected ? Theme.text(on: color) : Theme.ink)
                             .frame(maxWidth: .infinity, minHeight: 48)
-                            .background(isSelected ? AnyShapeStyle(color.gradient) : AnyShapeStyle(Theme.fill),
-                                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .background(isSelected ? AnyShapeStyle(color) : AnyShapeStyle(Theme.plate),
+                                        in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                             .overlay {
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                                     .strokeBorder(isSelected ? color : Theme.hairline, lineWidth: isSelected ? 2 : 1)
                             }
                     }
@@ -202,12 +202,11 @@ struct ScoreChoiceTile: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text("\(level.points)")
-                        .font(.display(.headline, weight: .bold).monospacedDigit())
-                        .foregroundStyle(isSelected ? Theme.alabaster : Theme.ink)
+                        .font(.display(.headline, weight: .heavy).monospacedDigit())
+                        .foregroundStyle(isSelected ? Theme.text(on: color) : Theme.ink)
                         .frame(minWidth: 28, minHeight: 28)
-                        .background(isSelected ? AnyShapeStyle(color.gradient) : AnyShapeStyle(Theme.fill),
-                                    in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .shadow(color: color.opacity(isSelected ? 0.45 : 0), radius: 5, y: 2)
+                        .background(isSelected ? color : Theme.plate, in: Rectangle())
+                        .overlay { Rectangle().strokeBorder(color, lineWidth: 2) }
                     Text(level.displayLabel)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.ink)
@@ -224,14 +223,9 @@ struct ScoreChoiceTile: View {
             }
             .padding(9)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(isSelected ? color.opacity(0.16) : Color.clear,
-                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(isSelected ? color : Theme.hairline, lineWidth: isSelected ? 2 : 1)
-            }
-            .scaleEffect(isSelected ? 1.02 : 1)
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(isSelected ? color.opacity(0.12) : Theme.plate, in: Rectangle())
+            .overlay { Rectangle().strokeBorder(isSelected ? color : Theme.rule, lineWidth: isSelected ? 2.5 : 1.5) }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)

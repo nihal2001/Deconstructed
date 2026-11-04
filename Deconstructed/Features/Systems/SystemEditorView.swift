@@ -95,7 +95,7 @@ struct SystemEditorView: View {
                 .foregroundStyle(Theme.inkSoft)
         }
         .padding(14)
-        .background(Theme.olive.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Theme.fill, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
     }
 
     private var basics: some View {
@@ -128,7 +128,7 @@ struct SystemEditorView: View {
                     .contentTransition(.numericText())
                 Spacer()
                 Image(systemName: balanced ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                    .foregroundStyle(balanced ? Theme.seagrass : Theme.warning)
+                    .foregroundStyle(balanced ? Theme.positive : Theme.warning)
                     .accessibilityHidden(true)
             }
             if !draft.criteria.isEmpty {
@@ -161,7 +161,7 @@ struct SystemEditorView: View {
             } label: {
                 Label("Add criterion", systemImage: "plus")
             }
-            .buttonStyle(.secondary(tint: Theme.rose))
+            .buttonStyle(.secondary(tint: Theme.tint))
         }
     }
 
@@ -374,7 +374,7 @@ struct CriterionEditorView: View {
                         }
                     }
                     .padding(14)
-                    .background(Theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .background(Theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 }
 
                 SectionTitle("What each score means", detail: "People choose one of these when rating, so be specific.")
@@ -383,9 +383,9 @@ struct CriterionEditorView: View {
                         HStack(spacing: 10) {
                             Text("\(level.points)")
                                 .font(.display(.title3, weight: .bold).monospacedDigit())
-                                .foregroundStyle(Theme.alabaster)
+                                .foregroundStyle(Theme.text(on: color))
                                 .frame(minWidth: 36, minHeight: 36)
-                                .background(color, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .background(color, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                                 .accessibilityLabel("\(level.points) point\(level.points == 1 ? "" : "s")")
                             TextField("Short label (optional)", text: $level.label)
                                 .inputField()

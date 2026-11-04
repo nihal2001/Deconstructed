@@ -34,7 +34,7 @@ struct SystemPickerSheet: View {
                     } label: {
                         Label("Add new ranking system", systemImage: "plus")
                     }
-                    .buttonStyle(.secondary(tint: Theme.rose))
+                    .buttonStyle(.secondary(tint: Theme.tint))
                     .padding(.top, 4)
                 }
                 .padding(Theme.spacing)
@@ -68,10 +68,10 @@ struct SystemOptionCard: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(system.name).font(.display(.title3)).foregroundStyle(Theme.ink)
                 SystemKindTag(system: system)
-                if model.defaultSystem?.id == system.id { Tag(text: "Default", symbol: "star.fill", tone: .rose) }
+                if model.defaultSystem?.id == system.id { Tag(text: "Default", symbol: "star.fill", tone: .accent) }
                 Spacer(minLength: 0)
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.rose).font(.title3)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.tint).font(.title3)
                         .accessibilityHidden(true)
                 }
             }
@@ -89,7 +89,7 @@ struct SystemOptionCard: View {
         .overlay {
             if isSelected {
                 RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .strokeBorder(Theme.rose, lineWidth: 2)
+                    .strokeBorder(Theme.tint, lineWidth: 2)
             }
         }
     }
@@ -101,10 +101,10 @@ struct SystemKindTag: View {
 
     var body: some View {
         if system.isStandard {
-            Tag(text: "Standard", tone: .seagrass)
+            Tag(text: "Standard", tone: .positive)
                 .accessibilityLabel("Standard system. Public ratings count toward community scores.")
         } else {
-            Tag(text: "Custom", tone: .olive)
+            Tag(text: "Custom", tone: .saved)
                 .accessibilityLabel("Custom system. Ratings are yours alone and don't join community scores.")
         }
     }

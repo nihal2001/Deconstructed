@@ -19,14 +19,13 @@ struct ScoreBar: View {
                     Color.clear.frame(width: 3, height: height)
                 }
                 ForEach(0..<max(criterion.maxPoints, 0), id: \.self) { point in
-                    RoundedRectangle(cornerRadius: height / 3.5, style: .continuous)
-                        .fill(Theme.criterionColor(index).opacity(point < (score ?? 0) ? 1 : 0.16))
+                    // Earned points are solid; the rest are outlined in the criterion's ink, and
+                    // dashed when the criterion hasn't been scored at all.
+                    Rectangle()
+                        .fill(point < (score ?? 0) ? Theme.criterionColor(index) : .clear)
                         .overlay {
-                            if score == nil {
-                                RoundedRectangle(cornerRadius: height / 3.5, style: .continuous)
-                                    .strokeBorder(Theme.criterionColor(index).opacity(0.55),
-                                                  style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
-                            }
+                            Rectangle().strokeBorder(Theme.criterionColor(index),
+                                                     style: StrokeStyle(lineWidth: 1, dash: score == nil ? [2, 2] : []))
                         }
                         .frame(height: height)
                 }
@@ -69,7 +68,7 @@ struct ScoreRing: View {
         let arcs = arcs
         let count = max(arcs.count, 1)
         let lineWidth = diameter * 0.13
-        let gap = 0.022
+        let gap = 0.012
         ZStack {
             ForEach(arcs) { arc in
                 let start = Double(arc.id) / Double(count) + gap / 2
@@ -77,12 +76,12 @@ struct ScoreRing: View {
                 Circle()
                     .trim(from: start, to: shown || reduceMotion ? end : start)
                     .stroke(arc.color.opacity(arc.earned ? 1 : 0.2),
-                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
                     .animation(.spring(duration: 0.5, bounce: 0.25).delay(Double(arc.id) * 0.045), value: shown)
             }
             Text(total.map(String.init) ?? "–")
-                .font(.display(size: diameter * 0.40))
+                .font(.display(size: diameter * 0.40, weight: .heavy))
                 .foregroundStyle(Theme.ink)
                 .contentTransition(.numericText())
                 .minimumScaleFactor(0.6)
@@ -121,7 +120,7 @@ struct ScoreBadge: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 0) {
             Text(total.map(String.init) ?? "–")
-                .font(.display(numberStyle, weight: .bold))
+                .font(.display(numberStyle, weight: .heavy))
                 .foregroundStyle(Theme.ink)
                 .contentTransition(.numericText())
             Text("/\(RankingRules.totalPoints)")
@@ -134,7 +133,7 @@ struct ScoreBadge: View {
             if isCustom {
                 Text("  custom")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.olive)
+                    .foregroundStyle(Theme.saved)
             }
         }
         .monospacedDigit()
@@ -188,7 +187,7 @@ struct BreakdownRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Circle().fill(color).frame(width: 9, height: 9).accessibilityHidden(true)
+                Rectangle().fill(color).frame(width: 9, height: 9).accessibilityHidden(true)
                 Text(criterion.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
                 if let level = score.flatMap(criterion.level(for:)), !level.label.isBlank {
                     Text(level.label).font(.subheadline).foregroundStyle(Theme.inkSoft).lineLimit(1)
@@ -303,7 +302,7 @@ struct CommunityScoreCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(Theme.seagrass.opacity(0.55), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4]))
+                .strokeBorder(Theme.inkSoft.opacity(0.55), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4]))
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Community score, \(score.systemName) version \(score.versionNumber): \(score.formattedAverage) out of 10 from \(score.userCount) \(score.userCount == 1 ? "person" : "people")\(score.isLimited ? ". Limited ratings." : "")")
@@ -320,21 +319,21 @@ struct AllocationStrip: View {
                 let total = max(criteria.reduce(0) { $0 + max($1.maxPoints, 0) }, RankingRules.totalPoints)
                 HStack(spacing: 2) {
                     ForEach(Array(criteria.enumerated()), id: \.element.id) { index, criterion in
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        Rectangle()
                             .fill(Theme.criterionColor(index))
                             .frame(width: max(0, proxy.size.width * CGFloat(criterion.maxPoints) / CGFloat(total) - 2))
                     }
                     Spacer(minLength: 0)
                 }
             }
-            .frame(height: 8)
-            .background(Theme.fill, in: RoundedRectangle(cornerRadius: 3, style: .continuous))
+            .frame(height: 10)
+            .overlay { Rectangle().strokeBorder(Theme.rule, lineWidth: 1.5) }
             .accessibilityHidden(true)
 
             FlowLayout(spacing: 6) {
                 ForEach(Array(criteria.enumerated()), id: \.element.id) { index, criterion in
                     HStack(spacing: 5) {
-                        Circle().fill(Theme.criterionColor(index)).frame(width: 7, height: 7)
+                        Rectangle().fill(Theme.criterionColor(index)).frame(width: 8, height: 8)
                         Text("\(criterion.name.isBlank ? "Unnamed" : criterion.name) \(criterion.maxPoints)")
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Theme.ink)

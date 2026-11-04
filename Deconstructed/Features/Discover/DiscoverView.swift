@@ -55,10 +55,10 @@ struct DiscoverView: View {
     private var areaRow: some View {
         HStack(spacing: 10) {
             Image(systemName: model.location.manualArea == nil ? "location.fill" : "mappin.and.ellipse")
-                .foregroundStyle(Theme.seagrass)
+                .foregroundStyle(Theme.positive)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Searching near").font(.caption).foregroundStyle(Theme.inkSoft)
+                Text("SEARCHING NEAR").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
                 Text(model.location.originLabel).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
             }
             Spacer()
@@ -239,9 +239,9 @@ struct PlaceStatusTags: View {
         let latest = model.visits(forPlaceID: placeID).first(where: \.isCompleted)?.activeRevision
         HStack(spacing: 6) {
             if let latest {
-                Tag(text: "Visited · \(model.ratingLabel(latest))", symbol: "checkmark", tone: .seagrass, solid: true)
+                Tag(text: "Visited · \(model.ratingLabel(latest))", symbol: "checkmark", tone: .positive, solid: true)
             } else if model.isSaved(placeID: placeID) {
-                Tag(text: "Want to try", symbol: "bookmark.fill", tone: .olive, solid: true)
+                Tag(text: "Want to try", symbol: "bookmark.fill", tone: .saved, solid: true)
             }
         }
     }
@@ -258,7 +258,7 @@ struct SaveButton: View {
         } label: {
             Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
                 .font(.title3)
-                .foregroundStyle(isSaved ? Theme.olive : Theme.ink)
+                .foregroundStyle(isSaved ? Theme.saved : Theme.ink)
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
                 .liquidGlass(Circle(), interactive: true)

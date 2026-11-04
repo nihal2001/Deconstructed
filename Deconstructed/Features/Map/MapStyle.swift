@@ -6,24 +6,26 @@ import UIKit
 /// names, and drops everything else (businesses, landmarks, transit, road shields, indoor maps),
 /// so the only places on the map are the app's own pins.
 ///
-/// Every colour is a palette colour, or one laid over alabaster at a given strength and
-/// flattened to a single value, because map styles take opaque colours.
+/// Every colour is a palette ink laid over the stock at a given strength and flattened to a
+/// single value, because map styles take opaque colours.
 enum MapStyle {
     // MARK: Palette, as the map uses it
 
-    static let land = mix(Theme.oliveHex, 0.08, over: Theme.alabasterHex)
-    static let buildings = mix(Theme.oliveHex, 0.16, over: Theme.alabasterHex)
-    static let water = mix(Theme.seagrassHex, 0.55, over: Theme.alabasterHex)
-    static let parks = mix(Theme.oliveHex, 0.38, over: Theme.alabasterHex)
-    static let localRoads = hex(Theme.alabasterHex) // a shade lighter than the land
-    static let arterialRoads = mix(Theme.roseHex, 0.22, over: Theme.alabasterHex)
-    static let highways = mix(Theme.roseHex, 0.50, over: Theme.alabasterHex)
-    static let borders = mix(Theme.jetHex, 0.25, over: Theme.alabasterHex)
-    static let cityLabels = hex(Theme.jetHex)
-    static let areaLabels = mix(Theme.jetHex, 0.62, over: Theme.alabasterHex)
-    static let roadLabels = mix(Theme.jetHex, 0.55, over: Theme.alabasterHex)
-    static let waterLabels = mix(Theme.seagrassHex, 0.65, over: Theme.jetHex)
-    static let halo = hex(Theme.alabasterHex)
+    private static let paper: UInt32 = Theme.plateHex
+
+    static let land = mix(Theme.stockHex, 0.55, over: paper)
+    static let buildings = mix(Theme.hairlineHex, 0.7, over: paper)
+    static let water = mix(Theme.tealHex, 0.30, over: paper)
+    static let parks = mix(Theme.mossHex, 0.22, over: paper)
+    static let localRoads = hex(0xFFFFFF) // a shade lighter than the land
+    static let arterialRoads = mix(Theme.ochreHex, 0.30, over: 0xFFFFFF)
+    static let highways = mix(Theme.ochreHex, 0.55, over: 0xFFFFFF)
+    static let borders = mix(Theme.inkHex, 0.25, over: paper)
+    static let cityLabels = hex(Theme.inkHex)
+    static let areaLabels = mix(Theme.inkHex, 0.62, over: paper)
+    static let roadLabels = mix(Theme.inkHex, 0.55, over: paper)
+    static let waterLabels = mix(Theme.tealHex, 0.75, over: Theme.inkHex)
+    static let halo = hex(0xFFFFFF)
 
     // MARK: Google (live)
 
@@ -44,7 +46,7 @@ enum MapStyle {
             rule("water", element: "labels.text.fill", ["color": waterLabels]),
             rule("landscape.man_made", element: "geometry", ["color": buildings]),
 
-            // Streets are light lanes; bigger roads blush rose. Names are soft and never shielded.
+            // Streets are light lanes; bigger roads ochre. Names are soft and never shielded.
             rule("road", element: "geometry.stroke", ["visibility": "off"]),
             rule("road.local", element: "geometry.fill", ["color": localRoads]),
             rule("road.arterial", element: "geometry.fill", ["color": arterialRoads]),
@@ -63,7 +65,7 @@ enum MapStyle {
 
     static func apply(to map: GMSMapView) {
         map.mapStyle = google
-        map.backgroundColor = UIColor(hex: Theme.alabasterHex) // no grey flash before tiles load
+        map.backgroundColor = UIColor(hex: Theme.stockHex) // no grey flash before tiles load
         map.overrideUserInterfaceStyle = .light // dark Google logo on the light map
         map.isIndoorEnabled = false
         map.settings.indoorPicker = false
@@ -72,7 +74,7 @@ enum MapStyle {
     // MARK: Apple (demo)
 
     /// MapKit can't be recoloured, so the demo uses Apple's light map without points of
-    /// interest, with an alabaster wash laid between the roads and the labels to warm it.
+    /// interest, with a stock-coloured wash laid between the roads and the labels to warm it.
     static func apply(to map: MKMapView) {
         let configuration = MKStandardMapConfiguration(elevationStyle: .flat, emphasisStyle: .default)
         configuration.pointOfInterestFilter = .excludingAll // keep real businesses out of a fictional demo
@@ -95,7 +97,7 @@ enum MapStyle {
 
         private final class Renderer: MKOverlayRenderer {
             override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-                context.setFillColor(UIColor(hex: Theme.alabasterHex).cgColor)
+                context.setFillColor(UIColor(hex: Theme.stockHex).cgColor)
                 context.fill(rect(for: mapRect))
             }
         }
@@ -103,8 +105,8 @@ enum MapStyle {
 
     // MARK: Pins
 
-    /// A round badge with the pin's symbol. Normally the pin's colour ringed in alabaster; when
-    /// selected it is larger and inverted (alabaster, ringed and marked in the pin's colour), so the
+    /// A round badge with the pin's symbol. Normally the pin's colour ringed in white; when
+    /// selected it is larger and inverted (white, ringed and marked in the pin's colour), so the
     /// tapped pin stands out among pins of the same kind.
     static func badge(for pin: MapPin, selected: Bool) -> UIImage {
         let diameter: CGFloat = selected ? 44 : 32
@@ -113,11 +115,12 @@ enum MapStyle {
         let size = CGSize(width: diameter + margin * 2, height: diameter + margin * 2)
         return UIGraphicsImageRenderer(size: size).image { context in
             let circle = CGRect(x: margin, y: margin, width: diameter, height: diameter)
-            let alabaster = UIColor(hex: Theme.alabasterHex)
-            let (ringColor, fill, glyph) = selected ? (pin.color, alabaster, pin.color) : (alabaster, pin.color, alabaster)
+            let white = UIColor.white
+            let (ringColor, fill, glyph) = selected ? (pin.color, white, pin.color) : (white, pin.color, white)
 
-            context.cgContext.setShadow(offset: CGSize(width: 0, height: 1), blur: selected ? 5 : 3,
-                                        color: UIColor.black.withAlphaComponent(0.4).cgColor)
+            // The app's crisp offset shadow, in ink.
+            context.cgContext.setShadow(offset: CGSize(width: 2, height: 2), blur: 0,
+                                        color: UIColor(hex: Theme.inkHex).cgColor)
             ringColor.setFill()
             UIBezierPath(ovalIn: circle).fill()
             context.cgContext.setShadow(offset: .zero, blur: 0, color: nil)

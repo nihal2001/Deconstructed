@@ -84,7 +84,7 @@ struct DraftSystemCard: View {
             }
             Text("\(draft.allocatedPoints) of \(RankingRules.totalPoints) points allocated")
                 .font(.footnote.weight(.medium))
-                .foregroundStyle(draft.allocatedPoints == RankingRules.totalPoints ? Theme.seagrass : Theme.warning)
+                .foregroundStyle(draft.allocatedPoints == RankingRules.totalPoints ? Theme.positive : Theme.warning)
             if !draft.criteria.isEmpty { AllocationStrip(criteria: draft.criteria) }
         }
         .card(padding: 14)
@@ -128,7 +128,7 @@ struct SystemDetailView: View {
                 Text(system.name).font(.display(.largeTitle, weight: .bold)).foregroundStyle(Theme.ink)
                 FlowLayout(spacing: 6) {
                     SystemKindTag(system: system)
-                    if isDefault { Tag(text: "Default", symbol: "star.fill", tone: .rose) }
+                    if isDefault { Tag(text: "Default", symbol: "star.fill", tone: .accent) }
                     if archived { Tag(text: "Archived", symbol: "archivebox") }
                     if system.isDraftOnly { Tag(text: "Draft", symbol: "pencil", tone: .warning) }
                     if let current { Tag(text: "Version \(current.number)") }
@@ -170,7 +170,7 @@ struct SystemDetailView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
                                 Text("Version \(version.number)").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
-                                if version.id == system.currentVersionID { Tag(text: "Current", tone: .seagrass) }
+                                if version.id == system.currentVersionID { Tag(text: "Current", tone: .positive) }
                                 Spacer()
                                 Text("\(count) rating\(count == 1 ? "" : "s")").font(.footnote).foregroundStyle(Theme.inkSoft)
                             }
@@ -255,7 +255,7 @@ struct SystemDetailView: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
-                    .buttonStyle(.secondary(tint: Theme.rose))
+                    .buttonStyle(.secondary(tint: Theme.tint))
                 }
             } else if !archived {
                 Text("Editing a standard system makes a personal copy for you. Ratings made with your copy appear on your reviews but no longer count toward the standard community average.")
@@ -289,7 +289,7 @@ struct CriterionDefinitionCard: View {
                         .font(.subheadline.weight(.bold).monospacedDigit())
                         .foregroundStyle(Theme.ink)
                         .frame(minWidth: 26, minHeight: 26)
-                        .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        .background(Theme.fill, in: RoundedRectangle(cornerRadius: 2, style: .continuous))
                     VStack(alignment: .leading, spacing: 1) {
                         if !level.label.isBlank {
                             Text(level.label).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)

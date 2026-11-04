@@ -79,7 +79,7 @@ struct RestaurantProfileView: View {
                 } label: {
                     Label(isSaved ? "Saved" : "Save", systemImage: isSaved ? "bookmark.fill" : "bookmark")
                 }
-                .buttonStyle(.secondary(tint: isSaved ? Theme.olive : Theme.ink))
+                .buttonStyle(.secondary(tint: isSaved ? Theme.saved : Theme.ink))
                 .disabled(place == nil)
                 .accessibilityLabel(isSaved ? "Saved to Want to try. Tap to remove." : "Save to Want to try")
 
@@ -230,7 +230,7 @@ struct VisitHistoryRow: View {
                 }
             }
             Spacer()
-            if isLatest { Tag(text: "Counts in rankings", tone: .seagrass) }
+            if isLatest { Tag(text: "Counts in rankings", tone: .positive) }
             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Theme.inkSoft)
         }
         .padding(.vertical, 10)

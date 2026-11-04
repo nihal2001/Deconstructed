@@ -61,7 +61,6 @@ struct SignInView: View {
                         Text("Restaurant scores you can explain. Pick a rubric, score each part, and the total takes care of itself.")
                             .font(.title3)
                             .foregroundStyle(Theme.inkSoft)
-                        Capsule().fill(Theme.spectrum).frame(width: 96, height: 6).padding(.top, 4)
                     }
                     .hero(padding: 24)
                     .padding(.top, 28)

@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T22:03:29+00:00",
+  "title": "Design System: Deconstructed",
+  "extensions": {
+    "colorMeta": {
+      "stock": {
+        "role": "neutral",
+        "displayName": "Peach Stock",
+        "canonical": "#FBE2D4",
+        "tonalRamp": [
+          "#100A07",
+          "#2D231D",
+          "#4D3F36",
+          "#705D52",
+          "#927E72",
+          "#B2A197",
+          "#D4C6BE",
+          "#F6ECE7"
+        ]
+      },
+      "plate": {
+        "role": "neutral",
+        "displayName": "Cream Plate",
+        "canonical": "#FFF8F3",
+        "tonalRamp": [
+          "#0C0B0A",
+          "#272422",
+          "#45413E",
+          "#65605C",
+          "#87817D",
+          "#A9A4A1",
+          "#CCC8C6",
+          "#F0EEEC"
+        ]
+      },
+      "fill": {
+        "role": "neutral",
+        "displayName": "Sunk Peach",
+        "canonical": "#F6D3C2",
+        "tonalRamp": [
+          "#110906",
+          "#30211A",
+          "#513D33",
+          "#765A4D",
+          "#987B6D",
+          "#B89F93",
+          "#D8C5BB",
+          "#F9EBE5"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline Blush",
+        "canonical": "#E7C3B2",
+        "tonalRamp": [
+          "#110905",
+          "#30211A",
+          "#523C32",
+          "#765A4C",
+          "#997B6D",
+          "#B89F93",
+          "#D9C4BB",
+          "#F9EBE5"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Oxblood Ink",
+        "canonical": "#2A0E08",
+        "tonalRamp": [
+          "#120806",
+          "#31201C",
+          "#533B36",
+          "#785851",
+          "#9B7971",
+          "#BA9E97",
+          "#DAC3BE",
+          "#FBEAE7"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#6A4A40",
+        "tonalRamp": [
+          "#120906",
+          "#30211C",
+          "#523C35",
+          "#775950",
+          "#9A7A70",
+          "#B99E96",
+          "#D9C4BD",
+          "#FAEBE6"
+        ]
+      },
+      "teal": {
+        "role": "primary",
+        "displayName": "Proof Teal",
+        "canonical": "#0E6E6A",
+        "tonalRamp": [
+          "#000F0E",
+          "#012C2A",
+          "#0F4C49",
+          "#216E6B",
+          "#47918C",
+          "#79B1AD",
+          "#A9D3D0",
+          "#D8F6F3"
+        ]
+      },
+      "tomato": {
+        "role": "secondary",
+        "displayName": "Tomato",
+        "canonical": "#D93A1C",
+        "tonalRamp": [
+          "#220000",
+          "#4E0000",
+          "#7E0E00",
+          "#B12202",
+          "#D94C32",
+          "#F27F68",
+          "#FFAE9B",
+          "#FFDDCF"
+        ]
+      },
+      "ochre": {
+        "role": "secondary",
+        "displayName": "Ochre",
+        "canonical": "#D9961B",
+        "tonalRamp": [
+          "#180600",
+          "#3B1D00",
+          "#623700",
+          "#8B5300",
+          "#AF7500",
+          "#CC9B53",
+          "#E8C28E",
+          "#FFEAC6"
+        ]
+      },
+      "ultramarine": {
+        "role": "secondary",
+        "displayName": "Ultramarine",
+        "canonical": "#2E3FA8",
+        "tonalRamp": [
+          "#040725",
+          "#151F52",
+          "#2A3A83",
+          "#4157B7",
+          "#607ADD",
+          "#87A0F3",
+          "#B2C7FF",
+          "#DEEDFF"
+        ]
+      },
+      "plum": {
+        "role": "secondary",
+        "displayName": "Plum",
+        "canonical": "#8A2D63",
+        "tonalRamp": [
+          "#1A020F",
+          "#3F122B",
+          "#67274B",
+          "#933E6D",
+          "#B8608F",
+          "#D58AB0",
+          "#F0B5D2",
+          "#FFE1F5"
+        ]
+      },
+      "moss": {
+        "role": "secondary",
+        "displayName": "Moss",
+        "canonical": "#44701A",
+        "tonalRamp": [
+          "#040F00",
+          "#172C01",
+          "#2E4C0D",
+          "#476E1D",
+          "#679142",
+          "#8FB273",
+          "#B8D4A3",
+          "#E3F6D4"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Proof Red",
+        "canonical": "#B52E12",
+        "tonalRamp": [
+          "#200000",
+          "#4A0800",
+          "#781C09",
+          "#A93119",
+          "#D0563E",
+          "#EA856F",
+          "#FFB2A0",
+          "#FFDFD2"
+        ]
+      },
+      "on-tint": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#1A1A1A",
+          "#333333",
+          "#555555",
+          "#777777",
+          "#999999",
+          "#BBBBBB",
+          "#DDDDDD",
+          "#FFFFFF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "large-title": {
+        "displayName": "Large Title",
+        "purpose": "Navigation large titles on every tab."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Scores on ranked rows and the large score badge."
+      },
+      "title3": {
+        "displayName": "Title3",
+        "purpose": "Section titles, system names on key plates, empty-state titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Restaurant names, primary button labels, level numbers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Row text, breakdowns, chip and secondary button labels."
+      },
+      "footnote": {
+        "displayName": "Footnote",
+        "purpose": "Metadata and criterion descriptions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Tags, stamps and legend entries."
+      },
+      "data-key": {
+        "displayName": "Data Key",
+        "purpose": "A mono uppercase key naming the data value beside it. Never a heading or kicker."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plate-offset",
+        "value": "5px 5px 0 0 #0E6E6A",
+        "purpose": "Default solid offset under any plate."
+      },
+      {
+        "name": "key-plate-offset",
+        "value": "6px 6px 0 0 #D9961B",
+        "purpose": "The one most important plate on a screen."
+      },
+      {
+        "name": "podium-offset",
+        "value": "5px 5px 0 0 <rank ink: #D93A1C / #0E6E6A / #2E3FA8>",
+        "purpose": "Ranked rows 1 to 3; rows below cast nothing."
+      },
+      {
+        "name": "button-primary-offset",
+        "value": "3px 3px 0 0 #2A0E08",
+        "purpose": "Under the primary capsule; pressed moves onto it."
+      },
+      {
+        "name": "button-secondary-offset",
+        "value": "2px 2px 0 0 #2A0E08",
+        "purpose": "Under secondary capsules."
+      },
+      {
+        "name": "pin-offset",
+        "value": "2px 2px 0 0 #2A0E08",
+        "purpose": "Under map pin badges."
+      },
+      {
+        "name": "glass-fallback-offset",
+        "value": "3px 3px 0 0 #2A0E08",
+        "purpose": "Floating controls before iOS 26."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press",
+        "value": "snappy, 0.12s",
+        "purpose": "Buttons moving onto their offset shadow."
+      },
+      {
+        "name": "select",
+        "value": "snappy, 0.15s",
+        "purpose": "Chip selection."
+      },
+      {
+        "name": "score-fill",
+        "value": "snappy, 0.25s",
+        "purpose": "Score bar cells filling."
+      },
+      {
+        "name": "ring-sweep",
+        "value": "spring(duration 0.5, bounce 0.25), 0.045s stagger per arc",
+        "purpose": "Score ring arcs sweeping in on appear; skipped under Reduce Motion."
+      }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action on a screen; presses down onto its 3pt ink shadow.",
+      "html": "<button class=\"ds-btn-primary\">Log a visit</button>",
+      "css": ".ds-btn-primary { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 17px; font-weight: 600; color: #FFFFFF; background: #0E6E6A; border: 2px solid #2A0E08; border-radius: 999px; min-height: 52px; padding: 12px 18px; width: 280px; box-shadow: 3px 3px 0 0 #2A0E08; transition: transform 0.12s, box-shadow 0.12s; cursor: pointer; } .ds-btn-primary:active { transform: translate(3px,3px); box-shadow: 0 0 0 0 #2A0E08; } .ds-btn-primary:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 4px; } .ds-btn-primary:disabled { background: #F6D3C2; color: #6A4A40; box-shadow: 3px 3px 0 0 #E7C3B2; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Cream capsule for actions beside the primary one; 2pt ink offset.",
+      "html": "<button class=\"ds-btn-secondary\">Save to try</button>",
+      "css": ".ds-btn-secondary { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 999px; min-height: 46px; padding: 11px 14px; width: 200px; box-shadow: 2px 2px 0 0 #2A0E08; transition: transform 0.12s, box-shadow 0.12s, background 0.12s; cursor: pointer; } .ds-btn-secondary:active { background: #F6D3C2; transform: translate(2px,2px); box-shadow: 0 0 0 0 #2A0E08; } .ds-btn-secondary:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 4px; }"
+    },
+    {
+      "name": "Segmented Chips",
+      "kind": "chip",
+      "refersTo": "chip-selected",
+      "description": "Ruled capsules standing in for a segmented control; selected is teal.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">Version 2 · current</button><button class=\"ds-chip\">Version 1</button></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; flex-wrap: wrap; } .ds-chip { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 999px; min-height: 36px; padding: 0 14px; cursor: pointer; transition: background 0.15s, color 0.15s; } .ds-chip:hover { background: #F6D3C2; } .ds-chip-on, .ds-chip-on:hover { background: #0E6E6A; color: #FFFFFF; } .ds-chip:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Tag",
+      "kind": "chip",
+      "refersTo": "tag-warning",
+      "description": "A ruled stamp in the tone's ink; the Demo stamp is the warning tone.",
+      "html": "<span class=\"ds-tag ds-tag-warn\">Demo</span> <span class=\"ds-tag\">v2</span> <span class=\"ds-tag ds-tag-pos\">Visited</span>",
+      "css": ".ds-tag { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: inline-block; font-size: 12px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 2px; padding: 3px 7px; } .ds-tag-warn { color: #B52E12; border-color: #B52E12; } .ds-tag-pos { color: #44701A; border-color: #44701A; }"
+    },
+    {
+      "name": "Plate",
+      "kind": "card",
+      "refersTo": "plate",
+      "description": "Every content panel: cream, 2pt ink rule, 4pt corners, solid teal offset.",
+      "html": "<div class=\"ds-stock\"><div class=\"ds-plate\"><div class=\"ds-plate-title\">Harbor Light Oyster Room</div><div class=\"ds-plate-meta\">Seafood · Embarcadero</div></div></div>",
+      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-plate { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 16px; box-shadow: 5px 5px 0 0 #0E6E6A; } .ds-plate-title { font-size: 17px; font-weight: 600; color: #2A0E08; } .ds-plate-meta { font-size: 13px; color: #6A4A40; margin-top: 4px; }"
+    },
+    {
+      "name": "Key Plate",
+      "kind": "card",
+      "refersTo": "plate",
+      "description": "The one most important plate on a screen: ochre 6pt offset, mono data key over the value, allocation strip.",
+      "html": "<div class=\"ds-stock\"><div class=\"ds-key\"><div class=\"ds-key-row\"><span class=\"ds-datakey\">RANKED WITH</span><span class=\"ds-key-val\">General</span></div><div class=\"ds-strip\"><i style=\"flex:5;background:#D93A1C\"></i><i style=\"flex:2;background:#0E6E6A\"></i><i style=\"flex:2;background:#D9961B\"></i><i style=\"flex:1;background:#2E3FA8\"></i></div></div></div>",
+      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-key { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 16px; box-shadow: 6px 6px 0 0 #D9961B; } .ds-key-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; } .ds-datakey { font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.8px; color: #6A4A40; } .ds-key-val { font-size: 20px; font-weight: 600; color: #2A0E08; } .ds-strip { display: flex; gap: 2px; height: 10px; border: 1.5px solid #2A0E08; } .ds-strip i { display: block; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text input as a cream plate well with a 1.5pt ink rule.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search restaurants\">",
+      "css": ".ds-input { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 17px; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 4px; padding: 10px 12px; width: 260px; outline: none; } .ds-input::placeholder { color: #6A4A40; } .ds-input:focus-visible { caret-color: #0E6E6A; box-shadow: 0 0 0 2px #0E6E6A; }"
+    },
+    {
+      "name": "Ranked Row",
+      "kind": "custom",
+      "refersTo": "plate-row",
+      "description": "Podium row: square rank tile in the rank ink, score bar of ten outlined cells, heavy score, plate casting in the rank ink.",
+      "html": "<div class=\"ds-stock\"><div class=\"ds-row\"><div class=\"ds-rank\">1</div><div class=\"ds-row-main\"><div class=\"ds-row-name\">Nine Lanterns Noodle Bar</div><div class=\"ds-row-meta\">Ramen · Japantown</div><div class=\"ds-bar\"><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"t\"></i><b></b><i class=\"f e\"></i><i class=\"f e\"></i><b></b><i class=\"f o\"></i><i class=\"f o\"></i><b></b><i class=\"f u\"></i></div></div><div class=\"ds-score\">9<span>/10</span></div></div></div>",
+      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-row { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: flex; gap: 12px; align-items: flex-start; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 14px; box-shadow: 5px 5px 0 0 #D93A1C; } .ds-rank { width: 40px; height: 40px; display: grid; place-items: center; background: #D93A1C; color: #FFFFFF; border: 2px solid #2A0E08; border-radius: 4px; font-size: 20px; font-weight: 800; box-sizing: border-box; } .ds-row-main { flex: 1; } .ds-row-name { font-size: 17px; font-weight: 600; color: #2A0E08; } .ds-row-meta { font-size: 13px; color: #6A4A40; margin: 4px 0 8px; } .ds-bar { display: flex; gap: 2px; } .ds-bar i { flex: 1; height: 8px; border: 1px solid; box-sizing: border-box; } .ds-bar b { width: 3px; } .ds-bar .t { border-color: #D93A1C; } .ds-bar .t.f { background: #D93A1C; } .ds-bar .e { border-color: #0E6E6A; background: #0E6E6A; } .ds-bar .o { border-color: #D9961B; background: #D9961B; } .ds-bar .u { border-color: #2E3FA8; background: #2E3FA8; } .ds-score { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #2A0E08; font-variant-numeric: tabular-nums; } .ds-score span { font-size: 13px; font-weight: 500; letter-spacing: 0; color: #6A4A40; }"
+    },
+    {
+      "name": "Tab Bar (pre-iOS 26)",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Cream tab bar edged in an ink rule; selected item teal, others soft ink. On iOS 26 the system Liquid Glass bar replaces it.",
+      "html": "<nav class=\"ds-tabs\"><a>Discover</a><a>Map</a><a class=\"on\" aria-current=\"page\">Rankings</a><a>Friends</a><a>Profile</a></nav>",
+      "css": ".ds-tabs { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: flex; justify-content: space-around; background: #FFF8F3; border-top: 1px solid #2A0E08; padding: 8px 0; width: 375px; } .ds-tabs a { font-size: 10px; font-weight: 500; color: #6A4A40; cursor: pointer; text-decoration: none; } .ds-tabs a:hover { color: #2A0E08; } .ds-tabs a.on { color: #0E6E6A; } .ds-tabs a:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Press Proof",
+    "overview": "Every restaurant, score and visit is a ruled cream plate laid on warm peach stock, and every plate casts a crisp offset shadow in a second ink, as if a colour had been printed slightly out of register. The look is a proof sheet, not a glass dashboard: flat colour, hard rules, no blur. The density follows a list you scan: plates stack at a steady rhythm, the score sits heavy at the right edge, and the criteria that made it read left to right as outlined cells.\n\nColour carries meaning. Six criterion inks belong to the score data, teal is the one colour you can tap, and a few state colours mark visited, saved and warnings. Everything else is oxblood ink on cream and peach. San Francisco carries the whole app, set heavy and tracked in for titles and scores, so Dynamic Type and native navigation keep working while the proof does the talking.\n\nThe system refuses soft blurred card shadows, the dark glass canvas the app used to have, and the grey-list-with-one-tint look common in this category. The system tab bar and floating map controls stay on Liquid Glass on iOS 26. That is the platform's own layer above the proof, not part of the proof.",
+    "keyCharacteristics": [
+      "Peach stock ground, cream plates, 2pt oxblood rule, 4pt corners.",
+      "Solid, unblurred offset shadows down and to the right, in a second ink.",
+      "Six criterion inks, one interactive teal, everything else ink.",
+      "SF Pro throughout: heavy titles and scores, small mono uppercase keys over data values.",
+      "Capsule buttons that press down onto their own shadow.",
+      "Light only."
+    ],
+    "rules": [
+      {
+        "name": "The One Tap Colour Rule",
+        "body": "Teal is the only colour that means \"tappable\". Criterion inks never style a control unless that control is choosing a score for that criterion.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Follows the Criterion Rule",
+        "body": "A criterion is coloured by its position everywhere, and colour is never the only cue: its name and number sit beside it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Text-Safe Rule",
+        "body": "Text on the cream plate is ink, soft ink, teal, ultramarine, plum, moss or warning, all 4.5:1 or better there. On the peach stock, moss drops below 4.5:1, so moss text sits on a plate. Tomato and ochre are for fills and rules, never running text. On a solid ink fill, pick ink or white by luminance.",
+        "section": "colors"
+      },
+      {
+        "name": "The Heavy Number Rule",
+        "body": "Scores are heavy with monospaced digits; the \"/10\" denominator is a size smaller, regular weight, in soft ink. The system name always travels with the number.",
+        "section": "typography"
+      },
+      {
+        "name": "The Key Over Value Rule",
+        "body": "Mono uppercase is only ever a data key naming the value next to it. It is never a section heading, a kicker or a decorative label above a title.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Blur Rule",
+        "body": "Every shadow is a solid, unblurred offset. A blurred or ambient shadow does not belong in this world.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Key Plate Rule",
+        "body": "Each screen has at most one ochre-offset plate. Long lists drop the shadow on ordinary rows so the plates that do cast one mean something.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do set every content panel as a cream plate with a 2pt ink rule and 4pt corners on peach stock.",
+      "Do lift plates with a solid, unblurred offset: teal 5pt by default, ochre 6pt for the one key plate on a screen, the rank ink for podium rows.",
+      "Do reserve teal for things you can tap, and keep it to one primary button per screen.",
+      "Do colour a criterion by its position everywhere it appears, with its name and number beside the colour.",
+      "Do set scores heavy with monospaced digits and keep the system name with the number.",
+      "Do use Dynamic Type text styles and SF Symbols, and let chips and tags wrap."
+    ],
+    "donts": [
+      "Don't use blurred, ambient or soft shadows.",
+      "Don't use mono uppercase as a section heading or a kicker above a title; it only names a data value.",
+      "Don't set running text in tomato or ochre; they are below 4.5:1 on the plate.",
+      "Don't put a shadow on every plate in a long list; ordinary rows drop it.",
+      "Don't add a dark appearance; the app is light only.",
+      "Don't use criterion inks for chrome, navigation or general actions."
+    ]
+  }
+}

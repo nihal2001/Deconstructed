@@ -2,14 +2,14 @@ import SwiftUI
 
 struct Tag: View {
     enum Tone {
-        case neutral, rose, olive, seagrass, warning
+        case neutral, accent, saved, positive, warning
 
         var color: Color {
             switch self {
-            case .neutral: Theme.ink
-            case .rose: Theme.rose
-            case .olive: Theme.olive
-            case .seagrass: Theme.seagrass
+            case .neutral: Theme.inkSoft
+            case .accent: Theme.tint
+            case .saved: Theme.saved
+            case .positive: Theme.positive
             case .warning: Theme.warning
             }
         }
@@ -18,18 +18,8 @@ struct Tag: View {
     var text: String
     var symbol: String?
     var tone: Tone = .neutral
-    /// Filled with the tone's colour and light text, for statuses that should stand out.
+    /// Filled with the tone's colour, for statuses that should stand out.
     var solid = false
-
-    private var solidFill: LinearGradient {
-        switch tone {
-        case .rose: Theme.roseGradient
-        case .olive: Theme.oliveGradient
-        case .seagrass: Theme.seagrassGradient
-        case .neutral: Theme.mutedGradient
-        case .warning: Theme.roseGradient
-        }
-    }
 
     var body: some View {
         HStack(spacing: 4) {
@@ -37,19 +27,61 @@ struct Tag: View {
             Text(text)
         }
         .font(.caption.weight(.semibold))
-        // Text is always jet or alabaster; the palette colour is the chip behind it.
-        .foregroundStyle(solid ? AnyShapeStyle(Theme.alabaster) : AnyShapeStyle(Theme.ink))
-        .padding(.horizontal, solid ? 10 : 8)
-        .padding(.vertical, solid ? 5 : 4)
-        .background(solid ? AnyShapeStyle(solidFill) : AnyShapeStyle(tone.color.opacity(tone == .neutral ? 0.14 : 0.32)), in: Capsule())
+        .foregroundStyle(solid ? Color.white : (tone == .neutral ? Theme.ink : tone.color))
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        // A ruled stamp: square-cornered, outlined in the tone's ink.
+        .background(solid ? tone.color : Theme.plate, in: RoundedRectangle(cornerRadius: 2))
+        .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(tone == .neutral ? Theme.rule : tone.color, lineWidth: 1.5) }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// A row of ruled chips standing in for a segmented control: the chosen one is teal with white
+/// text, the rest are plates with the ink rule. Wraps at large Dynamic Type sizes.
+struct SegmentedChips<Value: Hashable>: View {
+    var title: String
+    var options: [Value]
+    @Binding var selection: Value
+    var label: (Value) -> String
+
+    var body: some View {
+        FlowLayout(spacing: 8) {
+            ForEach(options, id: \.self) { option in
+                let isOn = option == selection
+                Button {
+                    withAnimation(.snappy(duration: 0.15)) { selection = option }
+                } label: {
+                    Text(label(option))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(isOn ? Theme.onTint : Theme.ink)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: 36)
+                        .background(isOn ? Theme.tint : Theme.plate, in: Capsule())
+                        .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isOn ? [.isSelected] : [])
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(title)
     }
 }
 
 /// Marks anything fictional so demo content can never be mistaken for real results.
 struct DemoBadge: View {
     var body: some View {
-        Tag(text: "Demo", symbol: "theatermasks", tone: .warning)
+        // Quiet on purpose: it sits beside every name, so it must not outshout ranks and scores.
+        Text("DEMO")
+            .font(.dataKey)
+            .tracking(0.8)
+            .foregroundStyle(Theme.inkSoft)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 1)
+            .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Theme.inkSoft.opacity(0.6), lineWidth: 1) }
+            .fixedSize()
             .accessibilityLabel("Demo data, not a real restaurant")
     }
 }
@@ -64,21 +96,16 @@ struct SectionTitle: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Capsule().fill(Theme.spectrum)
-                .frame(width: 22, height: 5)
-                .padding(.top, 11)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(text)
-                    .font(.display(.title3))
-                    .foregroundStyle(Theme.ink)
-                    .accessibilityAddTraits(.isHeader)
-                if let detail {
-                    Text(detail).font(.footnote).foregroundStyle(Theme.inkSoft)
-                }
+        VStack(alignment: .leading, spacing: 2) {
+            Text(text)
+                .font(.display(.title3))
+                .foregroundStyle(Theme.ink)
+                .accessibilityAddTraits(.isHeader)
+            if let detail {
+                Text(detail).font(.footnote).foregroundStyle(Theme.inkSoft)
             }
         }
+        .padding(.top, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -87,14 +114,18 @@ struct Avatar: View {
     var profile: UserProfile
     var size: CGFloat = 40
 
+    private var color: Color {
+        let colors = [Theme.tomato, Theme.teal, Theme.ultramarine, Theme.plum, Theme.moss, Theme.ochre]
+        return colors[Int(profile.id.uuid.14 ^ profile.id.uuid.15) % colors.count]
+    }
+
     var body: some View {
         Text(profile.initials)
             .font(.display(size: size * 0.40))
-            .foregroundStyle(Theme.alabaster)
+            .foregroundStyle(Theme.text(on: color))
             .frame(width: size, height: size)
-            .background([Theme.rose, Theme.seagrass, Theme.olive][Int(profile.id.uuid.14 ^ profile.id.uuid.15) % 3], in: Circle())
-            .overlay { Circle().strokeBorder(Theme.alabaster.opacity(0.7), lineWidth: max(1.5, size * 0.04)) }
-            .shadow(color: .black.opacity(0.2), radius: 5, y: 2)
+            .background(color, in: Circle())
+            .overlay { Circle().strokeBorder(Theme.rule, lineWidth: max(1.5, size * 0.035)) }
             .accessibilityHidden(true)
     }
 }
@@ -116,13 +147,13 @@ struct ErrorBanner: View {
                 if let retry {
                     Button("Try again", action: retry)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.rose)
+                        .foregroundStyle(Theme.tint)
                 }
             }
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(Theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Theme.warning.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .accessibilityElement(children: .contain)
     }
 }
@@ -138,7 +169,7 @@ struct EmptyState: View {
         VStack(spacing: 12) {
             Image(systemName: symbol)
                 .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Theme.rose)
+                .foregroundStyle(Theme.tint)
                 .accessibilityHidden(true)
             Text(title).font(.display(.title3)).foregroundStyle(Theme.ink)
             Text(message)

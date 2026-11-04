@@ -1,72 +1,92 @@
 import SwiftUI
 import UIKit
 
-/// Palette and type for the app. Every colour the app sets is one of the five in
-/// `Color-scheme.png`, used at its exact value, or a transparency of one of them:
+/// Palette and type for the app: a press proof on peach stock.
 ///
-///     Jet Black 143642 · Blush Rose D65780 · Alabaster Grey EAE6E5 · Olive 91972A · Seagrass 519E8A
+/// Content sits on warm peach. Plates are pale cream, ruled in oxblood ink with small corners,
+/// and cast a crisp teal offset shadow with no blur, like a second colour printed slightly out
+/// of register. Colour is kept for meaning: four contrasting criterion inks for score data,
+/// teal for anything you can tap, and a few state colours. The system tab bar and floating
+/// map controls stay on Liquid Glass on iOS 26.
 ///
-/// The app has one look, in the two layers Liquid Glass asks for. Content sits on a jet canvas
-/// lit by soft pools of the accent colours, in frosted panels with alabaster text. Controls float
-/// above it on Liquid Glass, which takes its colour from whatever is behind it.
+/// The app is light only.
 enum Theme {
-    static let jetHex: UInt32 = 0x143642
-    static let roseHex: UInt32 = 0xD65780
-    static let alabasterHex: UInt32 = 0xEAE6E5
-    static let oliveHex: UInt32 = 0x91972A
-    static let seagrassHex: UInt32 = 0x519E8A
+    // Stock and ink
+    static let stockHex: UInt32 = 0xFBE2D4
+    static let plateHex: UInt32 = 0xFFF8F3
+    static let inkHex: UInt32 = 0x2A0E08
+    static let inkSoftHex: UInt32 = 0x6A4A40
+    static let hairlineHex: UInt32 = 0xE7C3B2
 
-    static let jet = Color(hex: jetHex)
-    static let alabaster = Color(hex: alabasterHex)
+    // Inks
+    static let tomatoHex: UInt32 = 0xD93A1C
+    static let tealHex: UInt32 = 0x0E6E6A
+    static let ochreHex: UInt32 = 0xD9961B
+    static let ultramarineHex: UInt32 = 0x2E3FA8
+    static let plumHex: UInt32 = 0x8A2D63
+    static let mossHex: UInt32 = 0x44701A
+
+    static let tomato = Color(hex: tomatoHex)
+    static let teal = Color(hex: tealHex)
+    static let ochre = Color(hex: ochreHex)
+    static let ultramarine = Color(hex: ultramarineHex)
+    static let plum = Color(hex: plumHex)
+    static let moss = Color(hex: mossHex)
 
     // Surfaces
-    static let canvas = jet
-    static let fill = alabaster.opacity(0.14)
-    static let hairline = alabaster.opacity(0.20)
-    /// The light catching a panel's edge: strongest at the top left, as if lit from above.
-    static let rim = LinearGradient(colors: [alabaster.opacity(0.42), alabaster.opacity(0.06), alabaster.opacity(0.16)],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let canvas = Color(hex: stockHex)
+    /// A content panel.
+    static let plate = Color(hex: plateHex)
+    /// Sunk wells: unselected chips, tracks behind bars.
+    static let fill = Color(hex: 0xF6D3C2)
+    /// Quiet dividers inside a plate.
+    static let hairline = Color(hex: hairlineHex)
+    /// The rule round every plate and control.
+    static let rule = Color(hex: inkHex)
+    static let ruleWidth: CGFloat = 2
+    /// The offset shadow under plates.
+    static let shadowInk = teal
+    static let shadowOffset: CGFloat = 5
 
     // Text
-    static let ink = alabaster
-    static let inkSoft = alabaster.opacity(0.78)
+    static let ink = Color(hex: inkHex)
+    static let inkSoft = Color(hex: inkSoftHex)
+    /// Text on a teal fill.
+    static let onTint = Color.white
 
-    // Accents, exact
-    static let rose = Color(hex: roseHex)
-    static let blush = rose
-    static let olive = Color(hex: oliveHex)
-    static let seagrass = Color(hex: seagrassHex)
-    /// Warnings and "needs attention" use the rose; there is no separate warning colour.
-    static let warning = rose
+    // Roles. Text-safe on the plate and the stock (4.5:1 or better).
+    /// The one interactive colour: buttons, links, selection, the tab bar.
+    static let tint = teal
+    /// Done, visited, balanced.
+    static let positive = moss
+    /// Saved / want to try.
+    static let saved = ultramarine
+    /// Problems and anything that needs attention, including the demo marker.
+    static let warning = Color(hex: 0xB52E12)
 
     /// One colour per criterion, by position, so a criterion keeps its colour everywhere its
-    /// score appears. The first four are the palette itself; further criteria reuse it at
-    /// reduced strength. Colour is never the only cue: names and numbers sit beside it.
+    /// score appears. Neighbours contrast in hue and value. Colour is never the only cue:
+    /// names and numbers sit beside it.
     static let criterionColors: [Color] = {
-        let base = [rose, seagrass, olive, alabaster] // alabaster, because jet would vanish on the canvas
-        return base + base.map { $0.opacity(0.6) } + [rose.opacity(0.35), seagrass.opacity(0.35)]
+        let base = [tomato, teal, ochre, ultramarine, plum, moss]
+        return base + base.map { $0.opacity(0.55) }
     }()
-
-    // Solid fills. (Typed as gradients so they fit anywhere a shape style is expected;
-    // both stops are the same colour.)
-    static let roseGradient = solid(rose)
-    static let seagrassGradient = solid(seagrass)
-    static let oliveGradient = solid(olive)
-    /// For things that rank below the accent colours and must still show up on the canvas.
-    static let mutedGradient = solid(alabaster.opacity(0.24))
-
-    private static func solid(_ color: Color) -> LinearGradient {
-        LinearGradient(colors: [color], startPoint: .top, endPoint: .bottom)
-    }
-
-    /// Rose → olive → seagrass, for thin accents.
-    static let spectrum = LinearGradient(colors: [rose, olive, seagrass], startPoint: .leading, endPoint: .trailing)
 
     static func criterionColor(_ index: Int) -> Color {
         criterionColors[index % criterionColors.count]
     }
 
-    static let cornerRadius: CGFloat = 24
+    /// Ink or white, whichever reads better on `color`.
+    static func text(on color: Color) -> Color {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+        func lin(_ c: CGFloat) -> CGFloat { c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
+        let luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+        return luminance > 0.179 ? ink : .white
+    }
+
+    static let cornerRadius: CGFloat = 4
+    static let controlRadius: CGFloat = 4
     static let spacing: CGFloat = 16
 }
 
@@ -90,81 +110,59 @@ extension UIColor {
 }
 
 extension Font {
-    /// Optima for names, headings and scores: a flared, calligraphic sans that reads as
-    /// considered rather than decorative. Scales with Dynamic Type.
+    /// Headings, names and scores. One grotesque carries the whole app: San Francisco, which
+    /// scales with Dynamic Type. Scores are set heavy and tracked in.
     static func display(_ style: Font.TextStyle, weight: Font.Weight = .semibold) -> Font {
-        .custom(Typeface.name(for: weight), size: Typeface.size(for: style), relativeTo: style)
+        .system(style, weight: weight)
     }
 
     static func display(size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom(Typeface.name(for: weight), fixedSize: size)
-    }
-}
-
-enum Typeface {
-    static func name(for weight: Font.Weight) -> String {
-        weight == .regular || weight == .light ? "Optima-Regular" : "Optima-Bold"
+        .system(size: size, weight: weight)
     }
 
-    static func size(for style: Font.TextStyle) -> CGFloat {
-        switch style {
-        case .largeTitle: 36
-        case .title: 30
-        case .title2: 24
-        case .title3: 21
-        case .headline: 18
-        case .subheadline: 16
-        default: 17
-        }
-    }
+    /// Small uppercase keys over data ("RANKED WITH", "VISITS"). Pair with `.tracking(0.8)`.
+    static let dataKey: Font = .system(.caption2, design: .monospaced, weight: .medium)
 }
 
 // MARK: - Surfaces and buttons
 
-/// Everything behind the content: the jet canvas, lit by pools of the accent colours so the
-/// frosted panels and the glass above them have something to pick up.
+/// Everything behind the content: plain peach stock.
 struct AmbientBackground: View {
     var body: some View {
-        ZStack {
-            Theme.canvas
-            pool(Theme.seagrass, strength: 0.60, at: UnitPoint(x: 1, y: 0), reach: 460)
-            pool(Theme.rose, strength: 0.42, at: UnitPoint(x: 0, y: 0.52), reach: 400)
-            pool(Theme.olive, strength: 0.40, at: UnitPoint(x: 0.9, y: 1), reach: 440)
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
-    }
-
-    private func pool(_ color: Color, strength: Double, at center: UnitPoint, reach: CGFloat) -> some View {
-        RadialGradient(colors: [color.opacity(strength), color.opacity(0)], center: center, startRadius: 0, endRadius: reach)
+        Theme.canvas
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
     }
 }
 
 extension View {
+    /// The crisp offset shadow: a solid copy of the shape, shifted down and right, no blur.
+    func offsetShadow<S: Shape>(_ shape: S, color: Color = Theme.shadowInk, distance: CGFloat = Theme.shadowOffset) -> some View {
+        background { shape.fill(color).offset(x: distance, y: distance) }
+    }
+
     /// Liquid Glass, for the layer of controls that floats above the content. `tint` colours it
-    /// and `interactive` makes it respond to touch. Before iOS 26 it falls back to a material,
-    /// or to the tint alone when that is opaque.
-    ///
-    /// Untinted glass is tinted jet: glass turns light over something bright like the map, and
-    /// the app's text is always alabaster.
+    /// and `interactive` makes it respond to touch. Before iOS 26 it falls back to a solid
+    /// plate with the ink rule.
     @ViewBuilder
     func liquidGlass<S: InsettableShape>(_ shape: S, tint: Color? = nil, interactive: Bool = false) -> some View {
         if #available(iOS 26, *) {
-            glassEffect(Glass.regular.tint(tint ?? Theme.jet.opacity(0.55)).interactive(interactive), in: shape)
+            glassEffect(Glass.regular.tint(tint).interactive(interactive), in: shape)
         } else {
-            background(tint ?? .clear, in: shape)
-                .background(.regularMaterial, in: shape)
-                .overlay { shape.strokeBorder(Theme.rim, lineWidth: 1) }
+            background(tint ?? Theme.plate, in: shape)
+                .overlay { shape.strokeBorder(Theme.rule, lineWidth: Theme.ruleWidth) }
+                .background { shape.fill(Theme.ink).offset(x: 3, y: 3) }
         }
     }
 
-    /// Frosted glass for the content layer. Liquid Glass belongs to controls, so panels of
-    /// content use this: a material, with the same lit edge.
-    func frosted<S: InsettableShape>(_ shape: S, tint: Color = Theme.alabaster.opacity(0.05)) -> some View {
-        background(tint, in: shape)
-            .background(.ultraThinMaterial, in: shape)
-            .overlay { shape.strokeBorder(Theme.rim, lineWidth: 1) }
-            .shadow(color: .black.opacity(0.18), radius: 14, y: 7)
+    /// A ruled plate on the stock with its offset shadow. `fill` washes it; `shadow` nil drops it.
+    func plate<S: InsettableShape>(_ shape: S, fill: Color = Theme.plate, shadow: Color? = Theme.shadowInk,
+                                   distance: CGFloat = Theme.shadowOffset) -> some View {
+        background(fill, in: shape)
+            .overlay { shape.strokeBorder(Theme.rule, lineWidth: Theme.ruleWidth) }
+            .background { if let shadow { shape.fill(shadow).offset(x: distance, y: distance) } }
+            .padding(.trailing, shadow == nil ? 0 : distance)
+            .padding(.bottom, shadow == nil ? 0 : distance)
     }
 }
 
@@ -184,30 +182,32 @@ struct GlassGroup<Content: View>: View {
 
 struct CardModifier: ViewModifier {
     var padding: CGFloat = Theme.spacing
+    var shadow: Color? = Theme.shadowInk
 
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frosted(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .plate(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous), shadow: shadow)
     }
 }
 
-/// A seagrass-tinted panel for the most important thing on a screen.
+/// The most important plate on a screen: a deeper offset in ochre, which no podium uses.
 struct HeroModifier: ViewModifier {
-    var padding: CGFloat = 20
+    var padding: CGFloat = 16
 
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frosted(RoundedRectangle(cornerRadius: 30, style: .continuous), tint: Theme.seagrass.opacity(0.42))
+            .plate(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous), shadow: Theme.ochre, distance: 6)
     }
 }
 
 extension View {
-    func card(padding: CGFloat = Theme.spacing) -> some View {
-        modifier(CardModifier(padding: padding))
+    /// A ruled plate. Pass `shadow: nil` for plates in long lists that shouldn't each cast one.
+    func card(padding: CGFloat = Theme.spacing, shadow: Color? = Theme.shadowInk) -> some View {
+        modifier(CardModifier(padding: padding, shadow: shadow))
     }
 
     /// Standard screen background and list styling.
@@ -226,7 +226,7 @@ extension View {
         }
     }
 
-    func hero(padding: CGFloat = 20) -> some View {
+    func hero(padding: CGFloat = 16) -> some View {
         modifier(HeroModifier(padding: padding))
     }
 
@@ -238,54 +238,68 @@ extension View {
         if #available(iOS 26, *) {
             safeAreaBar(edge: .bottom, spacing: 0) { bar }
         } else {
-            safeAreaInset(edge: .bottom, spacing: 0) { bar.background(.regularMaterial) }
+            safeAreaInset(edge: .bottom, spacing: 0) {
+                bar.background(Theme.canvas).overlay(alignment: .top) { Theme.rule.frame(height: 1.5) }
+            }
         }
     }
 
-    /// Text input sunk into a panel, in place of the system's rounded border.
+    /// Text input: a plate well with the ink rule, in place of the system's rounded border.
     func inputField() -> some View {
         padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(Theme.plate, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1)
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous).strokeBorder(Theme.rule, lineWidth: 1.5)
             }
     }
 }
 
+/// Teal, for the one main action on a screen, with a crisp oxblood offset. Pressing it pushes
+/// the button down onto its shadow.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
+        let shape = Capsule()
+        let pressed = configuration.isPressed
         configuration.label
             .font(.headline)
-            .foregroundStyle(isEnabled ? Theme.alabaster : Theme.inkSoft)
+            .foregroundStyle(isEnabled ? Theme.onTint : Theme.inkSoft)
             .frame(maxWidth: .infinity, minHeight: 28)
             .padding(.vertical, 12)
             .padding(.horizontal, 18)
-            .contentShape(Capsule())
-            .liquidGlass(Capsule(), tint: isEnabled ? Theme.rose : nil, interactive: isEnabled)
-            .opacity(configuration.isPressed ? 0.85 : 1)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.snappy(duration: 0.18), value: configuration.isPressed)
+            .contentShape(shape)
+            .background(isEnabled ? Theme.tint : Theme.fill, in: shape)
+            .overlay { shape.strokeBorder(Theme.rule, lineWidth: Theme.ruleWidth) }
+            .offset(x: pressed ? 3 : 0, y: pressed ? 3 : 0)
+            .background { shape.fill(isEnabled ? Theme.ink : Theme.hairline).offset(x: 3, y: 3) }
+            .padding(.trailing, 3).padding(.bottom, 3)
+            .animation(.snappy(duration: 0.12), value: pressed)
     }
 }
 
+/// A cream capsule with the ink rule, for actions beside the primary one.
 struct SecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     var tint: Color = Theme.ink
 
     func makeBody(configuration: Configuration) -> some View {
+        let shape = Capsule()
+        let pressed = configuration.isPressed
         configuration.label
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(isEnabled ? tint : Theme.inkSoft.opacity(0.6))
+            .foregroundStyle(isEnabled ? tint : Theme.inkSoft.opacity(0.7))
             .frame(maxWidth: .infinity, minHeight: 24)
             .padding(.vertical, 11)
             .padding(.horizontal, 14)
-            .contentShape(Capsule())
-            .liquidGlass(Capsule(), interactive: isEnabled)
-            .opacity(configuration.isPressed ? 0.7 : 1)
-            .animation(.snappy(duration: 0.18), value: configuration.isPressed)
+            .contentShape(shape)
+            .background(pressed ? Theme.fill : Theme.plate, in: shape)
+            .overlay { shape.strokeBorder(isEnabled ? Theme.rule : Theme.hairline, lineWidth: 1.5) }
+            .offset(x: pressed ? 2 : 0, y: pressed ? 2 : 0)
+            .background { shape.fill(isEnabled ? Theme.ink : .clear).offset(x: 2, y: 2) }
+            .padding(.trailing, 2).padding(.bottom, 2)
+            .animation(.snappy(duration: 0.12), value: pressed)
     }
 }
 

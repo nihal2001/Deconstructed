@@ -74,8 +74,8 @@ struct MapScreen: View {
                     })
                     .ignoresSafeArea()
 
-                // Keeps the light status bar readable over the pale map.
-                LinearGradient(colors: [Theme.jet.opacity(0.75), Theme.jet.opacity(0)], startPoint: .top, endPoint: .bottom)
+                // Keeps the status bar readable over busy parts of the map.
+                LinearGradient(colors: [Theme.canvas.opacity(0.85), Theme.canvas.opacity(0)], startPoint: .top, endPoint: .bottom)
                     .frame(height: 110)
                     .ignoresSafeArea(edges: .top)
                     .allowsHitTesting(false)
@@ -171,13 +171,8 @@ struct MapScreen: View {
         GlassGroup {
             VStack(spacing: 10) {
                 HStack(spacing: 8) {
-                    Picker("Show", selection: $filter) {
-                        ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityLabel("Filter pins")
-                    .padding(6)
-                    .liquidGlass(Capsule())
+                    SegmentedChips(title: "Filter pins", options: Array(Filter.allCases), selection: $filter) { $0.rawValue }
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                     recenterButton
                 }
@@ -228,11 +223,11 @@ struct MapScreen: View {
                 Text("Search this area")
             }
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(emphasiseSearch ? Theme.onTint : Theme.ink)
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .contentShape(Capsule())
-            .liquidGlass(Capsule(), tint: emphasiseSearch ? Theme.rose : nil, interactive: true)
+            .liquidGlass(Capsule(), tint: emphasiseSearch ? Theme.tint : nil, interactive: true)
         }
         .buttonStyle(.plain)
         .disabled(discovery.isSearching || discovery.visibleMapArea == nil)
@@ -254,7 +249,7 @@ struct MapScreen: View {
                     Text("Set an area by hand to centre the map.").font(.footnote).foregroundStyle(Theme.inkSoft)
                 }
                 Spacer()
-                Text("Set area").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.rose)
+                Text("Set area").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.tint)
             }
             .padding(12)
             .liquidGlass(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
