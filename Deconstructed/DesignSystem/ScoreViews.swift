@@ -3,42 +3,56 @@ import SwiftUI
 // The rubric is the product, so these views are used everywhere a score appears. They are
 // all driven by a `SystemVersion`; nothing here knows about any particular ranking system.
 
-/// Ten blocks, grouped and coloured by criterion. Filled blocks are points earned.
-/// Reading left to right shows both the total and where it came from.
+/// The points earned, as glossy pills coloured by criterion and closed up, so the bar's length
+/// is the total and its colours say where it came from. Points not earned take no space.
+/// The pills spring in one after another when the bar appears or a score changes.
 struct ScoreBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var version: SystemVersion
     var scores: [UUID: Int]
     var height: CGFloat = 12
+    @State private var shown = false
 
-    var body: some View {
-        // One flat row so all ten blocks are the same width; a small gap separates criteria.
-        HStack(spacing: 2) {
-            ForEach(Array(version.criteria.enumerated()), id: \.element.id) { index, criterion in
-                let score = scores[criterion.id]
-                if index > 0 {
-                    Color.clear.frame(width: 3, height: height)
-                }
-                ForEach(0..<max(criterion.maxPoints, 0), id: \.self) { point in
-                    // Earned points are solid; the rest are outlined in the criterion's ink, and
-                    // dashed when the criterion hasn't been scored at all.
-                    Rectangle()
-                        .fill(point < (score ?? 0) ? Theme.criterionColor(index) : .clear)
-                        .overlay {
-                            Rectangle().strokeBorder(Theme.criterionColor(index),
-                                                     style: StrokeStyle(lineWidth: 1, dash: score == nil ? [2, 2] : []))
-                        }
-                        .frame(height: height)
-                }
+    private var earned: [(id: Int, color: Color)] {
+        var result: [(id: Int, color: Color)] = []
+        for (index, criterion) in version.criteria.enumerated() {
+            for _ in 0..<min(max(scores[criterion.id] ?? 0, 0), max(criterion.maxPoints, 0)) {
+                result.append((id: result.count, color: Theme.criterionColor(index)))
             }
         }
-        .animation(.snappy(duration: 0.25), value: scores)
+        return result
+    }
+
+    private var slots: Int { max(version.criteria.reduce(0) { $0 + max($1.maxPoints, 0) }, 1) }
+
+    var body: some View {
+        let earned = earned
+        HStack(spacing: 3) {
+            ForEach(earned, id: \.id) { point in
+                Capsule()
+                    .fill(point.color)
+                    .overlay { Gloss(shape: Capsule(), strength: 0.45) }
+                    .frame(height: height)
+                    .frame(maxWidth: .infinity)
+                    .scaleEffect(x: shown || reduceMotion ? 1 : 0.05, y: shown || reduceMotion ? 1 : 0.4, anchor: .leading)
+                    .opacity(shown || reduceMotion ? 1 : 0)
+                    .animation(reduceMotion ? nil : Motion.fill(point.id), value: shown)
+            }
+            // Empty slots keep every point the same width, so lengths compare across rows.
+            ForEach(earned.count..<max(slots, earned.count), id: \.self) { _ in
+                Color.clear.frame(height: height).frame(maxWidth: .infinity)
+            }
+        }
+        .onAppear { shown = true }
+        .animation(Motion.pop, value: scores)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(ScoreText.spoken(version: version, scores: scores))
     }
 }
 
-/// The same ten blocks bent into a ring, with the total in the middle. Each arc is one
-/// point, coloured by its criterion, and the arcs sweep in when the ring appears.
+/// The earned points bent into a ring, with the total in the middle: one glossy arc per
+/// criterion, as long as the points it earned, sweeping round when the ring appears. Points
+/// not earned leave the ring open.
 struct ScoreRing: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var version: SystemVersion
@@ -50,35 +64,44 @@ struct ScoreRing: View {
     private struct Arc: Identifiable {
         var id: Int
         var color: Color
-        var earned: Bool
+        var start: Double
+        var end: Double
     }
 
     private var arcs: [Arc] {
+        let slots = Double(max(version.criteria.reduce(0) { $0 + max($1.maxPoints, 0) }, 1))
         var result: [Arc] = []
+        var cursor = 0.0
         for (index, criterion) in version.criteria.enumerated() {
-            for point in 0..<max(criterion.maxPoints, 0) {
-                result.append(Arc(id: result.count, color: Theme.criterionColor(index),
-                                  earned: point < (scores[criterion.id] ?? 0)))
-            }
+            let earned = Double(min(max(scores[criterion.id] ?? 0, 0), max(criterion.maxPoints, 0)))
+            guard earned > 0 else { continue }
+            result.append(Arc(id: index, color: Theme.criterionColor(index),
+                              start: cursor / slots, end: (cursor + earned) / slots))
+            cursor += earned
         }
         return result
     }
 
     var body: some View {
-        let arcs = arcs
-        let count = max(arcs.count, 1)
         let lineWidth = diameter * 0.13
-        let gap = 0.012
+        // Room for the round caps, so neighbouring arcs never overlap.
+        let gap = Double(lineWidth / (diameter * .pi)) * 1.3
         ZStack {
-            ForEach(arcs) { arc in
-                let start = Double(arc.id) / Double(count) + gap / 2
-                let end = Double(arc.id + 1) / Double(count) - gap / 2
-                Circle()
-                    .trim(from: start, to: shown || reduceMotion ? end : start)
-                    .stroke(arc.color.opacity(arc.earned ? 1 : 0.2),
-                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.spring(duration: 0.5, bounce: 0.25).delay(Double(arc.id) * 0.045), value: shown)
+            Circle().stroke(Theme.fill.opacity(0.6), lineWidth: lineWidth * 0.35)
+            ForEach(Array(arcs.enumerated()), id: \.element.id) { order, arc in
+                let start = arc.start + gap / 2
+                let end = max(arc.end - gap / 2, start + 0.001)
+                let to = shown || reduceMotion ? end : start
+                ZStack {
+                    Circle().trim(from: start, to: to)
+                        .stroke(arc.color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    // The gloss: a thin bright line along the arc.
+                    Circle().trim(from: start, to: to)
+                        .stroke(.white.opacity(0.35), style: StrokeStyle(lineWidth: lineWidth * 0.28, lineCap: .round))
+                        .padding(-lineWidth * 0.18)
+                }
+                .rotationEffect(.degrees(-90))
+                .animation(reduceMotion ? nil : .spring(duration: 0.7, bounce: 0.35).delay(Double(order) * 0.12), value: shown)
             }
             Text(total.map(String.init) ?? "–")
                 .font(.display(size: diameter * 0.40, weight: .heavy))
@@ -187,7 +210,7 @@ struct BreakdownRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Rectangle().fill(color).frame(width: 9, height: 9).accessibilityHidden(true)
+                Circle().fill(color).frame(width: 9, height: 9).accessibilityHidden(true)
                 Text(criterion.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
                 if let level = score.flatMap(criterion.level(for:)), !level.label.isBlank {
                     Text(level.label).font(.subheadline).foregroundStyle(Theme.inkSoft).lineLimit(1)
@@ -300,9 +323,10 @@ struct CommunityScoreCard: View {
         }
         .padding(Theme.spacing)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // A quieter sunk well, so it never reads as your own score.
+        .background(Theme.fill.opacity(0.7), in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(Theme.inkSoft.opacity(0.55), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4]))
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(Theme.rule, lineWidth: 1)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Community score, \(score.systemName) version \(score.versionNumber): \(score.formattedAverage) out of 10 from \(score.userCount) \(score.userCount == 1 ? "person" : "people")\(score.isLimited ? ". Limited ratings." : "")")
@@ -319,21 +343,21 @@ struct AllocationStrip: View {
                 let total = max(criteria.reduce(0) { $0 + max($1.maxPoints, 0) }, RankingRules.totalPoints)
                 HStack(spacing: 2) {
                     ForEach(Array(criteria.enumerated()), id: \.element.id) { index, criterion in
-                        Rectangle()
+                        Capsule()
                             .fill(Theme.criterionColor(index))
+                            .overlay { Gloss(shape: Capsule(), strength: 0.4) }
                             .frame(width: max(0, proxy.size.width * CGFloat(criterion.maxPoints) / CGFloat(total) - 2))
                     }
                     Spacer(minLength: 0)
                 }
             }
             .frame(height: 10)
-            .overlay { Rectangle().strokeBorder(Theme.rule, lineWidth: 1.5) }
             .accessibilityHidden(true)
 
             FlowLayout(spacing: 6) {
                 ForEach(Array(criteria.enumerated()), id: \.element.id) { index, criterion in
                     HStack(spacing: 5) {
-                        Rectangle().fill(Theme.criterionColor(index)).frame(width: 8, height: 8)
+                        Circle().fill(Theme.criterionColor(index)).frame(width: 8, height: 8)
                         Text("\(criterion.name.isBlank ? "Unnamed" : criterion.name) \(criterion.maxPoints)")
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Theme.ink)

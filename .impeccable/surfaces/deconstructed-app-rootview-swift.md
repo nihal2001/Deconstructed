@@ -9,20 +9,20 @@ related_targets: ["Deconstructed/DesignSystem/Theme.swift"]
 
 Scope: the whole iOS app, every tab and sheet. Mode: Operate. Platform: ios.
 
-Audience and job: diners finding where to eat and logging/ranking visits with explainable scores. Glance-first: a score and where it came from must read in under a second, one-handed, in daylight.
+Audience and job: diners finding where to eat and logging/ranking visits with explainable scores. Glance-first, one-handed, in daylight.
 
-Constraints: native navigation (tab bar, stacks, sheets), Dynamic Type, SF Symbols, light only. Demo labelling stays on every screen. User steer: distinct and non-corporate, sharp in places, not too round, no blurry soft shadows, coloured ground welcome.
+Constraints: native navigation (tab bar with SF Symbol icons, stacks, sheets), Dynamic Type, light only, Reduce Motion honoured. Demo labelling stays on every screen. User steer (2026-11-05): softer, rounder, easier to look at, more animated; contrasting colour to highlight what matters; soft diffuse shadows; pep and steel; glossy and glass-like; calm background; score bars show only earned points, closed up.
 
 ## Direction contract
 
-THESIS: A press proof on peach stock. Every restaurant, score and visit is a ruled cream plate with a crisp offset shadow in a second ink. Refuses the incumbent dark glass canvas, soft blurred card shadows, and the grey-list-with-one-tint category default.
+THESIS: Glass gelato. Glossy frosted panels, very round, on calm steel; colour is spent on emphasis: the key panel, the podium, the primary action. Refuses the previous hard-ruled press proof and the flat grey category list.
 
-OWN-WORLD: Stock #FBE2D4 peach; plates #FFF8F3 ruled 2pt in oxblood ink #2A0E08, 4pt corners; secondary text #6A4A40. Offset shadows are solid, unblurred, 5pt down-right: teal #0E6E6A by default, ochre #D9961B on the screen's key plate, podium rows in their rank ink. Criterion inks tomato #D93A1C, teal, ochre, ultramarine #2E3FA8, plum, moss. Teal is the one interactive tint. SF Pro throughout, heavy for titles and scores; small mono uppercase keys for data labels. Buttons are capsules with a 3pt ink offset that they press into.
+OWN-WORLD: Steel gradient #EEF2F6→#DFE5EC. Panels white 72% over ultra-thin material, a top gloss band, a bright 1pt white edge, soft diffuse shadows, 24pt corners (28 on the key panel, 16 on controls, 14 on badges). Key panel and primary actions: cobalt→ocean gradient #2452E0→#0B6FB8 with gloss. Criteria scoops: coral #FF4D3A, cobalt #2F6BFF, amber #FFB000, aqua #00C2A8, violet, pink. Podium badges: coral, cyan (navy text), cobalt gradients. SF Pro Rounded throughout. Tint #1F55E0. Tab bar pre-26: frosted with a cobalt capsule behind the selected icon.
 
-STORY: The diner sees rank and score first, reads which criteria made it from the outlined 10-cell bar, taps through to the breakdown, logs a visit with the one teal button.
+STORY: The diner sees their ranking with glossy podium scoops, reads the earned-points bar, taps through to a restaurant whose score ring and bar fill in, logs a visit by tapping springy score tiles.
 
-FIRST VIEWPORT: Large heavy title on peach. Rankings: key plate (RANKED WITH, system, ruled allocation strip, legend) with ochre offset; filter capsules; ranked plates with square rank tile, name + meta, outlined criterion cells, heavy score right. Restaurant: key plate with name, meta, visited tag; teal Log a visit; secondary capsules; score plate with ring and breakdown.
+FIRST VIEWPORT: Rankings: large rounded title; cobalt glass key panel (Ranked with, system, criterion allocation, legend); glass filter chips; glass rows with rank scoop, name, earned-points bar, round score scoop. Restaurant: cobalt key panel with name and visited tag; cobalt Log a visit; glass secondary actions; score panel with ring.
 
-FORM: Design Annual Plates (catalog challenger design-annual-s-plate-section), steered over two rounds to Peach & teal (scheme F, chosen 2026-11-04). seed:336eb3858e01ccc0. Signature move: the crisp offset proof shadow, with the podium casting in its own ink so the top three lift off the list.
+FORM: Gelato Counter (my own grounded pick), raised by the user over four steer rounds to Glass Gelato, Ocean Neon scheme (user's choice, 2026-11-05). seed:c5af56b99e9922c2. Signature move: scores fill in point by point, each glossy pill springing out in turn, and the ring sweeps round; every tap squishes with a light haptic.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

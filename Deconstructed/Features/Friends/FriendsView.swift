@@ -191,8 +191,9 @@ struct FollowButton: View {
                 .padding(.vertical, 8)
                 .frame(minHeight: 36)
                 .contentShape(Capsule())
-                .background(isFollowing ? Theme.plate : Theme.tint, in: Capsule())
-                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
+                .background { Gloss(shape: Capsule(), strength: 0.4) }
+                .background { Capsule().fill(isFollowing ? AnyShapeStyle(Theme.plate) : AnyShapeStyle(Theme.keyGradient)) }
+                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1) }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isFollowing ? "Following \(user.displayName). Tap to unfollow." : "Follow \(user.displayName)")

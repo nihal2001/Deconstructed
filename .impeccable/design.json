@@ -1,452 +1,657 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-04T22:03:29+00:00",
+  "generatedAt": "2026-11-05T20:00:38+00:00",
   "title": "Design System: Deconstructed",
   "extensions": {
+    "platform": "ios",
+    "appearance": "light only",
     "colorMeta": {
-      "stock": {
+      "steel-top": {
         "role": "neutral",
-        "displayName": "Peach Stock",
-        "canonical": "#FBE2D4",
+        "displayName": "Steel Top",
+        "canonical": "#EEF2F6",
+        "oklch": "oklch(95.9% 0.007 247.9)",
         "tonalRamp": [
-          "#100A07",
-          "#2D231D",
-          "#4D3F36",
-          "#705D52",
-          "#927E72",
-          "#B2A197",
-          "#D4C6BE",
-          "#F6ECE7"
+          "#0B0B0C",
+          "#242526",
+          "#404244",
+          "#5F6264",
+          "#7F8386",
+          "#A2A5A8",
+          "#C7C9CC",
+          "#EDEFF0"
         ]
       },
-      "plate": {
+      "steel-bottom": {
         "role": "neutral",
-        "displayName": "Cream Plate",
-        "canonical": "#FFF8F3",
+        "displayName": "Steel Bottom",
+        "canonical": "#DFE5EC",
+        "oklch": "oklch(91.9% 0.012 252.1)",
         "tonalRamp": [
-          "#0C0B0A",
-          "#272422",
-          "#45413E",
-          "#65605C",
-          "#87817D",
-          "#A9A4A1",
-          "#CCC8C6",
-          "#F0EEEC"
+          "#0A0B0C",
+          "#232527",
+          "#3F4246",
+          "#5D6267",
+          "#7E8389",
+          "#A1A5AB",
+          "#C6C9CE",
+          "#ECEFF2"
         ]
       },
-      "fill": {
+      "glass-plate": {
         "role": "neutral",
-        "displayName": "Sunk Peach",
-        "canonical": "#F6D3C2",
+        "displayName": "Glass Plate",
+        "canonical": "rgba(255, 255, 255, 0.72)"
+      },
+      "glass-edge": {
+        "role": "neutral",
+        "displayName": "Glass Edge",
+        "canonical": "rgba(255, 255, 255, 0.9)"
+      },
+      "sunk-well": {
+        "role": "neutral",
+        "displayName": "Sunk Well",
+        "canonical": "#E3E8EF",
+        "oklch": "oklch(92.9% 0.011 256.7)",
         "tonalRamp": [
-          "#110906",
-          "#30211A",
-          "#513D33",
-          "#765A4D",
-          "#987B6D",
-          "#B89F93",
-          "#D8C5BB",
-          "#F9EBE5"
+          "#0A0B0C",
+          "#242527",
+          "#404246",
+          "#5E6166",
+          "#7E8389",
+          "#A2A5AB",
+          "#C6C9CD",
+          "#ECEFF1"
         ]
       },
       "hairline": {
         "role": "neutral",
-        "displayName": "Hairline Blush",
-        "canonical": "#E7C3B2",
+        "displayName": "Hairline",
+        "canonical": "#D5DCE4",
+        "oklch": "oklch(89.1% 0.013 251.6)",
         "tonalRamp": [
-          "#110905",
-          "#30211A",
-          "#523C32",
-          "#765A4C",
-          "#997B6D",
-          "#B89F93",
-          "#D9C4BB",
-          "#F9EBE5"
+          "#0A0B0D",
+          "#232528",
+          "#3F4246",
+          "#5D6267",
+          "#7D838A",
+          "#A0A6AC",
+          "#C5CACE",
+          "#ECEFF2"
+        ]
+      },
+      "shadow-ink": {
+        "role": "neutral",
+        "displayName": "Shadow Ink",
+        "canonical": "#1E2836",
+        "oklch": "oklch(27.4% 0.030 256.8)",
+        "tonalRamp": [
+          "#090B0E",
+          "#21252B",
+          "#3C434C",
+          "#59626F",
+          "#778394",
+          "#9CA6B4",
+          "#C2CAD5",
+          "#E9EFF7"
         ]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Oxblood Ink",
-        "canonical": "#2A0E08",
+        "displayName": "Ink",
+        "canonical": "#18202B",
+        "oklch": "oklch(24.1% 0.024 256.4)",
         "tonalRamp": [
-          "#120806",
-          "#31201C",
-          "#533B36",
-          "#785851",
-          "#9B7971",
-          "#BA9E97",
-          "#DAC3BE",
-          "#FBEAE7"
+          "#0A0B0E",
+          "#22252A",
+          "#3D424A",
+          "#5A626D",
+          "#798391",
+          "#9DA6B1",
+          "#C3CAD3",
+          "#EAEFF5"
         ]
       },
       "ink-soft": {
         "role": "neutral",
-        "displayName": "Soft Ink",
-        "canonical": "#6A4A40",
+        "displayName": "Ink Soft",
+        "canonical": "#56606C",
+        "oklch": "oklch(48.5% 0.023 253.0)",
         "tonalRamp": [
-          "#120906",
-          "#30211C",
-          "#523C35",
-          "#775950",
-          "#9A7A70",
-          "#B99E96",
-          "#D9C4BD",
-          "#FAEBE6"
+          "#090B0E",
+          "#22252A",
+          "#3D434A",
+          "#5A626C",
+          "#798390",
+          "#9DA6B1",
+          "#C3CAD2",
+          "#EAEFF5"
         ]
       },
-      "teal": {
+      "tint": {
         "role": "primary",
-        "displayName": "Proof Teal",
-        "canonical": "#0E6E6A",
+        "displayName": "Interactive Cobalt",
+        "canonical": "#1F55E0",
+        "oklch": "oklch(50.9% 0.219 263.9)",
         "tonalRamp": [
-          "#000F0E",
-          "#012C2A",
-          "#0F4C49",
-          "#216E6B",
-          "#47918C",
-          "#79B1AD",
-          "#A9D3D0",
-          "#D8F6F3"
+          "#020922",
+          "#0B2053",
+          "#1A3B8A",
+          "#2957C5",
+          "#3C76FF",
+          "#6CA0FF",
+          "#9DC8FF",
+          "#CFEFFF"
         ]
       },
-      "tomato": {
-        "role": "secondary",
-        "displayName": "Tomato",
-        "canonical": "#D93A1C",
+      "key-cobalt": {
+        "role": "primary",
+        "displayName": "Key Cobalt",
+        "canonical": "#2452E0",
+        "oklch": "oklch(50.5% 0.221 265.1)",
         "tonalRamp": [
-          "#220000",
-          "#4E0000",
-          "#7E0E00",
-          "#B12202",
-          "#D94C32",
-          "#F27F68",
-          "#FFAE9B",
-          "#FFDDCF"
+          "#020922",
+          "#0D2053",
+          "#1C3A8B",
+          "#2D56C6",
+          "#4075FF",
+          "#6E9FFF",
+          "#9EC7FF",
+          "#D0EEFF"
+        ],
+        "note": "Start of the key gradient (top-leading); ends at key-ocean (bottom-trailing)."
+      },
+      "key-ocean": {
+        "role": "primary",
+        "displayName": "Key Ocean",
+        "canonical": "#0B6FB8",
+        "oklch": "oklch(53.0% 0.140 248.5)",
+        "tonalRamp": [
+          "#010C19",
+          "#072741",
+          "#13446E",
+          "#20659F",
+          "#3187D1",
+          "#6AABE8",
+          "#9ECEFF",
+          "#D1F3FF"
         ]
       },
-      "ochre": {
-        "role": "secondary",
-        "displayName": "Ochre",
-        "canonical": "#D9961B",
+      "coral": {
+        "role": "tertiary",
+        "displayName": "Coral Scoop",
+        "canonical": "#FF4D3A",
+        "oklch": "oklch(67.1% 0.217 29.9)",
         "tonalRamp": [
-          "#180600",
-          "#3B1D00",
-          "#623700",
-          "#8B5300",
-          "#AF7500",
-          "#CC9B53",
-          "#E8C28E",
-          "#FFEAC6"
+          "#1D0201",
+          "#490904",
+          "#7B150C",
+          "#B02316",
+          "#E73625",
+          "#FF7461",
+          "#FFA796",
+          "#FFD8CB"
         ]
       },
-      "ultramarine": {
-        "role": "secondary",
-        "displayName": "Ultramarine",
-        "canonical": "#2E3FA8",
+      "cobalt": {
+        "role": "tertiary",
+        "displayName": "Cobalt Scoop",
+        "canonical": "#2F6BFF",
+        "oklch": "oklch(58.1% 0.229 263.9)",
         "tonalRamp": [
-          "#040725",
-          "#151F52",
-          "#2A3A83",
-          "#4157B7",
-          "#607ADD",
-          "#87A0F3",
-          "#B2C7FF",
-          "#DEEDFF"
+          "#020923",
+          "#0A2055",
+          "#173A8D",
+          "#2656CA",
+          "#3874FF",
+          "#699FFF",
+          "#9BC7FF",
+          "#CEEFFF"
         ]
       },
-      "plum": {
-        "role": "secondary",
-        "displayName": "Plum",
-        "canonical": "#8A2D63",
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Amber Scoop",
+        "canonical": "#FFB000",
+        "oklch": "oklch(81.2% 0.170 76.4)",
         "tonalRamp": [
-          "#1A020F",
-          "#3F122B",
-          "#67274B",
-          "#933E6D",
-          "#B8608F",
-          "#D58AB0",
-          "#F0B5D2",
-          "#FFE1F5"
+          "#150800",
+          "#391E00",
+          "#613700",
+          "#8D5200",
+          "#BA7000",
+          "#D5982E",
+          "#F0C07A",
+          "#FFE9BA"
         ]
       },
-      "moss": {
-        "role": "secondary",
-        "displayName": "Moss",
-        "canonical": "#44701A",
+      "aqua": {
+        "role": "tertiary",
+        "displayName": "Aqua Scoop",
+        "canonical": "#00C2A8",
+        "oklch": "oklch(72.9% 0.134 178.5)",
         "tonalRamp": [
-          "#040F00",
-          "#172C01",
-          "#2E4C0D",
-          "#476E1D",
-          "#679142",
-          "#8FB273",
-          "#B8D4A3",
-          "#E3F6D4"
+          "#00100B",
+          "#002E25",
+          "#005042",
+          "#007562",
+          "#009B83",
+          "#4BBBA6",
+          "#8DDBCA",
+          "#C7FBEF"
+        ]
+      },
+      "violet": {
+        "role": "tertiary",
+        "displayName": "Violet Scoop",
+        "canonical": "#8B3DFF",
+        "oklch": "oklch(57.5% 0.263 294.9)",
+        "tonalRamp": [
+          "#0E0323",
+          "#2B1056",
+          "#4C228E",
+          "#6F34CB",
+          "#944BFF",
+          "#B183FF",
+          "#D1B3FF",
+          "#F3E0FF"
+        ]
+      },
+      "pink": {
+        "role": "tertiary",
+        "displayName": "Pink Scoop",
+        "canonical": "#FF4FA3",
+        "oklch": "oklch(69.5% 0.223 355.3)",
+        "tonalRamp": [
+          "#1B010C",
+          "#460627",
+          "#761145",
+          "#A91D66",
+          "#DE2E88",
+          "#F76FAA",
+          "#FFA3CD",
+          "#FFD5F1"
+        ]
+      },
+      "podium-coral": {
+        "role": "secondary",
+        "displayName": "Podium Coral",
+        "canonical": "#F0402C",
+        "oklch": "oklch(63.2% 0.215 30.4)",
+        "tonalRamp": [
+          "#1D0201",
+          "#490904",
+          "#7A160C",
+          "#AF2516",
+          "#E63825",
+          "#FE7560",
+          "#FFA895",
+          "#FFD9CB"
+        ]
+      },
+      "podium-cyan": {
+        "role": "secondary",
+        "displayName": "Podium Cyan",
+        "canonical": "#00B4F0",
+        "oklch": "oklch(72.2% 0.146 231.4)",
+        "tonalRamp": [
+          "#000D18",
+          "#002A3E",
+          "#00496A",
+          "#006B99",
+          "#008FC9",
+          "#4AB2E1",
+          "#8CD4F9",
+          "#C6F7FF"
+        ]
+      },
+      "on-podium-cyan": {
+        "role": "secondary",
+        "displayName": "Deep Navy on Cyan",
+        "canonical": "#06283A",
+        "oklch": "oklch(26.3% 0.051 236.7)",
+        "tonalRamp": [
+          "#060C10",
+          "#1B272F",
+          "#324551",
+          "#4B6576",
+          "#66879D",
+          "#8EA9BC",
+          "#B7CDDB",
+          "#E2F1FB"
+        ]
+      },
+      "positive": {
+        "role": "status",
+        "displayName": "Positive Green",
+        "canonical": "#0A8061",
+        "oklch": "oklch(53.4% 0.106 168.0)",
+        "tonalRamp": [
+          "#010F09",
+          "#072C21",
+          "#134D3B",
+          "#207158",
+          "#329676",
+          "#6DB69B",
+          "#A1D7C1",
+          "#D3F9E9"
+        ]
+      },
+      "saved": {
+        "role": "status",
+        "displayName": "Saved Blue",
+        "canonical": "#2A5FE8",
+        "oklch": "oklch(53.7% 0.215 264.2)",
+        "tonalRamp": [
+          "#020921",
+          "#0C2052",
+          "#1B3B89",
+          "#2B57C4",
+          "#3E76FF",
+          "#6DA0FF",
+          "#9EC8FF",
+          "#D0EFFF"
         ]
       },
       "warning": {
-        "role": "tertiary",
-        "displayName": "Proof Red",
-        "canonical": "#B52E12",
+        "role": "status",
+        "displayName": "Warning Red",
+        "canonical": "#D11F3F",
+        "oklch": "oklch(55.6% 0.208 19.2)",
         "tonalRamp": [
-          "#200000",
-          "#4A0800",
-          "#781C09",
-          "#A93119",
-          "#D0563E",
-          "#EA856F",
-          "#FFB2A0",
-          "#FFDFD2"
-        ]
-      },
-      "on-tint": {
-        "role": "neutral",
-        "displayName": "White",
-        "canonical": "#FFFFFF",
-        "tonalRamp": [
-          "#1A1A1A",
-          "#333333",
-          "#555555",
-          "#777777",
-          "#999999",
-          "#BBBBBB",
-          "#DDDDDD",
-          "#FFFFFF"
+          "#1C0204",
+          "#480912",
+          "#781724",
+          "#AD2538",
+          "#E3384E",
+          "#FB747B",
+          "#FFA7A8",
+          "#FFD8D7"
         ]
       }
     },
+    "gradients": [
+      {
+        "name": "steel-ground",
+        "value": "linear-gradient(to bottom, #EEF2F6, #DFE5EC)",
+        "purpose": "Every screen background."
+      },
+      {
+        "name": "key",
+        "value": "linear-gradient(135deg, #2452E0, #0B6FB8)",
+        "purpose": "Key panel, primary button, selected chip."
+      },
+      {
+        "name": "podium-1",
+        "value": "linear-gradient(to bottom, #FF7A66, #F0402C)",
+        "purpose": "Rank 1 badge and score scoop."
+      },
+      {
+        "name": "podium-2",
+        "value": "linear-gradient(to bottom, #5FDCFF, #00B4F0)",
+        "purpose": "Rank 2 badge and score scoop; text #06283A."
+      },
+      {
+        "name": "podium-3",
+        "value": "linear-gradient(to bottom, #5B8CFF, #2F6BFF)",
+        "purpose": "Rank 3 badge and score scoop."
+      },
+      {
+        "name": "podium-rest",
+        "value": "linear-gradient(to bottom, #EEF1F5, #D6DCE4)",
+        "purpose": "Ranks 4 and below; text ink-soft."
+      },
+      {
+        "name": "gloss",
+        "value": "linear-gradient(to bottom, rgba(255,255,255,S), rgba(255,255,255,0) 55%)",
+        "purpose": "Top gloss band; S is 0.6 panels, 0.45 to 0.5 controls and scoops, 0.4 primary, 0.16 key panel."
+      },
+      {
+        "name": "tab-capsule",
+        "value": "linear-gradient(135deg, #3A6BF0, #0B6FB8)",
+        "purpose": "Selected tab capsule before iOS 26 (48x30pt, radius 15, top 45% white at 30%)."
+      }
+    ],
     "typographyMeta": {
-      "large-title": {
-        "displayName": "Large Title",
-        "purpose": "Navigation large titles on every tab."
+      "display": {
+        "displayName": "Display",
+        "purpose": "Large navigation titles and the restaurant name in its key panel (largeTitle, bold)."
       },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Scores on ranked rows and the large score badge."
-      },
-      "title3": {
-        "displayName": "Title3",
-        "purpose": "Section titles, system names on key plates, empty-state titles."
+      "score": {
+        "displayName": "Score",
+        "purpose": "Score totals, heavy with monospaced digits; size follows the badge (headline, title2, largeTitle) or 40% of ring diameter."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Restaurant names, primary button labels, level numbers."
+        "purpose": "Section titles, system picker, score-grid numerals (title3, semibold)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Row names, primary button, inline nav titles (headline, semibold)."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Row text, breakdowns, chip and secondary button labels."
+        "purpose": "Row text, chip and secondary button labels, breakdown rows (subheadline)."
       },
-      "footnote": {
-        "displayName": "Footnote",
-        "purpose": "Metadata and criterion descriptions."
+      "detail": {
+        "displayName": "Detail",
+        "purpose": "Subtitles and level descriptions (footnote)."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Tags, stamps and legend entries."
-      },
-      "data-key": {
-        "displayName": "Data Key",
-        "purpose": "A mono uppercase key naming the data value beside it. Never a heading or kicker."
+        "purpose": "Tags and data keys (caption, semibold); demo badge at caption2. Sentence case."
       }
     },
     "shadows": [
       {
-        "name": "plate-offset",
-        "value": "5px 5px 0 0 #0E6E6A",
-        "purpose": "Default solid offset under any plate."
+        "name": "panel",
+        "value": "0 10px 22px rgba(30,40,54,0.10)",
+        "purpose": "Glass cards and secondary buttons."
       },
       {
-        "name": "key-plate-offset",
-        "value": "6px 6px 0 0 #D9961B",
-        "purpose": "The one most important plate on a screen."
+        "name": "floating-glass",
+        "value": "0 10px 22px rgba(30,40,54,0.12)",
+        "purpose": "Pre-iOS 26 Liquid Glass fallback and toasts."
       },
       {
-        "name": "podium-offset",
-        "value": "5px 5px 0 0 <rank ink: #D93A1C / #0E6E6A / #2E3FA8>",
-        "purpose": "Ranked rows 1 to 3; rows below cast nothing."
+        "name": "key-glow",
+        "value": "0 14px 24px rgba(47,107,255,0.32)",
+        "purpose": "Under the key panel only."
       },
       {
-        "name": "button-primary-offset",
-        "value": "3px 3px 0 0 #2A0E08",
-        "purpose": "Under the primary capsule; pressed moves onto it."
+        "name": "primary-glow",
+        "value": "0 8px 14px rgba(47,107,255,0.35)",
+        "purpose": "Primary button; 0 8px 14px rgba(0,0,0,0.15) when on the key panel."
       },
       {
-        "name": "button-secondary-offset",
-        "value": "2px 2px 0 0 #2A0E08",
-        "purpose": "Under secondary capsules."
+        "name": "scoop-glow",
+        "value": "0 4px 8px <scoop hue at 0.35>",
+        "purpose": "Podium badges (8/4), score scoops (10/5), avatars (8/4), selected chips and tiles; 0.08 below the podium."
       },
       {
-        "name": "pin-offset",
-        "value": "2px 2px 0 0 #2A0E08",
-        "purpose": "Under map pin badges."
-      },
-      {
-        "name": "glass-fallback-offset",
-        "value": "3px 3px 0 0 #2A0E08",
-        "purpose": "Floating controls before iOS 26."
+        "name": "tab-edge",
+        "value": "linear-gradient(rgba(30,40,54,0), rgba(30,40,54,0.08)) 10px",
+        "purpose": "Soft fade above the pre-iOS 26 tab bar instead of a hairline."
       }
     ],
     "motion": [
       {
         "name": "press",
-        "value": "snappy, 0.12s",
-        "purpose": "Buttons moving onto their offset shadow."
+        "value": "spring(duration: 0.28, bounce: 0.45)",
+        "purpose": "Squish to 0.94 on every press, spring back."
       },
       {
-        "name": "select",
-        "value": "snappy, 0.15s",
-        "purpose": "Chip selection."
+        "name": "pop",
+        "value": "spring(duration: 0.4, bounce: 0.35)",
+        "purpose": "Selection and state changes; selected tiles pop to 1.03 to 1.15."
       },
       {
-        "name": "score-fill",
-        "value": "snappy, 0.25s",
-        "purpose": "Score bar cells filling."
+        "name": "fill",
+        "value": "spring(duration: 0.5, bounce: 0.3), delay min(index * 0.035s, 0.4s)",
+        "purpose": "Score-bar points springing in one after another."
       },
       {
         "name": "ring-sweep",
-        "value": "spring(duration 0.5, bounce 0.25), 0.045s stagger per arc",
-        "purpose": "Score ring arcs sweeping in on appear; skipped under Reduce Motion."
+        "value": "spring(duration: 0.7, bounce: 0.35), delay index * 0.12s",
+        "purpose": "Score ring arcs sweeping round."
+      },
+      {
+        "name": "reduce-motion",
+        "value": "none",
+        "purpose": "Bars and rings appear finished; no fill or sweep."
       }
     ],
-    "breakpoints": []
+    "haptics": [
+      {
+        "name": "press",
+        "value": "impact(light)",
+        "purpose": "Primary button press."
+      },
+      {
+        "name": "selection",
+        "value": "selection",
+        "purpose": "Chip and score-tile selection."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "iphone",
+        "value": "Dynamic Type scaling; chips and legends wrap (FlowLayout) instead of breakpoints"
+      }
+    ]
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one main action on a screen; presses down onto its 3pt ink shadow.",
+      "description": "The one main action on a screen: key gradient capsule with gloss, squishes on press.",
       "html": "<button class=\"ds-btn-primary\">Log a visit</button>",
-      "css": ".ds-btn-primary { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 17px; font-weight: 600; color: #FFFFFF; background: #0E6E6A; border: 2px solid #2A0E08; border-radius: 999px; min-height: 52px; padding: 12px 18px; width: 280px; box-shadow: 3px 3px 0 0 #2A0E08; transition: transform 0.12s, box-shadow 0.12s; cursor: pointer; } .ds-btn-primary:active { transform: translate(3px,3px); box-shadow: 0 0 0 0 #2A0E08; } .ds-btn-primary:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 4px; } .ds-btn-primary:disabled { background: #F6D3C2; color: #6A4A40; box-shadow: 3px 3px 0 0 #E7C3B2; }"
+      "css": ".ds-btn-primary { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; font-size: 17px; font-weight: 600; color: #fff; width: 100%; min-height: 54px; padding: 13px 18px; border: 1px solid rgba(255,255,255,0.45); border-radius: 9999px; background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0) 55%), linear-gradient(135deg, #2452E0, #0B6FB8); box-shadow: 0 8px 14px rgba(47,107,255,0.35); cursor: pointer; transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1); } .ds-btn-primary:hover { box-shadow: 0 10px 18px rgba(47,107,255,0.42); } .ds-btn-primary:active { transform: scale(0.94); } .ds-btn-primary:focus-visible { outline: 2px solid #1F55E0; outline-offset: 3px; } .ds-btn-primary:disabled { background: #E3E8EF; color: #56606C; box-shadow: none; }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Cream capsule for actions beside the primary one; 2pt ink offset.",
-      "html": "<button class=\"ds-btn-secondary\">Save to try</button>",
-      "css": ".ds-btn-secondary { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 999px; min-height: 46px; padding: 11px 14px; width: 200px; box-shadow: 2px 2px 0 0 #2A0E08; transition: transform 0.12s, box-shadow 0.12s, background 0.12s; cursor: pointer; } .ds-btn-secondary:active { background: #F6D3C2; transform: translate(2px,2px); box-shadow: 0 0 0 0 #2A0E08; } .ds-btn-secondary:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 4px; }"
+      "description": "Glass capsule for actions beside the primary.",
+      "html": "<button class=\"ds-btn-secondary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"><path d=\"M6 3h12v18l-6-4-6 4z\"/></svg> Save</button>",
+      "css": ".ds-btn-secondary { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #18202B; min-width: 160px; min-height: 48px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.9); border-radius: 9999px; background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%), rgba(255,255,255,0.72); box-shadow: 0 10px 22px rgba(30,40,54,0.10); cursor: pointer; transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1); } .ds-btn-secondary:hover { background-color: rgba(255,255,255,0.9); } .ds-btn-secondary:active { transform: scale(0.94); } .ds-btn-secondary:focus-visible { outline: 2px solid #1F55E0; outline-offset: 3px; }"
     },
     {
-      "name": "Segmented Chips",
+      "name": "Glass Chips",
       "kind": "chip",
-      "refersTo": "chip-selected",
-      "description": "Ruled capsules standing in for a segmented control; selected is teal.",
-      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">Version 2 · current</button><button class=\"ds-chip\">Version 1</button></div>",
-      "css": ".ds-chips { display: flex; gap: 8px; flex-wrap: wrap; } .ds-chip { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 999px; min-height: 36px; padding: 0 14px; cursor: pointer; transition: background 0.15s, color 0.15s; } .ds-chip:hover { background: #F6D3C2; } .ds-chip-on, .ds-chip-on:hover { background: #0E6E6A; color: #FFFFFF; } .ds-chip:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 3px; }"
+      "refersTo": "chip",
+      "description": "Segmented-control replacement; selected chip fills with the key gradient.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">General</button><button class=\"ds-chip\">Fine Dining</button><button class=\"ds-chip\">Fast Casual</button></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; background: linear-gradient(#EEF2F6, #DFE5EC); } .ds-chip { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #18202B; height: 38px; padding: 0 16px; border: 1px solid rgba(255,255,255,0.9); border-radius: 9999px; background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0) 55%), rgba(255,255,255,0.72); box-shadow: 0 5px 10px rgba(30,40,54,0.08); cursor: pointer; transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1); } .ds-chip:active { transform: scale(0.94); } .ds-chip:focus-visible { outline: 2px solid #1F55E0; outline-offset: 2px; } .ds-chip-on { color: #fff; background: linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%), linear-gradient(135deg, #2452E0, #0B6FB8); box-shadow: 0 5px 10px rgba(47,107,255,0.3); }"
     },
     {
-      "name": "Tag",
-      "kind": "chip",
-      "refersTo": "tag-warning",
-      "description": "A ruled stamp in the tone's ink; the Demo stamp is the warning tone.",
-      "html": "<span class=\"ds-tag ds-tag-warn\">Demo</span> <span class=\"ds-tag\">v2</span> <span class=\"ds-tag ds-tag-pos\">Visited</span>",
-      "css": ".ds-tag { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: inline-block; font-size: 12px; font-weight: 600; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 2px; padding: 3px 7px; } .ds-tag-warn { color: #B52E12; border-color: #B52E12; } .ds-tag-pos { color: #44701A; border-color: #44701A; }"
-    },
-    {
-      "name": "Plate",
+      "name": "Glass Card",
       "kind": "card",
-      "refersTo": "plate",
-      "description": "Every content panel: cream, 2pt ink rule, 4pt corners, solid teal offset.",
-      "html": "<div class=\"ds-stock\"><div class=\"ds-plate\"><div class=\"ds-plate-title\">Harbor Light Oyster Room</div><div class=\"ds-plate-meta\">Seafood · Embarcadero</div></div></div>",
-      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-plate { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 16px; box-shadow: 5px 5px 0 0 #0E6E6A; } .ds-plate-title { font-size: 17px; font-weight: 600; color: #2A0E08; } .ds-plate-meta { font-size: 13px; color: #6A4A40; margin-top: 4px; }"
+      "refersTo": "card",
+      "description": "Every panel: glass plate, gloss band, bright edge, soft diffuse shadow, 24pt corners.",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-card\"><div class=\"ds-card-title\">Your score</div><div class=\"ds-card-body\">From your most recent completed visit</div></div></div>",
+      "css": ".ds-stage { padding: 20px; background: linear-gradient(#EEF2F6, #DFE5EC); } .ds-card { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; padding: 16px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.9); background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%), rgba(255,255,255,0.72); box-shadow: 0 10px 22px rgba(30,40,54,0.10); } .ds-card-title { font-size: 20px; font-weight: 600; color: #18202B; } .ds-card-body { font-size: 13px; color: #56606C; margin-top: 2px; }"
     },
     {
-      "name": "Key Plate",
-      "kind": "card",
-      "refersTo": "plate",
-      "description": "The one most important plate on a screen: ochre 6pt offset, mono data key over the value, allocation strip.",
-      "html": "<div class=\"ds-stock\"><div class=\"ds-key\"><div class=\"ds-key-row\"><span class=\"ds-datakey\">RANKED WITH</span><span class=\"ds-key-val\">General</span></div><div class=\"ds-strip\"><i style=\"flex:5;background:#D93A1C\"></i><i style=\"flex:2;background:#0E6E6A\"></i><i style=\"flex:2;background:#D9961B\"></i><i style=\"flex:1;background:#2E3FA8\"></i></div></div></div>",
-      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-key { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 16px; box-shadow: 6px 6px 0 0 #D9961B; } .ds-key-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; } .ds-datakey { font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.8px; color: #6A4A40; } .ds-key-val { font-size: 20px; font-weight: 600; color: #2A0E08; } .ds-strip { display: flex; gap: 2px; height: 10px; border: 1.5px solid #2A0E08; } .ds-strip i { display: block; }"
+      "name": "Key Panel",
+      "kind": "custom",
+      "refersTo": "key-panel",
+      "description": "The one cobalt-to-ocean slab per screen; contents render white.",
+      "html": "<div class=\"ds-stage-k\"><div class=\"ds-key\"><div class=\"ds-key-row\"><span class=\"ds-key-label\">Ranked with</span><span class=\"ds-key-value\">General</span></div><div class=\"ds-strip\"><i style=\"flex:5;background:#FF4D3A\"></i><i style=\"flex:2;background:#2F6BFF\"></i><i style=\"flex:2;background:#FFB000\"></i><i style=\"flex:1;background:#00C2A8\"></i></div></div></div>",
+      "css": ".ds-stage-k { padding: 20px; background: linear-gradient(#EEF2F6, #DFE5EC); } .ds-key { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; color: #fff; padding: 18px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.4); background: linear-gradient(to bottom, rgba(255,255,255,0.16), rgba(255,255,255,0) 55%), linear-gradient(135deg, #2452E0, #0B6FB8); box-shadow: 0 14px 24px rgba(47,107,255,0.32); } .ds-key-row { display: flex; justify-content: space-between; align-items: baseline; } .ds-key-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.82); } .ds-key-value { font-size: 20px; font-weight: 600; } .ds-strip { display: flex; gap: 2px; margin-top: 14px; height: 10px; } .ds-strip i { border-radius: 9999px; background-image: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%); }"
     },
     {
-      "name": "Input",
+      "name": "Text Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Text input as a cream plate well with a 1.5pt ink rule.",
+      "description": "Glass well with a hairline border, 16pt corners.",
       "html": "<input class=\"ds-input\" placeholder=\"Search restaurants\">",
-      "css": ".ds-input { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 17px; color: #2A0E08; background: #FFF8F3; border: 1.5px solid #2A0E08; border-radius: 4px; padding: 10px 12px; width: 260px; outline: none; } .ds-input::placeholder { color: #6A4A40; } .ds-input:focus-visible { caret-color: #0E6E6A; box-shadow: 0 0 0 2px #0E6E6A; }"
+      "css": ".ds-input { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; font-size: 17px; color: #18202B; width: 280px; padding: 11px 14px; border-radius: 16px; border: 1px solid #D5DCE4; background: rgba(255,255,255,0.72); outline: none; } .ds-input::placeholder { color: #56606C; } .ds-input:focus-visible { border-color: #1F55E0; caret-color: #1F55E0; }"
     },
     {
-      "name": "Ranked Row",
+      "name": "Tags and Demo Badge",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Tone-tinted capsules; solid tags fill with gloss; the demo badge stays quiet.",
+      "html": "<div class=\"ds-tags\"><span class=\"ds-tag ds-tag-solid\">&#10003; Visited &middot; 9/10 &middot; General</span><span class=\"ds-tag ds-tag-saved\">Want to try</span><span class=\"ds-demo\">Demo</span></div>",
+      "css": ".ds-tags { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; display: flex; gap: 8px; align-items: center; } .ds-tag { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 9999px; } .ds-tag-solid { color: #fff; background: linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%), #0A8061; } .ds-tag-saved { color: #2A5FE8; background: rgba(42,95,232,0.13); } .ds-demo { font-size: 11px; font-weight: 600; color: #56606C; background: #E3E8EF; padding: 2px 7px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Podium Row",
       "kind": "custom",
-      "refersTo": "plate-row",
-      "description": "Podium row: square rank tile in the rank ink, score bar of ten outlined cells, heavy score, plate casting in the rank ink.",
-      "html": "<div class=\"ds-stock\"><div class=\"ds-row\"><div class=\"ds-rank\">1</div><div class=\"ds-row-main\"><div class=\"ds-row-name\">Nine Lanterns Noodle Bar</div><div class=\"ds-row-meta\">Ramen · Japantown</div><div class=\"ds-bar\"><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"f t\"></i><i class=\"t\"></i><b></b><i class=\"f e\"></i><i class=\"f e\"></i><b></b><i class=\"f o\"></i><i class=\"f o\"></i><b></b><i class=\"f u\"></i></div></div><div class=\"ds-score\">9<span>/10</span></div></div></div>",
-      "css": ".ds-stock { background: #FBE2D4; padding: 20px; } .ds-row { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: flex; gap: 12px; align-items: flex-start; background: #FFF8F3; border: 2px solid #2A0E08; border-radius: 4px; padding: 14px; box-shadow: 5px 5px 0 0 #D93A1C; } .ds-rank { width: 40px; height: 40px; display: grid; place-items: center; background: #D93A1C; color: #FFFFFF; border: 2px solid #2A0E08; border-radius: 4px; font-size: 20px; font-weight: 800; box-sizing: border-box; } .ds-row-main { flex: 1; } .ds-row-name { font-size: 17px; font-weight: 600; color: #2A0E08; } .ds-row-meta { font-size: 13px; color: #6A4A40; margin: 4px 0 8px; } .ds-bar { display: flex; gap: 2px; } .ds-bar i { flex: 1; height: 8px; border: 1px solid; box-sizing: border-box; } .ds-bar b { width: 3px; } .ds-bar .t { border-color: #D93A1C; } .ds-bar .t.f { background: #D93A1C; } .ds-bar .e { border-color: #0E6E6A; background: #0E6E6A; } .ds-bar .o { border-color: #D9961B; background: #D9961B; } .ds-bar .u { border-color: #2E3FA8; background: #2E3FA8; } .ds-score { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #2A0E08; font-variant-numeric: tabular-nums; } .ds-score span { font-size: 13px; font-weight: 500; letter-spacing: 0; color: #6A4A40; }"
+      "refersTo": "podium-rank-1",
+      "description": "Rankings row: glossy rank badge, name, earned-points bar, round score scoop.",
+      "html": "<div class=\"ds-stage-p\"><div class=\"ds-row\"><span class=\"ds-rank\">1</span><div class=\"ds-mid\"><div class=\"ds-name\">Harbor Light Oyster Room</div><div class=\"ds-sub\">Seafood &middot; Embarcadero</div><div class=\"ds-bar\"><i style=\"background:#FF4D3A\"></i><i style=\"background:#FF4D3A\"></i><i style=\"background:#FF4D3A\"></i><i style=\"background:#FF4D3A\"></i><i style=\"background:#FF4D3A\"></i><i style=\"background:#2F6BFF\"></i><i style=\"background:#2F6BFF\"></i><i style=\"background:#FFB000\"></i><i style=\"background:#00C2A8\"></i><b></b></div></div><span class=\"ds-scoop\">9</span></div></div>",
+      "css": ".ds-stage-p { padding: 20px; background: linear-gradient(#EEF2F6, #DFE5EC); } .ds-row { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; display: flex; gap: 12px; align-items: flex-start; padding: 16px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.9); background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%), rgba(255,255,255,0.72); box-shadow: 0 10px 22px rgba(30,40,54,0.10); } .ds-rank { width: 42px; height: 42px; flex: none; display: grid; place-items: center; font-size: 20px; font-weight: 700; color: #fff; border-radius: 14px; background: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%), linear-gradient(#FF7A66, #F0402C); box-shadow: 0 4px 8px rgba(255,77,58,0.35); } .ds-mid { flex: 1; min-width: 0; } .ds-name { font-size: 17px; font-weight: 600; color: #18202B; } .ds-sub { font-size: 13px; color: #56606C; margin: 4px 0 8px; } .ds-bar { display: flex; gap: 3px; height: 8px; } .ds-bar i, .ds-bar b { flex: 1; border-radius: 9999px; } .ds-bar i { background-image: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%); } .ds-scoop { width: 54px; height: 54px; flex: none; display: grid; place-items: center; font-size: 22px; font-weight: 700; color: #fff; border-radius: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%), linear-gradient(#FF7A66, #F0402C); box-shadow: 0 5px 10px rgba(255,77,58,0.35); }"
     },
     {
-      "name": "Tab Bar (pre-iOS 26)",
-      "kind": "nav",
-      "refersTo": "",
-      "description": "Cream tab bar edged in an ink rule; selected item teal, others soft ink. On iOS 26 the system Liquid Glass bar replaces it.",
-      "html": "<nav class=\"ds-tabs\"><a>Discover</a><a>Map</a><a class=\"on\" aria-current=\"page\">Rankings</a><a>Friends</a><a>Profile</a></nav>",
-      "css": ".ds-tabs { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; display: flex; justify-content: space-around; background: #FFF8F3; border-top: 1px solid #2A0E08; padding: 8px 0; width: 375px; } .ds-tabs a { font-size: 10px; font-weight: 500; color: #6A4A40; cursor: pointer; text-decoration: none; } .ds-tabs a:hover { color: #2A0E08; } .ds-tabs a.on { color: #0E6E6A; } .ds-tabs a:focus-visible { outline: 2px solid #0E6E6A; outline-offset: 2px; }"
+      "name": "Score Tile",
+      "kind": "custom",
+      "refersTo": "score-tile",
+      "description": "A described score level to tap; selected tiles tint, border and glow in the criterion colour.",
+      "html": "<div class=\"ds-tiles\"><button class=\"ds-tile ds-tile-on\"><span class=\"ds-pt\">4</span><span class=\"ds-lv\">Very good</span><span class=\"ds-dt\">Well-made food with at least one dish you would come back for.</span></button><button class=\"ds-tile\"><span class=\"ds-pt ds-pt-off\">3</span><span class=\"ds-lv\">Good</span><span class=\"ds-dt\">Solid, enjoyable cooking with no real mistakes.</span></button></div>",
+      "css": ".ds-tiles { font-family: 'SF Pro Rounded', ui-rounded, system-ui, sans-serif; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 340px; } .ds-tile { text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 5px 8px; align-items: center; padding: 10px; border-radius: 16px; border: 1px solid #D5DCE4; background: rgba(255,255,255,0.72); cursor: pointer; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); } .ds-tile:active { transform: scale(0.94); } .ds-tile:focus-visible { outline: 2px solid #1F55E0; outline-offset: 2px; } .ds-tile-on { border: 2px solid #FF4D3A; background: rgba(255,77,58,0.14); box-shadow: 0 6px 12px rgba(255,77,58,0.28); transform: scale(1.03); } .ds-pt { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; font-size: 17px; font-weight: 700; color: #18202B; background: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%), #FF4D3A; } .ds-pt-off { background: rgba(255,77,58,0.14); color: #18202B; } .ds-lv { font-size: 15px; font-weight: 600; color: #18202B; } .ds-dt { grid-column: 1 / -1; font-size: 11px; color: #56606C; }"
     }
   ],
   "narrative": {
-    "northStar": "The Press Proof",
-    "overview": "Every restaurant, score and visit is a ruled cream plate laid on warm peach stock, and every plate casts a crisp offset shadow in a second ink, as if a colour had been printed slightly out of register. The look is a proof sheet, not a glass dashboard: flat colour, hard rules, no blur. The density follows a list you scan: plates stack at a steady rhythm, the score sits heavy at the right edge, and the criteria that made it read left to right as outlined cells.\n\nColour carries meaning. Six criterion inks belong to the score data, teal is the one colour you can tap, and a few state colours mark visited, saved and warnings. Everything else is oxblood ink on cream and peach. San Francisco carries the whole app, set heavy and tracked in for titles and scores, so Dynamic Type and native navigation keep working while the proof does the talking.\n\nThe system refuses soft blurred card shadows, the dark glass canvas the app used to have, and the grey-list-with-one-tint look common in this category. The system tab bar and floating map controls stay on Liquid Glass on iOS 26. That is the platform's own layer above the proof, not part of the proof.",
+    "northStar": "Glass Gelato, Ocean Neon",
+    "overview": "**Creative North Star: \"Glass Gelato, Ocean Neon\"**\n\nDeconstructed is a counter of glossy scoops on calm steel. Every surface is frosted glass: a translucent white body over ultra-thin material, a bright band of gloss across its top half, a one-point white edge, and a soft diffuse shadow underneath. Shapes are very round and use continuous corners, and every glyph is SF Pro Rounded so the type matches the forms. The steel ground is deliberately quiet, so colour can be spent only where it means something.\n\nColour carries emphasis, not decoration. Each screen has exactly one key panel, a cobalt-to-ocean glass slab holding the thing the screen is about (the ranking system on Rankings, the restaurant on its profile). The same key gradient fills the one primary action and the selected chip. The podium (ranks 1 to 3) is coral, cyan and cobalt scoops. Criteria keep their own scoop colour, by position, everywhere their points appear. Everything else is ink on glass.\n\nThe world moves on springs. Scores fill in point by point, ring arcs sweep round, and anything tappable squishes and springs back with a light haptic. Reduce Motion removes the fills and sweeps. The app is light only, and the previous hard-ruled press-proof look and flat grey category lists are rejected.",
     "keyCharacteristics": [
-      "Peach stock ground, cream plates, 2pt oxblood rule, 4pt corners.",
-      "Solid, unblurred offset shadows down and to the right, in a second ink.",
-      "Six criterion inks, one interactive teal, everything else ink.",
-      "SF Pro throughout: heavy titles and scores, small mono uppercase keys over data values.",
-      "Capsule buttons that press down onto their own shadow.",
-      "Light only."
+      "Frosted glass panels on a steel gradient, glossy top band, bright white edge",
+      "One cobalt-to-ocean key panel per screen; the same gradient marks the primary action",
+      "Coral, cyan, cobalt podium scoops; six criterion scoop colours by position",
+      "SF Pro Rounded everywhere, heavy numerals for scores",
+      "Soft diffuse shadows only, tinted by the fill they sit under",
+      "Spring motion: squish on press, pop on select, point-by-point fills"
     ],
     "rules": [
       {
-        "name": "The One Tap Colour Rule",
-        "body": "Teal is the only colour that means \"tappable\". Criterion inks never style a control unless that control is choosing a score for that criterion.",
+        "name": "The One Key Panel Rule",
+        "body": "A screen gets one key panel and one primary action. The key gradient appears nowhere else except the selected chip; if two things on a screen are cobalt slabs, one of them is wrong.",
         "section": "colors"
       },
       {
-        "name": "The Ink Follows the Criterion Rule",
-        "body": "A criterion is coloured by its position everywhere, and colour is never the only cue: its name and number sit beside it.",
+        "name": "The Scoop Follows the Criterion Rule",
+        "body": "A criterion's colour is fixed by its position and travels with it to every bar, ring, strip and tile. Colour is never the only cue: the criterion's name and number always sit beside it.",
         "section": "colors"
       },
       {
-        "name": "The Text-Safe Rule",
-        "body": "Text on the cream plate is ink, soft ink, teal, ultramarine, plum, moss or warning, all 4.5:1 or better there. On the peach stock, moss drops below 4.5:1, so moss text sits on a plate. Tomato and ochre are for fills and rules, never running text. On a solid ink fill, pick ink or white by luminance.",
+        "name": "The Scoops Are Fills Rule",
+        "body": "Criterion and podium colours are fills under white or navy text, not text colours on glass. Text on glass is ink, ink-soft or tint.",
         "section": "colors"
       },
       {
         "name": "The Heavy Number Rule",
-        "body": "Scores are heavy with monospaced digits; the \"/10\" denominator is a size smaller, regular weight, in soft ink. The system name always travels with the number.",
+        "body": "A score's number is the heaviest thing in its group; its \"/10\" is regular and soft, and the system name always travels with it.",
         "section": "typography"
       },
       {
-        "name": "The Key Over Value Rule",
-        "body": "Mono uppercase is only ever a data key naming the value next to it. It is never a section heading, a kicker or a decorative label above a title.",
-        "section": "typography"
-      },
-      {
-        "name": "The No Blur Rule",
-        "body": "Every shadow is a solid, unblurred offset. A blurred or ambient shadow does not belong in this world.",
+        "name": "The Diffuse Shadow Rule",
+        "body": "Shadows are wide, soft and fall straight down. A shadow takes the colour of what casts it: steel ink under glass, the scoop's hue under a scoop.",
         "section": "elevation"
       },
       {
-        "name": "The One Key Plate Rule",
-        "body": "Each screen has at most one ochre-offset plate. Long lists drop the shadow on ordinary rows so the plates that do cast one mean something.",
+        "name": "The Gloss Band Rule",
+        "body": "Every glass or glossy surface carries a white band from its top edge fading out by 55% of its height (60% strength on panels, about 45% on scoops and buttons, 16% on the key panel).",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do set every content panel as a cream plate with a 2pt ink rule and 4pt corners on peach stock.",
-      "Do lift plates with a solid, unblurred offset: teal 5pt by default, ochre 6pt for the one key plate on a screen, the rank ink for podium rows.",
-      "Do reserve teal for things you can tap, and keep it to one primary button per screen.",
-      "Do colour a criterion by its position everywhere it appears, with its name and number beside the colour.",
-      "Do set scores heavy with monospaced digits and keep the system name with the number.",
-      "Do use Dynamic Type text styles and SF Symbols, and let chips and tags wrap."
+      "Do put every surface on the steel gradient and build panels as glass: glass plate, gloss band, one-point glass edge, panel shadow.",
+      "Do give each screen exactly one key panel and one key-gradient primary action.",
+      "Do colour a criterion by its position everywhere it appears, and always print its name and points beside the colour.",
+      "Do use SF Pro Rounded for everything, through Dynamic Type text styles, with heavy monospaced digits for scores.",
+      "Do use the Motion springs (press, pop, fill) for anything that moves, and honour Reduce Motion.",
+      "Do keep the demo badge beside every demo name, quiet and opaque."
     ],
     "donts": [
-      "Don't use blurred, ambient or soft shadows.",
-      "Don't use mono uppercase as a section heading or a kicker above a title; it only names a data value.",
-      "Don't set running text in tomato or ochre; they are below 4.5:1 on the plate.",
-      "Don't put a shadow on every plate in a long list; ordinary rows drop it.",
-      "Don't add a dark appearance; the app is light only.",
-      "Don't use criterion inks for chrome, navigation or general actions."
+      "Don't cast hard or offset shadows; every shadow is soft, diffuse and falls straight down.",
+      "Don't add a second key panel, or use the key gradient for anything but the key panel, primary action and selected chip.",
+      "Don't set text in criterion or podium scoop colours on glass; scoops are fills under white or navy text.",
+      "Don't use square corners or circular-arc corners on panels; use the radius scale with continuous corners.",
+      "Don't fall back to flat grey system lists or segmented controls; use glass cards and chips.",
+      "Don't add a dark appearance; the app is light only."
     ]
   }
 }

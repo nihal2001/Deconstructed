@@ -107,9 +107,9 @@ struct ProfileView: View {
                 let buckets = RankingEngine.distribution(of: model.ranked(scope: scope))
                 Chart(Array(buckets.enumerated()), id: \.offset) { total, count in
                     BarMark(x: .value("Total", "\(total)"), y: .value("Restaurants", count))
-                        .foregroundStyle(total >= 9 ? Theme.tomato : total >= 7 ? Theme.teal
-                                         : total >= 4 ? Theme.ultramarine : Theme.hairline)
-                        .cornerRadius(1)
+                        .foregroundStyle(total >= 9 ? Theme.coral : total >= 7 ? Theme.cobalt
+                                         : total >= 4 ? Theme.violet : Theme.hairline)
+                        .cornerRadius(8)
                         .accessibilityLabel("\(total) out of 10")
                         .accessibilityValue("\(count) restaurant\(count == 1 ? "" : "s")")
                 }

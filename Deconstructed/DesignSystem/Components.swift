@@ -26,19 +26,19 @@ struct Tag: View {
             if let symbol { Image(systemName: symbol).imageScale(.small) }
             Text(text)
         }
-        .font(.caption.weight(.semibold))
+        .font(.system(.caption, design: .rounded, weight: .semibold))
         .foregroundStyle(solid ? Color.white : (tone == .neutral ? Theme.ink : tone.color))
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
-        // A ruled stamp: square-cornered, outlined in the tone's ink.
-        .background(solid ? tone.color : Theme.plate, in: RoundedRectangle(cornerRadius: 2))
-        .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(tone == .neutral ? Theme.rule : tone.color, lineWidth: 1.5) }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 4)
+        // A soft scoop of the tone's colour; solid tags get the glossy fill.
+        .background { if solid { Gloss(shape: Capsule(), strength: 0.35) } }
+        .background(solid ? tone.color : tone.color.opacity(tone == .neutral ? 0.10 : 0.13), in: Capsule())
         .accessibilityElement(children: .combine)
     }
 }
 
-/// A row of ruled chips standing in for a segmented control: the chosen one is teal with white
-/// text, the rest are plates with the ink rule. Wraps at large Dynamic Type sizes.
+/// A row of glass chips standing in for a segmented control: the chosen one is glossy cobalt with
+/// white text, the rest are glass. Wraps at large Dynamic Type sizes.
 struct SegmentedChips<Value: Hashable>: View {
     var title: String
     var options: [Value]
@@ -50,18 +50,21 @@ struct SegmentedChips<Value: Hashable>: View {
             ForEach(options, id: \.self) { option in
                 let isOn = option == selection
                 Button {
-                    withAnimation(.snappy(duration: 0.15)) { selection = option }
+                    withAnimation(Motion.pop) { selection = option }
                 } label: {
                     Text(label(option))
-                        .font(.subheadline.weight(.semibold))
+                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
                         .foregroundStyle(isOn ? Theme.onTint : Theme.ink)
-                        .padding(.horizontal, 14)
-                        .frame(minHeight: 36)
-                        .background(isOn ? Theme.tint : Theme.plate, in: Capsule())
-                        .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
+                        .padding(.horizontal, 16)
+                        .frame(minHeight: 38)
+                        .background { Gloss(shape: Capsule(), strength: isOn ? 0.35 : 0.5) }
+                        .background { Capsule().fill(isOn ? AnyShapeStyle(Theme.keyGradient) : AnyShapeStyle(Theme.plate)) }
+                        .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1) }
+                        .shadow(color: (isOn ? Theme.cobalt : Theme.shadowInk).opacity(isOn ? 0.3 : 0.08), radius: 10, y: 5)
                         .contentShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.squish)
+                .sensoryFeedback(.selection, trigger: isOn)
                 .accessibilityAddTraits(isOn ? [.isSelected] : [])
             }
         }
@@ -74,13 +77,13 @@ struct SegmentedChips<Value: Hashable>: View {
 struct DemoBadge: View {
     var body: some View {
         // Quiet on purpose: it sits beside every name, so it must not outshout ranks and scores.
-        Text("DEMO")
-            .font(.dataKey)
-            .tracking(0.8)
-            .foregroundStyle(Theme.inkSoft)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 1)
-            .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Theme.inkSoft.opacity(0.6), lineWidth: 1) }
+        // Opaque in both schemes, so it stays legible on the key panel too.
+        Text("Demo")
+            .font(.system(.caption2, design: .rounded, weight: .semibold))
+            .foregroundStyle(Color(hex: Theme.inkSoftHex))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(Color(hex: 0xE3E8EF), in: Capsule())
             .fixedSize()
             .accessibilityLabel("Demo data, not a real restaurant")
     }
@@ -115,7 +118,7 @@ struct Avatar: View {
     var size: CGFloat = 40
 
     private var color: Color {
-        let colors = [Theme.tomato, Theme.teal, Theme.ultramarine, Theme.plum, Theme.moss, Theme.ochre]
+        let colors = [Theme.coral, Theme.cobalt, Theme.violet, Theme.aqua, Theme.amber, Theme.pink]
         return colors[Int(profile.id.uuid.14 ^ profile.id.uuid.15) % colors.count]
     }
 
@@ -124,8 +127,10 @@ struct Avatar: View {
             .font(.display(size: size * 0.40))
             .foregroundStyle(Theme.text(on: color))
             .frame(width: size, height: size)
+            .background { Gloss(shape: Circle(), strength: 0.4) }
             .background(color, in: Circle())
-            .overlay { Circle().strokeBorder(Theme.rule, lineWidth: max(1.5, size * 0.035)) }
+            .overlay { Circle().strokeBorder(.white, lineWidth: max(1.5, size * 0.05)) }
+            .shadow(color: color.opacity(0.35), radius: 8, y: 4)
             .accessibilityHidden(true)
     }
 }

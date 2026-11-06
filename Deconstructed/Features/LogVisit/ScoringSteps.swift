@@ -58,7 +58,7 @@ struct StepProgressHeader: View {
                 .font(.display(.subheadline))
                 .foregroundStyle(Theme.inkSoft)
         }
-        .animation(.snappy, value: total)
+        .animation(Motion.pop, value: total)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Running total \(total) out of \(RankingRules.totalPoints)")
     }
@@ -84,7 +84,7 @@ struct StepProgressHeader: View {
                 .onTapGesture { go(dot.id) }
             }
         }
-        .animation(.snappy(duration: 0.25), value: current)
+        .animation(Motion.pop, value: current)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Step \(current + 1) of \(dots.count)")
     }
@@ -105,7 +105,7 @@ struct CriterionScorePicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Rectangle().fill(color).frame(width: 10, height: 10).accessibilityHidden(true)
+                Circle().fill(color).frame(width: 10, height: 10).accessibilityHidden(true)
                 Text(criterion.name).font(.display(.title3)).foregroundStyle(Theme.ink)
                 Spacer()
                 Text(selection.map { "\($0)/\(criterion.maxPoints)" } ?? "up to \(criterion.maxPoints)")
@@ -159,14 +159,19 @@ struct CriterionScorePicker: View {
                             .font(.display(.title3, weight: .bold).monospacedDigit())
                             .foregroundStyle(isSelected ? Theme.text(on: color) : Theme.ink)
                             .frame(maxWidth: .infinity, minHeight: 48)
+                            .background { Gloss(shape: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous), strength: 0.45) }
                             .background(isSelected ? AnyShapeStyle(color) : AnyShapeStyle(Theme.plate),
-                                        in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+                                        in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
                             .overlay {
-                                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                                    .strokeBorder(isSelected ? color : Theme.hairline, lineWidth: isSelected ? 2 : 1)
+                                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                                    .strokeBorder(isSelected ? .white.opacity(0.6) : Theme.hairline, lineWidth: 1)
                             }
+                            .shadow(color: color.opacity(isSelected ? 0.4 : 0), radius: 10, y: 5)
+                            .scaleEffect(isSelected ? 1.08 : 1)
+                            .animation(Motion.pop, value: isSelected)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.squish)
+                    .sensoryFeedback(.selection, trigger: isSelected)
                     .accessibilityLabel("\(level.points) of \(criterion.maxPoints), \(level.displayLabel)")
                     .accessibilityValue(level.detail)
                     .accessibilityAddTraits(isSelected ? [.isSelected] : [])
@@ -202,11 +207,13 @@ struct ScoreChoiceTile: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text("\(level.points)")
-                        .font(.display(.headline, weight: .heavy).monospacedDigit())
+                        .font(.display(.headline, weight: .bold).monospacedDigit())
                         .foregroundStyle(isSelected ? Theme.text(on: color) : Theme.ink)
-                        .frame(minWidth: 28, minHeight: 28)
-                        .background(isSelected ? color : Theme.plate, in: Rectangle())
-                        .overlay { Rectangle().strokeBorder(color, lineWidth: 2) }
+                        .frame(minWidth: 30, minHeight: 30)
+                        .background { Gloss(shape: Circle(), strength: isSelected ? 0.45 : 0) }
+                        .background(isSelected ? color : color.opacity(0.14), in: Circle())
+                        .scaleEffect(isSelected ? 1.15 : 1)
+                        .animation(Motion.pop, value: isSelected)
                     Text(level.displayLabel)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.ink)
@@ -221,13 +228,21 @@ struct ScoreChoiceTile: View {
                     .lineLimit(6)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(9)
+            .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(isSelected ? color.opacity(0.12) : Theme.plate, in: Rectangle())
-            .overlay { Rectangle().strokeBorder(isSelected ? color : Theme.rule, lineWidth: isSelected ? 2.5 : 1.5) }
-            .contentShape(Rectangle())
+            .background(isSelected ? color.opacity(0.14) : Theme.plate,
+                        in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                    .strokeBorder(isSelected ? color : Theme.hairline, lineWidth: isSelected ? 2 : 1)
+            }
+            .shadow(color: color.opacity(isSelected ? 0.28 : 0), radius: 12, y: 6)
+            .scaleEffect(isSelected ? 1.03 : 1)
+            .animation(Motion.pop, value: isSelected)
+            .contentShape(RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.squish)
+        .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(level.points) of \(maxPoints), \(level.displayLabel)")
         .accessibilityValue(level.detail)

@@ -2,301 +2,332 @@
 name: Deconstructed
 description: Restaurant scores you can explain.
 colors:
-  stock: "#FBE2D4"
-  plate: "#FFF8F3"
-  fill: "#F6D3C2"
-  hairline: "#E7C3B2"
-  ink: "#2A0E08"
-  ink-soft: "#6A4A40"
-  teal: "#0E6E6A"
-  tomato: "#D93A1C"
-  ochre: "#D9961B"
-  ultramarine: "#2E3FA8"
-  plum: "#8A2D63"
-  moss: "#44701A"
-  warning: "#B52E12"
-  on-tint: "#FFFFFF"
+  steel-top: "#EEF2F6"
+  steel-bottom: "#DFE5EC"
+  glass-plate: "rgba(255, 255, 255, 0.72)"
+  glass-edge: "rgba(255, 255, 255, 0.9)"
+  sunk-well: "#E3E8EF"
+  hairline: "#D5DCE4"
+  shadow-ink: "#1E2836"
+  ink: "#18202B"
+  ink-soft: "#56606C"
+  tint: "#1F55E0"
+  key-cobalt: "#2452E0"
+  key-ocean: "#0B6FB8"
+  coral: "#FF4D3A"
+  cobalt: "#2F6BFF"
+  amber: "#FFB000"
+  aqua: "#00C2A8"
+  violet: "#8B3DFF"
+  pink: "#FF4FA3"
+  podium-coral: "#F0402C"
+  podium-cyan: "#00B4F0"
+  on-podium-cyan: "#06283A"
+  positive: "#0A8061"
+  saved: "#2A5FE8"
+  warning: "#D11F3F"
 typography:
-  large-title:
-    fontFamily: "SF Pro (system), Dynamic Type largeTitle"
-    fontSize: "34pt"
+  display:
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "34px"
+    fontWeight: 700
+    lineHeight: 1.2
+  score:
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "34px"
     fontWeight: 800
-    letterSpacing: "-0.6pt"
-  title:
-    fontFamily: "SF Pro (system), Dynamic Type title"
-    fontSize: "28pt"
-    fontWeight: 800
-  title3:
-    fontFamily: "SF Pro (system), Dynamic Type title3"
-    fontSize: "20pt"
-    fontWeight: 600
+    lineHeight: 1
+    fontFeature: "tnum"
   headline:
-    fontFamily: "SF Pro (system), Dynamic Type headline"
-    fontSize: "17pt"
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "20px"
     fontWeight: 600
+    lineHeight: 1.25
+  title:
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 600
+    lineHeight: 1.3
   body:
-    fontFamily: "SF Pro (system), Dynamic Type subheadline"
-    fontSize: "15pt"
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "15px"
     fontWeight: 400
-  footnote:
-    fontFamily: "SF Pro (system), Dynamic Type footnote"
-    fontSize: "13pt"
+    lineHeight: 1.35
+  detail:
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "13px"
     fontWeight: 400
+    lineHeight: 1.35
   label:
-    fontFamily: "SF Pro (system), Dynamic Type caption"
-    fontSize: "12pt"
+    fontFamily: "SF Pro Rounded, ui-rounded, system-ui, sans-serif"
+    fontSize: "12px"
     fontWeight: 600
-  data-key:
-    fontFamily: "SF Mono (system monospaced), Dynamic Type caption2"
-    fontSize: "11pt"
-    fontWeight: 500
-    letterSpacing: "0.8pt"
+    lineHeight: 1.3
 rounded:
-  stamp: "2px"
-  plate: "4px"
-  capsule: "999px"
+  badge: "14px"
+  control: "16px"
+  card: "24px"
+  key: "28px"
+  capsule: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "12px"
-  row: "14px"
-  lg: "16px"
-  xl: "28px"
+  hair: "4px"
+  tight: "8px"
+  row: "12px"
+  base: "16px"
+  key: "18px"
+  section: "20px"
 components:
-  plate:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.plate}"
-    padding: "16px"
-  plate-row:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.plate}"
-    padding: "14px"
   button-primary:
-    backgroundColor: "{colors.teal}"
-    textColor: "{colors.on-tint}"
-    typography: "{typography.headline}"
+    backgroundColor: "{colors.key-cobalt}"
+    textColor: "#FFFFFF"
+    typography: "{typography.title}"
     rounded: "{rounded.capsule}"
-    padding: "12px 18px"
-    height: "52px"
+    padding: "13px 18px"
+    height: "54px"
+  button-primary-on-key:
+    backgroundColor: "#FFFFFF"
+    textColor: "{colors.tint}"
+    rounded: "{rounded.capsule}"
+    padding: "13px 18px"
   button-primary-disabled:
-    backgroundColor: "{colors.fill}"
+    backgroundColor: "{colors.sunk-well}"
     textColor: "{colors.ink-soft}"
     rounded: "{rounded.capsule}"
   button-secondary:
-    backgroundColor: "{colors.plate}"
+    backgroundColor: "{colors.glass-plate}"
     textColor: "{colors.ink}"
+    typography: "{typography.body}"
     rounded: "{rounded.capsule}"
-    padding: "11px 14px"
-  button-secondary-pressed:
-    backgroundColor: "{colors.fill}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.capsule}"
+    padding: "12px 14px"
   chip:
-    backgroundColor: "{colors.plate}"
+    backgroundColor: "{colors.glass-plate}"
     textColor: "{colors.ink}"
     rounded: "{rounded.capsule}"
-    padding: "0 14px"
-    height: "36px"
+    padding: "0 16px"
+    height: "38px"
   chip-selected:
-    backgroundColor: "{colors.teal}"
-    textColor: "{colors.on-tint}"
+    backgroundColor: "{colors.key-cobalt}"
+    textColor: "#FFFFFF"
     rounded: "{rounded.capsule}"
-    padding: "0 14px"
-    height: "36px"
-  tag:
-    backgroundColor: "{colors.plate}"
+    padding: "0 16px"
+    height: "38px"
+  card:
+    backgroundColor: "{colors.glass-plate}"
     textColor: "{colors.ink}"
-    typography: "{typography.label}"
-    rounded: "{rounded.stamp}"
-    padding: "3px 7px"
-  tag-warning:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.warning}"
-    typography: "{typography.label}"
-    rounded: "{rounded.stamp}"
-    padding: "3px 7px"
+    rounded: "{rounded.card}"
+    padding: "{spacing.base}"
+  key-panel:
+    backgroundColor: "{colors.key-cobalt}"
+    textColor: "#FFFFFF"
+    rounded: "{rounded.key}"
+    padding: "{spacing.key}"
   input:
-    backgroundColor: "{colors.plate}"
+    backgroundColor: "{colors.glass-plate}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.plate}"
-    padding: "10px 12px"
-  rank-tile:
-    backgroundColor: "{colors.plate}"
+    rounded: "{rounded.control}"
+    padding: "11px 14px"
+  tag:
     textColor: "{colors.ink}"
-    rounded: "{rounded.plate}"
-    size: "40px"
+    typography: "{typography.label}"
+    rounded: "{rounded.capsule}"
+    padding: "4px 9px"
+  demo-badge:
+    backgroundColor: "{colors.sunk-well}"
+    textColor: "{colors.ink-soft}"
+    rounded: "{rounded.capsule}"
+    padding: "2px 7px"
+  podium-rank-1:
+    backgroundColor: "{colors.podium-coral}"
+    textColor: "#FFFFFF"
+    rounded: "{rounded.badge}"
+    size: "42px"
+  podium-rank-2:
+    backgroundColor: "{colors.podium-cyan}"
+    textColor: "{colors.on-podium-cyan}"
+    rounded: "{rounded.badge}"
+    size: "42px"
+  podium-rank-3:
+    backgroundColor: "{colors.cobalt}"
+    textColor: "#FFFFFF"
+    rounded: "{rounded.badge}"
+    size: "42px"
+  score-scoop:
+    backgroundColor: "{colors.podium-coral}"
+    textColor: "#FFFFFF"
+    rounded: "{rounded.capsule}"
+    size: "54px"
+  score-tile:
+    backgroundColor: "{colors.glass-plate}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "10px"
 ---
 
 # Design System: Deconstructed
 
 ## Overview
 
-**Creative North Star: "The Press Proof"**
+**Creative North Star: "Glass Gelato, Ocean Neon"**
 
-Every restaurant, score and visit is a ruled cream plate laid on warm peach stock, and every plate casts a crisp offset shadow in a second ink, as if a colour had been printed slightly out of register. The look is a proof sheet, not a glass dashboard: flat colour, hard rules, no blur. The density follows a list you scan: plates stack at a steady rhythm, the score sits heavy at the right edge, and the criteria that made it read left to right as outlined cells.
+Deconstructed is a counter of glossy scoops on calm steel. Every surface is frosted glass: a translucent white body over ultra-thin material, a bright band of gloss across its top half, a one-point white edge, and a soft diffuse shadow underneath. Shapes are very round and use continuous corners, and every glyph is SF Pro Rounded so the type matches the forms. The steel ground is deliberately quiet, so colour can be spent only where it means something.
 
-Colour carries meaning. Six criterion inks belong to the score data, teal is the one colour you can tap, and a few state colours mark visited, saved and warnings. Everything else is oxblood ink on cream and peach. San Francisco carries the whole app, set heavy and tracked in for titles and scores, so Dynamic Type and native navigation keep working while the proof does the talking.
+Colour carries emphasis, not decoration. Each screen has exactly one key panel, a cobalt-to-ocean glass slab holding the thing the screen is about (the ranking system on Rankings, the restaurant on its profile). The same key gradient fills the one primary action and the selected chip. The podium (ranks 1 to 3) is coral, cyan and cobalt scoops. Criteria keep their own scoop colour, by position, everywhere their points appear. Everything else is ink on glass.
 
-The system refuses soft blurred card shadows, the dark glass canvas the app used to have, and the grey-list-with-one-tint look common in this category. The system tab bar and floating map controls stay on Liquid Glass on iOS 26. That is the platform's own layer above the proof, not part of the proof.
+The world moves on springs. Scores fill in point by point, ring arcs sweep round, and anything tappable squishes and springs back with a light haptic. Reduce Motion removes the fills and sweeps. The app is light only, and the previous hard-ruled press-proof look and flat grey category lists are rejected.
 
 **Key Characteristics:**
-- Peach stock ground, cream plates, 2pt oxblood rule, 4pt corners.
-- Solid, unblurred offset shadows down and to the right, in a second ink.
-- Six criterion inks, one interactive teal, everything else ink.
-- SF Pro throughout: heavy titles and scores, small mono uppercase keys over data values.
-- Capsule buttons that press down onto their own shadow.
-- Light only.
+- Frosted glass panels on a steel gradient, glossy top band, bright white edge
+- One cobalt-to-ocean key panel per screen; the same gradient marks the primary action
+- Coral, cyan, cobalt podium scoops; six criterion scoop colours by position
+- SF Pro Rounded everywhere, heavy numerals for scores
+- Soft diffuse shadows only, tinted by the fill they sit under
+- Spring motion: squish on press, pop on select, point-by-point fills
 
 ## Colors
 
-A warm two-paper palette (peach stock, cream plate) in oxblood ink, with saturated printer's inks kept for data and action.
+A calm steel neutral field with one cobalt key voice and a small family of saturated gelato scoops reserved for scores and ranks.
 
 ### Primary
-- **Proof Teal** (teal): the one interactive colour. Primary buttons, selected chips, links, the tab bar tint, the empty-state symbol. It is also the default offset shadow under plates and the second podium ink.
+- **Key Cobalt to Ocean** (key-cobalt to key-ocean, top-leading to bottom-trailing): the key panel, the primary button and the selected chip. Both ends hold white text at 4.5:1 or better. Content inside the key panel renders in the dark colour scheme, so ink, glass and wells turn white automatically.
+- **Interactive Cobalt** (tint): the one interactive colour for links, navigation items, the selected tab label, the primary button's text when it sits on the key panel, and empty-state symbols. Text-safe on glass and steel.
 
-### Secondary (the criterion inks)
-- **Tomato** (tomato): criterion 1 and the first podium place. Search-result pins on the map.
-- **Proof Teal** (teal): criterion 2.
-- **Ochre** (ochre): criterion 3, and the shadow under the key plate of each screen. No podium place uses it.
-- **Ultramarine** (ultramarine): criterion 4, the third podium place, and the "saved / want to try" state.
-- **Plum** (plum): criterion 5.
-- **Moss** (moss): criterion 6, and the "done, visited, balanced" state.
-
-Criteria 7 to 12 reuse the six inks at 55% opacity. A criterion keeps its ink everywhere its score appears: bar, ring, breakdown square, allocation strip, level grid.
+### Secondary
+- **Podium Scoops**: rank 1 is coral (#FF7A66 to podium-coral), rank 2 is cyan (#5FDCFF to podium-cyan, with on-podium-cyan text), rank 3 is cobalt (#5B8CFF to cobalt). Ranks below 3 get a steel scoop (#EEF1F5 to #D6DCE4) with ink-soft text. Each podium scoop casts a glow in its own hue.
 
 ### Tertiary
-- **Proof Red** (warning): problems, things that need attention, and the Demo stamp. Deeper than tomato so it stays text-safe.
+- **Criterion Scoops** (coral, cobalt, amber, aqua, violet, pink, then the same six at 60% opacity): one colour per criterion by position, applied to score-bar pills, ring arcs, allocation strips, legend dots and selected score tiles. Avatars draw from the same six.
 
 ### Neutral
-- **Peach Stock** (stock): the ground behind every screen, the pre-iOS 26 bars, and the map background before tiles load.
-- **Cream Plate** (plate): every content panel, secondary buttons, unselected chips, inputs, search fields.
-- **Sunk Peach** (fill): sunk wells. Pressed secondary buttons, disabled primary buttons, tracks.
-- **Hairline Blush** (hairline): quiet dividers inside a plate and disabled rules.
-- **Oxblood Ink** (ink): all primary text and the rule round every plate and control. Also the shadow under buttons and map pins.
-- **Soft Ink** (ink-soft): secondary text, metadata, denominators, data keys, unselected tab items.
+- **Steel Top / Steel Bottom** (steel-top, steel-bottom): the screen gradient behind everything; steel-top also backs the map before tiles load.
+- **Glass Plate** (glass-plate): the body of every panel, card, secondary button, unselected chip and input.
+- **Glass Edge** (glass-edge): the bright one-point stroke round every glass panel and control.
+- **Sunk Well** (sunk-well): unselected tracks, the disabled primary button, the demo badge, and the community-score well.
+- **Hairline** (hairline): quiet input and score-tile borders.
+- **Ink / Ink Soft** (ink, ink-soft): primary and secondary text. Ink also fills the map cluster badge.
+- **Status**: positive for done and visited, saved for want-to-try, warning for problems.
 
 ### Named Rules
-**The One Tap Colour Rule.** Teal is the only colour that means "tappable". Criterion inks never style a control unless that control is choosing a score for that criterion.
+**The One Key Panel Rule.** A screen gets one key panel and one primary action. The key gradient appears nowhere else except the selected chip; if two things on a screen are cobalt slabs, one of them is wrong.
 
-**The Ink Follows the Criterion Rule.** A criterion is coloured by its position everywhere, and colour is never the only cue: its name and number sit beside it.
+**The Scoop Follows the Criterion Rule.** A criterion's colour is fixed by its position and travels with it to every bar, ring, strip and tile. Colour is never the only cue: the criterion's name and number always sit beside it.
 
-**The Text-Safe Rule.** Text on the cream plate is ink, soft ink, teal, ultramarine, plum, moss or warning, all 4.5:1 or better there. On the peach stock, moss drops below 4.5:1, so moss text sits on a plate. Tomato and ochre are for fills and rules, never running text. On a solid ink fill, pick ink or white by luminance.
+**The Scoops Are Fills Rule.** Criterion and podium colours are fills under white or navy text, not text colours on glass. Text on glass is ink, ink-soft or tint.
 
 ## Typography
 
-**Display Font:** SF Pro (system), scaled by Dynamic Type
-**Body Font:** SF Pro (system)
-**Label/Mono Font:** SF Mono (system monospaced), for data keys only
+**Display Font:** SF Pro Rounded (system `.rounded` design, applied app-wide)
+**Body Font:** SF Pro Rounded
+**Label Font:** SF Pro Rounded, semibold caption
 
-**Character:** One grotesque for everything. Weight does the work: heavy for titles and scores, semibold for names, regular for reading. The only contrast in voice is a small monospaced key over a data value.
+**Character:** One rounded family throughout, so every glyph shares the soft geometry of the glass. Hierarchy comes from weight and Dynamic Type style, not from a second face. All sizes are iOS points at the default content size and scale with Dynamic Type.
 
 ### Hierarchy
-- **Large Title** (heavy, 34pt, −0.6pt kerning): navigation large titles on every tab, ink on peach.
-- **Title** (heavy, 28pt, −1pt tracking on scores): the score on a ranked row; the large score badge at 34pt.
-- **Title 3** (semibold, 20pt): section titles, the system name on a key plate, empty-state titles.
-- **Headline** (semibold, 17pt): restaurant names in rows, primary button labels, level numbers.
-- **Body** (regular or semibold, 15pt subheadline): row text, breakdown rows, chip and secondary button labels.
-- **Footnote** (regular, 13pt): metadata, criterion descriptions, section details.
-- **Label** (semibold, 12pt caption): tags and stamps, legend entries.
-- **Data Key** (medium, 11pt mono, 0.8pt tracking, uppercase): a key directly over or beside the value it names ("RANKED WITH" over the system, "SEARCHING NEAR" over the area, "SYSTEM" beside the system name).
+- **Display** (bold, 34pt large title): navigation large titles and the restaurant name in its key panel.
+- **Score** (heavy, monospaced digits): the total in score badges (headline, title2 or large title by size) and inside the score ring (40% of the ring diameter). The denominator follows in regular weight and ink-soft.
+- **Headline** (semibold, 20pt title3): section titles, the ranking-system picker, score-grid numerals.
+- **Title** (semibold, 17pt headline): row names, the primary button label, inline navigation titles.
+- **Body** (regular to semibold, 15pt subheadline): row text, chip and secondary-button labels, breakdown rows.
+- **Detail** (regular, 13pt footnote): subtitles, level descriptions, section detail lines.
+- **Label** (semibold, 12pt caption): tags and data keys such as "Ranked with"; demo badge at 11pt caption2. Sentence case, no tracking.
 
 ### Named Rules
-**The Heavy Number Rule.** Scores are heavy with monospaced digits; the "/10" denominator is a size smaller, regular weight, in soft ink. The system name always travels with the number.
-
-**The Key Over Value Rule.** Mono uppercase is only ever a data key naming the value next to it. It is never a section heading, a kicker or a decorative label above a title.
+**The Heavy Number Rule.** A score's number is the heaviest thing in its group; its "/10" is regular and soft, and the system name always travels with it.
 
 ## Layout
 
-Single-column scrolling stacks on peach, in native navigation stacks, tabs and sheets. Screen and plate padding is 16pt; dense list rows use 14pt; small inline plates use 12pt. Elements inside a plate step 4, 8, 12 or 14pt apart, and plates stack with room for their 5pt shadow. Chips and tags wrap with a flow layout so they survive large Dynamic Type sizes. Floating footers pin the main action under scrolling content; on iOS 26 the content fades out beneath them, earlier versions get a peach bar under a 1.5pt ink rule.
+Single-column, glance-first stacks on an iPhone width with native navigation: a five-tab bar, push stacks and sheets. Content sits in glass cards 16pt in from the screen edge with a 16pt base gutter and internal padding (18pt in the key panel). Spacing runs on a small set of steps: 4 inside tags and badges, 8 between chips and inline items, 10 to 12 between stacked lines and rows, 14 between a ring and its badge, 20 between larger groups. Chips and legends wrap onto further lines at large Dynamic Type sizes rather than truncating. Score tiles sit in a two-column grid; numeric score choices use an adaptive grid with a 48pt minimum cell.
 
 ## Elevation & Depth
 
-Depth is printed, not lit. There are no blurred shadows anywhere. A plate lifts off the stock with a solid copy of its own shape shifted down and right, in a second ink. The offset is reserved space: plates pad their trailing and bottom edges by the offset so the shadow never collides with neighbours. Liquid Glass on iOS 26 is the one exception, kept for the system tab bar, floating map controls and toasts.
+Depth is layered glass lifted by soft, diffuse shadows. Nothing casts a hard or offset shadow. Neutral glass casts a cool shadow-ink shadow; coloured fills cast a glow in their own hue at higher opacity. On iOS 26 and later the floating controls (tab bar, toasts, bars) use Liquid Glass; earlier versions fall back to ultra-thin material with the same gloss, bright edge and soft shadow.
 
 ### Shadow Vocabulary
-- **Plate offset** (solid teal, 5pt down-right, no blur): the default under any plate.
-- **Key plate offset** (solid ochre, 6pt down-right, no blur): the one most important plate on a screen (Rankings scope, restaurant header, Discover's lead plate, profile header, sign-in).
-- **Podium offset** (solid rank ink, 5pt): ranked rows 1 to 3 cast in tomato, teal and ultramarine. Rows below the podium cast nothing.
-- **Button offset** (solid ink, 3pt primary / 2pt secondary): sits under capsule buttons; pressing moves the button onto it.
-- **Pin offset** (solid ink, 2pt, no blur): under map pin badges.
-- **Glass fallback offset** (solid ink, 3pt): under floating controls before iOS 26.
+- **Panel** (shadow-ink at 10%, blur 22, y 10): every glass card and secondary button.
+- **Floating glass** (shadow-ink at 12%, blur 22, y 10): pre-iOS 26 Liquid Glass fallback, toasts.
+- **Key panel glow** (cobalt at 32%, blur 24, y 14): under the key panel only.
+- **Primary glow** (cobalt at 35%, blur 14, y 8; black at 15% when on the key panel): the primary button.
+- **Scoop glow** (the scoop's own hue at 35%, blur 8 to 10, y 4 to 5; 8% below the podium): podium rank and score scoops, avatars, selected chips and selected score tiles.
+- **Tab edge** (shadow-ink fading from 0 to 8% over 10pt): replaces the hairline above the pre-iOS 26 tab bar.
 
 ### Named Rules
-**The No Blur Rule.** Every shadow is a solid, unblurred offset. A blurred or ambient shadow does not belong in this world.
+**The Diffuse Shadow Rule.** Shadows are wide, soft and fall straight down. A shadow takes the colour of what casts it: steel ink under glass, the scoop's hue under a scoop.
 
-**The One Key Plate Rule.** Each screen has at most one ochre-offset plate. Long lists drop the shadow on ordinary rows so the plates that do cast one mean something.
+**The Gloss Band Rule.** Every glass or glossy surface carries a white band from its top edge fading out by 55% of its height (60% strength on panels, about 45% on scoops and buttons, 16% on the key panel).
 
 ## Shapes
 
-Small, firm corners and hard rules. Plates, rank tiles and inputs use 4pt continuous corners. Tags and stamps use 2pt corners. Score cells, level choices and allocation strips are square. Buttons and chips are full capsules; avatars and map pins are circles. Rules are oxblood ink: 2pt round plates, rank tiles and primary buttons, 1.5pt round secondary buttons, chips, tags and inputs, 1pt round score cells. Unscored criterion cells are dashed (2 on, 2 off). The community score, which is not yours, is a dashed 1.2pt soft-ink outline with no fill and no shadow.
+Very round, always continuous-cornered. Panels and cards are 24pt, the key panel 28pt, controls, inputs and score tiles 16pt, rank badges 14pt. Buttons, chips, tags, the demo badge, score-bar pills and toasts are capsules; score scoops and avatars are circles. Score bars are closed-up glossy pills with 3pt gaps, one per earned point, so a bar's length is its total; ring arcs use round caps with a gap between criteria. Every glass shape carries a one-point bright white edge.
 
 ## Components
 
 ### Buttons
-Tactile and printed: they press into their own shadow.
-- **Shape:** full capsule (999px).
-- **Primary:** teal fill, white headline label, 2pt ink rule, 52pt tall, full width, 3pt solid ink offset. One per screen, for the main action ("Log a visit").
-- **Pressed:** the button moves 3pt down-right onto its shadow (snappy, 0.12s).
-- **Disabled:** sunk peach fill, soft ink label, hairline offset.
-- **Secondary:** cream plate fill, ink semibold label, 1.5pt ink rule, 2pt ink offset; pressed fills sunk peach and moves 2pt. Takes an optional label tint.
-- **Inline text buttons** ("Change", "Try again"): plain teal semibold text.
+Glossy, springy, never flat.
+- **Shape:** capsule (rounded.capsule), full width.
+- **Primary:** the key gradient with white headline text, 13pt vertical and 18pt horizontal padding, white edge at 45%, primary glow. One per screen.
+- **On the key panel:** the primary turns to white glass with tint text and a soft black shadow, so it still stands out against cobalt.
+- **Disabled:** sunk-well fill, ink-soft text, no glow.
+- **Secondary:** a glass capsule with ink semibold subheadline text and the panel shadow, for actions beside the primary.
+- **Press:** every button and tappable tile squishes to 94% on the press spring and springs back; the primary adds a light impact haptic.
 
 ### Chips
-- **Style:** capsule, 36pt tall, 14pt side padding, 1.5pt ink rule, semibold 15pt label.
-- **State:** unselected is cream plate with ink text; selected is teal with white text. Used as a segmented control and wraps at large type sizes. Filter menus use the same capsule with a chevron.
+- **Style:** 38pt-tall glass capsules with 16pt horizontal padding, ink semibold subheadline text, gloss band and bright edge.
+- **State:** the selected chip fills with the key gradient and white text and pops on the pop spring with a selection haptic. Chips stand in for segmented controls and wrap at large type sizes.
 
-### Tags (stamps)
-- **Style:** a ruled stamp, 2pt corners, 1.5pt rule in the tone's ink, cream fill, semibold 12pt label, optional small SF Symbol.
-- **Tones:** neutral (ink), accent (teal), saved (ultramarine), positive (moss), warning (proof red). `solid` fills with the tone and sets white text. The Demo stamp is a warning tag and appears on every demo listing.
+### Tags
+- **Style:** capsules in caption semibold; the tone colour at 13% behind tone-coloured text (10% for neutral). Solid tags fill with the tone colour, add a gloss band and use white text.
+- **Demo badge:** quiet by design, sunk-well fill and ink-soft caption2 text, opaque in both schemes so it reads on the key panel too. It appears beside every demo name.
 
-### Cards / Containers (plates)
-- **Corner Style:** 4pt continuous.
-- **Background:** cream plate on peach stock.
-- **Shadow Strategy:** see Elevation. Teal by default, ochre on the key plate, rank ink on the podium, none on ordinary list rows.
-- **Border:** 2pt oxblood ink.
-- **Internal Padding:** 16pt, 14pt for ranked rows, 12pt for compact inline plates.
+### Cards / Containers
+- **Corner Style:** 24pt continuous.
+- **Background:** glass plate over ultra-thin material with the gloss band.
+- **Shadow Strategy:** panel shadow; a card may tint its glow, or drop it.
+- **Border:** one-point glass edge.
+- **Internal Padding:** 16pt base (12pt for dense scoring cards).
+- **Community score:** a sunk well at 70% instead of glass, so it never reads as your own score.
+
+### Key Panel
+The cobalt-to-ocean slab that opens each primary screen (Rankings, Discover, Restaurant, Profile, Sign in). 28pt corners, 18pt padding (24 on sign-in), gloss at 16%, white edge at 40%, key panel glow. Its contents render in the dark colour scheme, so text and glass inside it turn white without per-view overrides.
 
 ### Inputs / Fields
-- **Style:** cream plate well, 4pt corners, 1.5pt ink rule, 10pt by 12pt padding. System search fields are recoloured to cream plate.
-- **Focus:** the system caret and selection in teal.
+- **Style:** glass plate in a 16pt continuous rectangle, hairline border, 11pt vertical and 14pt horizontal padding. System search fields are white at 70%.
+- **Focus:** the system cursor and tint; no extra ring.
 
 ### Navigation
-- **Style:** native tab bar and navigation stacks. Large titles heavy 34pt ink, inline titles bold 17pt ink, tint teal. On iOS 26 the bars are Liquid Glass; before that the navigation bar is peach stock and the tab bar cream plate, each edged with an ink rule, unselected items in soft ink.
+- **Style:** native navigation bars and a five-tab bar. Titles are SF Pro Rounded, bold 34pt large and semibold 17pt inline, in ink.
+- **Selected tab:** on iOS 26 and later the system Liquid Glass tab bar with the tint. Before that, frosted ultra-thin bars with no hairline, a soft shadow fade above the tab bar, and the selected icon sitting white on a glossy cobalt capsule (48 by 30pt, #3A6BF0 to key-ocean) with its label in tint below.
 
-### Score Bar (signature)
-Ten square cells in one row, grouped by criterion with a 3pt gap between criteria. Earned points are solid in the criterion's ink; the rest are outlined in it; an unscored criterion is dashed. 12pt tall by default, 8pt inside ranked rows.
+### Score Bar, Ring and Allocation Strip (signature)
+The rubric made visible. The score bar is one glossy capsule per earned point in its criterion's colour, closed up with empty slots holding the remaining width so lengths compare across rows; points spring in one after another (fill spring, 35ms stagger capped at 0.4s). The score ring bends the same points into round-capped arcs with a gloss line, sweeping round 0.12s apart, with the heavy total in the middle over a faint sunk-well track. The allocation strip shows each criterion's maximum as a glossy capsule with a dot-and-name legend below.
 
-### Score Ring and Badge
-The same ten points bent into a ring of butt-capped arcs (earned at full ink, the rest at 20%), with the heavy total in the middle; arcs sweep in on appear unless Reduce Motion is on. The badge reads "8/10 · General": heavy number, smaller regular denominator, system name in soft ink.
+### Podium Rows
+Rankings rows are glass cards holding a 42pt rank badge (14pt corners) and a 54pt round score scoop, both glossy and coloured coral, cyan or cobalt for ranks 1 to 3, steel below, with their own glow. Tied ranks share a scoop and say "tied" beneath it. Badges pop in on appear.
 
-### Ranked Row
-A plate with a 40pt square rank tile (tomato, teal or ultramarine on the podium with ink or white by luminance, cream below it, 2pt ink rule), "tied" under shared ranks, name and meta, the score bar, and the heavy score on the right.
-
-### Level Choice
-A grid of square, ruled choices for scoring one criterion: a square numeral cell outlined in the criterion's ink, the level name, and its description. Selected fills the cell with the ink, washes the choice at 12% of the ink and thickens its rule to 2.5pt.
-
-### Allocation Strip
-A 10pt strip divided by criterion maximums, in the criterion inks, inside a 1.5pt ink rule, with a wrapping legend of 8pt squares, names and points.
+### Score Tiles
+Choosing a level is tapping a 16pt-cornered glass tile with a hairline border. Selected tiles tint to their criterion colour at 14%, take a two-point border in that colour, glow, and pop to 103% (numeric grid cells fill solid and pop to 108%). Each selection fires a selection haptic.
 
 ### Map Pins
-Circular badges: the pin's ink ringed in white (ultramarine saved, teal visited, tomato result), with a 2pt solid ink offset. Selected is larger (44pt) and inverted. The basemap is the palette laid over cream and flattened: peach land, pale teal water, pale moss parks, white local roads, ochre-tinted major roads, ink labels.
+Round badges, 32pt (44pt when selected) with a white ring and a bold white SF Symbol: cobalt for want-to-try, coral for search results, green for visited. A selected pin inverts to white with the pin's colour as ring and glyph, and every pin glows in its own colour. The Google basemap is a pale steel world with cobalt-tinted water, aqua parks, and coral- and violet-tinted major roads, with points of interest and transit hidden.
+
+### Motion
+- **press** (spring 0.28s, bounce 0.45): squish on every tap.
+- **pop** (spring 0.4s, bounce 0.35): selection and state changes.
+- **fill** (spring 0.5s, bounce 0.3, 35ms stagger, max 0.4s delay): score points filling in.
+Reduce Motion shows finished bars and rings with no fill or sweep.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** set every content panel as a cream plate with a 2pt ink rule and 4pt corners on peach stock.
-- **Do** lift plates with a solid, unblurred offset: teal 5pt by default, ochre 6pt for the one key plate on a screen, the rank ink for podium rows.
-- **Do** reserve teal for things you can tap, and keep it to one primary button per screen.
-- **Do** colour a criterion by its position everywhere it appears, with its name and number beside the colour.
-- **Do** set scores heavy with monospaced digits and keep the system name with the number.
-- **Do** use Dynamic Type text styles and SF Symbols, and let chips and tags wrap.
+- **Do** put every surface on the steel gradient and build panels as glass: glass plate, gloss band, one-point glass edge, panel shadow.
+- **Do** give each screen exactly one key panel and one key-gradient primary action.
+- **Do** colour a criterion by its position everywhere it appears, and always print its name and points beside the colour.
+- **Do** use SF Pro Rounded for everything, through Dynamic Type text styles, with heavy monospaced digits for scores.
+- **Do** use the Motion springs (press, pop, fill) for anything that moves, and honour Reduce Motion.
+- **Do** keep the demo badge beside every demo name, quiet and opaque.
 
 ### Don't:
-- **Don't** use blurred, ambient or soft shadows.
-- **Don't** use mono uppercase as a section heading or a kicker above a title; it only names a data value.
-- **Don't** set running text in tomato or ochre; they are below 4.5:1 on the plate.
-- **Don't** put a shadow on every plate in a long list; ordinary rows drop it.
+- **Don't** cast hard or offset shadows; every shadow is soft, diffuse and falls straight down.
+- **Don't** add a second key panel, or use the key gradient for anything but the key panel, primary action and selected chip.
+- **Don't** set text in criterion or podium scoop colours on glass; scoops are fills under white or navy text.
+- **Don't** use square corners or circular-arc corners on panels; use the radius scale with continuous corners.
+- **Don't** fall back to flat grey system lists or segmented controls; use glass cards and chips.
 - **Don't** add a dark appearance; the app is light only.
-- **Don't** use criterion inks for chrome, navigation or general actions.

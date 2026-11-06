@@ -11,20 +11,20 @@ import UIKit
 enum MapStyle {
     // MARK: Palette, as the map uses it
 
-    private static let paper: UInt32 = Theme.plateHex
+    private static let paper: UInt32 = 0xF7F9FB
 
-    static let land = mix(Theme.stockHex, 0.55, over: paper)
-    static let buildings = mix(Theme.hairlineHex, 0.7, over: paper)
-    static let water = mix(Theme.tealHex, 0.30, over: paper)
-    static let parks = mix(Theme.mossHex, 0.22, over: paper)
+    static let land = mix(Theme.steelBottomHex, 0.55, over: paper)
+    static let buildings = mix(Theme.steelBottomHex, 0.9, over: paper)
+    static let water = mix(Theme.cobaltHex, 0.22, over: paper)
+    static let parks = mix(Theme.aquaHex, 0.22, over: paper)
     static let localRoads = hex(0xFFFFFF) // a shade lighter than the land
-    static let arterialRoads = mix(Theme.ochreHex, 0.30, over: 0xFFFFFF)
-    static let highways = mix(Theme.ochreHex, 0.55, over: 0xFFFFFF)
+    static let arterialRoads = mix(Theme.coralHex, 0.16, over: 0xFFFFFF)
+    static let highways = mix(Theme.violetHex, 0.25, over: 0xFFFFFF)
     static let borders = mix(Theme.inkHex, 0.25, over: paper)
     static let cityLabels = hex(Theme.inkHex)
     static let areaLabels = mix(Theme.inkHex, 0.62, over: paper)
     static let roadLabels = mix(Theme.inkHex, 0.55, over: paper)
-    static let waterLabels = mix(Theme.tealHex, 0.75, over: Theme.inkHex)
+    static let waterLabels = mix(Theme.cobaltHex, 0.7, over: Theme.inkHex)
     static let halo = hex(0xFFFFFF)
 
     // MARK: Google (live)
@@ -46,7 +46,7 @@ enum MapStyle {
             rule("water", element: "labels.text.fill", ["color": waterLabels]),
             rule("landscape.man_made", element: "geometry", ["color": buildings]),
 
-            // Streets are light lanes; bigger roads ochre. Names are soft and never shielded.
+            // Streets are light lanes; bigger roads tinted coral and violet. Names are soft and never shielded.
             rule("road", element: "geometry.stroke", ["visibility": "off"]),
             rule("road.local", element: "geometry.fill", ["color": localRoads]),
             rule("road.arterial", element: "geometry.fill", ["color": arterialRoads]),
@@ -118,9 +118,9 @@ enum MapStyle {
             let white = UIColor.white
             let (ringColor, fill, glyph) = selected ? (pin.color, white, pin.color) : (white, pin.color, white)
 
-            // The app's crisp offset shadow, in ink.
-            context.cgContext.setShadow(offset: CGSize(width: 2, height: 2), blur: 0,
-                                        color: UIColor(hex: Theme.inkHex).cgColor)
+            // A soft glow in the pin's own colour.
+            context.cgContext.setShadow(offset: CGSize(width: 0, height: 2), blur: selected ? 8 : 5,
+                                        color: pin.color.withAlphaComponent(0.5).cgColor)
             ringColor.setFill()
             UIBezierPath(ovalIn: circle).fill()
             context.cgContext.setShadow(offset: .zero, blur: 0, color: nil)

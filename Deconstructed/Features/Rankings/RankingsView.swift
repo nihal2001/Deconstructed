@@ -139,7 +139,7 @@ struct RankingsView: View {
     private var scopeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("RANKED WITH").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
+                Text("Ranked with").font(.dataKey).foregroundStyle(Theme.inkSoft)
                 Spacer()
                 Menu {
                     Picker("System", selection: Binding(get: { resolvedChoice }, set: { newValue in
@@ -212,27 +212,26 @@ struct RankedRow: View {
     /// Under "All systems" each score carries the name of the system that produced it.
     var showsSystem = false
 
-    /// The podium places get an ink each. Tied ranks share one, like the rank itself.
-    private var medal: Color {
-        switch entry.rank {
-        case 1: Theme.tomato
-        case 2: Theme.teal
-        case 3: Theme.ultramarine
-        default: Theme.plate
-        }
-    }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown = false
+    private var isPodium: Bool { entry.rank <= 3 }
 
     var body: some View {
         let place = model.place(for: entry.restaurantID)
         let systemName = model.systemName(entry.revision.systemID)
         HStack(alignment: .top, spacing: 12) {
             VStack(spacing: 4) {
+                // The podium places get a glossy scoop each; tied ranks share one, like the rank.
+                let badge = RoundedRectangle(cornerRadius: Theme.badgeRadius, style: .continuous)
                 Text("\(entry.rank)")
-                    .font(.display(.title3, weight: .heavy).monospacedDigit())
-                    .foregroundStyle(Theme.text(on: medal))
-                    .frame(width: 40, height: 40)
-                    .background(medal, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-                    .overlay { RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(Theme.rule, lineWidth: Theme.ruleWidth) }
+                    .font(.display(.title3, weight: .bold).monospacedDigit())
+                    .foregroundStyle(Theme.onPodium(entry.rank))
+                    .frame(width: 42, height: 42)
+                    .background { Gloss(shape: badge, strength: 0.45) }
+                    .background(Theme.podium(entry.rank), in: badge)
+                    .shadow(color: Theme.podiumGlow(entry.rank).opacity(isPodium ? 0.35 : 0.08), radius: 8, y: 4)
+                    .scaleEffect(shown || reduceMotion ? 1 : 0.5)
+                    .animation(reduceMotion ? nil : Motion.pop.delay(0.05), value: shown)
                 if entry.isTied {
                     Text("tied").font(.caption2.weight(.semibold)).foregroundStyle(Theme.inkSoft)
                 }
@@ -260,24 +259,24 @@ struct RankedRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .trailing, spacing: 0) {
-                HStack(alignment: .firstTextBaseline, spacing: 1) {
-                    Text("\(entry.total)")
-                        .font(.display(.title, weight: .heavy).monospacedDigit())
-                        .tracking(-1)
-                        .foregroundStyle(Theme.ink)
-                    Text("/\(RankingRules.totalPoints)")
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(Theme.inkSoft)
-                }
+            VStack(spacing: 3) {
+                // The score sits in a round scoop, glossy and coloured for the podium.
+                Text("\(entry.total)")
+                    .font(.display(.title2, weight: .bold).monospacedDigit())
+                    .foregroundStyle(isPodium ? Theme.onPodium(entry.rank) : Theme.ink)
+                    .contentTransition(.numericText())
+                    .frame(width: 54, height: 54)
+                    .background { Gloss(shape: Circle(), strength: 0.45) }
+                    .background(Theme.podium(entry.rank), in: Circle())
+                    .shadow(color: Theme.podiumGlow(entry.rank).opacity(isPodium ? 0.35 : 0.08), radius: 10, y: 5)
                 if showsSystem {
                     Text(systemName).font(.caption2.weight(.semibold)).foregroundStyle(Theme.inkSoft).lineLimit(1)
                 }
             }
             .fixedSize()
         }
-        // Only the podium casts a shadow, in its own ink, so the top three lift off the list.
-        .card(padding: 14, shadow: entry.rank <= 3 ? medal : nil)
+        .card(padding: 14)
+        .onAppear { shown = true }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Rank \(entry.rank)\(entry.isTied ? ", tied" : ""). \(model.displayName(for: entry.restaurantID)). \(entry.total) out of 10, \(systemName) system.")
         .accessibilityHint("Opens the restaurant")
@@ -301,12 +300,15 @@ struct FilterMenu: View {
                     Text(selection ?? title)
                     Image(systemName: "chevron.down").imageScale(.small)
                 }
-                .font(.subheadline.weight(.semibold))
+                .font(.system(.subheadline, design: .rounded, weight: .semibold))
                 .foregroundStyle(selection == nil ? Theme.ink : Theme.onTint)
-                .padding(.horizontal, 14)
-                .frame(minHeight: 36)
-                .background(selection == nil ? Theme.plate : Theme.tint, in: Capsule())
-                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1.5) }
+                .padding(.horizontal, 16)
+                .frame(minHeight: 38)
+                .background { Gloss(shape: Capsule(), strength: 0.4) }
+                .background { Capsule().fill(selection == nil ? AnyShapeStyle(Theme.plate) : AnyShapeStyle(Theme.keyGradient)) }
+                .overlay { Capsule().strokeBorder(Theme.rule, lineWidth: 1) }
+                .shadow(color: (selection == nil ? Theme.shadowInk : Theme.cobalt).opacity(selection == nil ? 0.08 : 0.3), radius: 10, y: 5)
+                .animation(Motion.pop, value: selection)
             }
             .accessibilityLabel("\(title) filter: \(selection ?? "any")")
         }

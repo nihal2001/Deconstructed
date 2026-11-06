@@ -121,6 +121,7 @@ struct LogVisitView: View {
                     ForEach(steps, id: \.self) { step in
                         slide(step)
                             .padding(.horizontal, Theme.spacing)
+                            .padding(.top, 8)
                             .padding(.bottom, 18)
                             .frame(maxHeight: .infinity, alignment: .top)
                             .tag(step)
@@ -271,7 +272,7 @@ struct LogVisitView: View {
     private var systemCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("SYSTEM").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
+                Text("System").font(.dataKey).foregroundStyle(Theme.inkSoft)
                 if let system {
                     Text(system.name).font(.display(.title3)).foregroundStyle(Theme.ink)
                     SystemKindTag(system: system)

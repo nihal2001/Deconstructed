@@ -15,9 +15,9 @@ struct MapPin: Identifiable, Hashable {
 
     var color: UIColor {
         switch kind {
-        case .wantToTry: UIColor(hex: Theme.ultramarineHex)
-        case .visited: UIColor(hex: Theme.tealHex)
-        case .result: UIColor(hex: Theme.tomatoHex)
+        case .wantToTry: UIColor(hex: Theme.cobaltHex)
+        case .visited: UIColor(Theme.positive)
+        case .result: UIColor(hex: Theme.coralHex)
         }
     }
 
@@ -401,7 +401,7 @@ struct GoogleMapView: UIViewRepresentable {
             let label = UILabel(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
             label.text = "\(count)"
             label.textAlignment = .center
-            label.font = .systemFont(ofSize: 15, weight: .bold)
+            label.font = UIFont.systemFont(ofSize: 15, weight: .bold).fontDescriptor.withDesign(.rounded).map { UIFont(descriptor: $0, size: 15) } ?? .systemFont(ofSize: 15, weight: .bold)
             label.textColor = .white
             label.backgroundColor = UIColor(hex: Theme.inkHex)
             label.layer.cornerRadius = 20

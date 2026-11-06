@@ -58,7 +58,7 @@ struct DiscoverView: View {
                 .foregroundStyle(Theme.positive)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
-                Text("SEARCHING NEAR").font(.dataKey).tracking(0.8).foregroundStyle(Theme.inkSoft)
+                Text("Searching near").font(.dataKey).foregroundStyle(Theme.inkSoft)
                 Text(model.location.originLabel).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
             }
             Spacer()
